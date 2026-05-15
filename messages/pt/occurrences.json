@@ -1,0 +1,24 @@
+{
+  "title": "Ocorrências",
+  "subtitle": "Acompanhar manutenção e relatórios de incidentes",
+  "addOccurrence": "Adicionar Ocorrência",
+  "modal": {
+    "addTitle": "Adicionar Ocorrência",
+    "editTitle": "Editar Ocorrência",
+    "personalInfo": "Detalhes da ocorrência",
+    "title": "Título",
+    "titlePlaceholder": "Introduza o título da ocorrência",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Descreva a ocorrência",
+    "property": "Condomínio",
+    "priority": "Prioridade",
+    "status": "Estado",
+    "save": "Guardar ocorrência",
+    "update": "Actualizar ocorrência",
+    "cancel": "Cancelar",
+    "validation": {
+      "titleRequired": "O título da ocorrência é obrigatório",
+      "descriptionRequired": "Introduza uma descrição da ocorrência"
+    }
+  }
+}

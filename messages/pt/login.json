@@ -1,0 +1,18 @@
+{
+  "brand": "CondoAI",
+  "signingIn": "Faça o seu login",
+  "emailLabel": "Endereço de email",
+  "emailPlaceholder": "Digite o seu email",
+  "emailRequired": "Email obrigatório",
+  "emailInvalid": "Introduza um endereço de email válido",
+  "passwordLabel": "Senha",
+  "passwordPlaceholder": "Digite a sua senha",
+  "passwordRequired": "Senha obrigatória",
+  "passwordMinLength": "A senha deve ter pelo menos 6 caracteres",
+  "forgotPassword": "Esqueceu a senha?",
+  "rememberMe": "Lembrar-me",
+  "signInButton": "Entrar",
+  "signingInButton": "Entrando...",
+  "forgotPasswordAlert": "A recuperação de senha seria implementada aqui. Para demonstração, use: admin@condoai.pt / admin123",
+  "footer": "© {year} CondoAI. Todos os direitos reservados."
+}

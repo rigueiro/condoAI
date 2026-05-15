@@ -1,26 +1,98 @@
 @import "tailwindcss";
-
+@layer theme, base, components, utilities;
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F8FAFC;
+  --foreground: green;
 }
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
-
+@theme {
+  /* Primary Colors */
+  --color-primary: #2563EB; /* Deep blue (primary) - blue-600 */
+  --color-primary-50: #EFF6FF; /* Very light blue (50-level shade) - blue-50 */
+  --color-primary-100: #DBEAFE; /* Light blue (100-level shade) - blue-100 */
+  --color-primary-500: #3B82F6; /* Medium blue (500-level shade) - blue-500 */
+  --color-primary-700: #1D4ED8; /* Dark blue (700-level shade) - blue-700 */
+  --color-primary-900: #1E3A8A; /* Very dark blue (900-level shade) - blue-900 */
+  /* Secondary Colors */
+  --color-secondary: #64748B; /* Sophisticated slate gray (secondary) - slate-500 */
+  --color-secondary-50: #F8FAFC; /* Very light slate (50-level shade) - slate-50 */
+  --color-secondary-100: #F1F5F9; /* Light slate (100-level shade) - slate-100 */
+  --color-secondary-200: #E2E8F0; /* Light slate (200-level shade) - slate-200 */
+  --color-secondary-300: #CBD5E1; /* Medium light slate (300-level shade) - slate-300 */
+  --color-secondary-600: #475569; /* Medium dark slate (600-level shade) - slate-600 */
+  --color-secondary-700: #334155; /* Dark slate (700-level shade) - slate-700 */
+  --color-secondary-800: #1E293B; /* Very dark slate (800-level shade) - slate-800 **/
+  /* Accent Colors */
+  --color-accent: #0891B2; /* Vibrant cyan (accent) - cyan-600 */
+  --color-accent-50: #ECFEFF; /* Very light cyan (50-level shade) - cyan-50 */
+  --color-accent-100: #CFFAFE; /* Light cyan (100-level shade) - cyan-100 */
+  --color-accent-500: #06B6D4; /* Medium cyan (500-level shade) - cyan-500 */
+  --color-accent-700: #0E7490; /* Dark cyan (700-level shade) - cyan-700 */
+  /* Text Colors */
+  --color-text-primary: #1E293B; /* Rich charcoal text - slate-800 */
+  --color-text-secondary: #64748B; /* Muted gray text - slate-500 */
+  /* Status Colors */
+  --color-success: #059669; /* Forest green success - emerald-600 */
+  --color-success-50: #ECFDF5; /* Very light green (50-level shade) - emerald-50 */
+  --color-success-100: #D1FAE5; /* Light green (100-level shade) - emerald-100 */
+  --color-success-500: #10B981; /* Medium green (500-level shade) - emerald-500 */
+  --color-warning: #D97706; /* Warm amber warning - amber-600 */
+  --color-warning-50: #FFFBEB; /* Very light amber (50-level shade) - amber-50 */
+  --color-warning-100: #FEF3C7; /* Light amber (100-level shade) - amber-100 */
+  --color-warning-500: #F59E0B; /* Medium amber (500-level shade) - amber-500 */
+  --color-error: #DC2626; /* Clear red error - red-600 */
+  --color-error-50: #FEF2F2; /* Very light red (50-level shade) - red-50 */
+  --color-error-100: #FEE2E2; /* Light red (100-level shade) - red-100 */
+  --color-error-500: #EF4444; /* Medium red (500-level shade) - red-500 */
+  /* Border Colors */
+  --color-border-light: #E2E8F0; /* Light border - slate-200 */
+  --color-border-medium: #CBD5E1; /* Medium border - slate-300 */
+  /* Shadow Colors */
+  --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-heavy: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #F8FAFC;
     --foreground: #ededed;
   }
 }
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+  }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+@layer components {
+  .transition-smooth {
+    transition: all 150ms ease-out;
+  }
+  .transition-spring {
+    transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-light);
+  }
+  .shadow-modal {
+    box-shadow: var(--shadow-heavy);
+  }
+  .border-light {
+    border-color: var(--color-border-light);
+  }
+  .border-medium {
+    border-color: var(--color-border-medium);
+  }
 }

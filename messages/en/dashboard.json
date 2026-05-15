@@ -1,0 +1,75 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome, {name}. Here is an overview of your condominiums.",
+  "stats": {
+    "totalProperties": "Total Properties",
+    "totalUnits": "Total Units",
+    "collectionRate": "Collection Rate",
+    "outstandingPayments": "Outstanding Payments",
+    "addedThisMonth": "+2 this month",
+    "occupancy": "95% occupied",
+    "aboveTarget": "Above target",
+    "overdueCount": "23 overdue"
+  },
+  "charts": {
+    "collectionTrends": "Monthly Collection Trends",
+    "collected": "Collected",
+    "target": "Target",
+    "collectionTrendsAria": "Monthly Collection Trends Chart",
+    "propertyDistribution": "Property Distribution",
+    "propertyDistributionAria": "Property Distribution Pie Chart",
+    "propertiesTooltip": "Properties",
+    "unitsCount": "{count} units"
+  },
+  "distribution": {
+    "large": "Large",
+    "medium": "Medium",
+    "small": "Small"
+  },
+  "recentActivity": {
+    "title": "Recent Activity",
+    "viewAll": "View all",
+    "viewMore": "View more activities",
+    "minutesAgo": "{count} minutes ago",
+    "hoursAgo": "{count} hours ago",
+    "daysAgo": "{count} days ago"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "addProperty": "Add Property",
+    "addPropertyDesc": "Register a new condominium",
+    "addOwner": "Add Owner",
+    "addOwnerDesc": "Register a unit owner",
+    "addPayment": "Record Payment",
+    "addPaymentDesc": "Record fee payment",
+    "generateReport": "Generate Financial Report",
+    "generateReportDesc": "Create financial reports",
+    "manageOwners": "Manage Owners"
+  },
+  "mockActivities": {
+    "paymentReceived": "Payment Received",
+    "newOwner": "New Owner Added",
+    "propertyUpdated": "Property Updated",
+    "paymentOverdue": "Overdue Payment",
+    "maintenanceRequest": "Maintenance Request"
+  },
+  "upcomingPayments": {
+    "title": "Upcoming Payments",
+    "viewAll": "View all",
+    "unitProperty": "Unit {unit} • {property}",
+    "status": {
+      "overdue": "Overdue",
+      "dueSoon": "Due Soon",
+      "upcoming": "Upcoming"
+    },
+    "dueDate": {
+      "overdue": "{days} days overdue",
+      "today": "Due today",
+      "tomorrow": "Due tomorrow",
+      "inDays": "Due in {days} days"
+    },
+    "record": "Record",
+    "managePayments": "Manage Payments",
+    "sendReminders": "Send Reminders"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "brand": "CondoAI",
+  "metadata": {
+    "title": "CondoAI",
+    "description": "A sua aplicação de gestão de condomínios"
+  },
+  "nav": {
+    "dashboard": "Painel",
+    "dashboardTooltip": "Visão geral do portfólio e métricas principais",
+    "properties": "Condomínios",
+    "propertiesTooltip": "Gestão do portfólio de condomínios",
+    "owners": "Proprietários",
+    "ownersTooltip": "Base de dados e contactos de proprietários",
+    "payments": "Pagamentos",
+    "paymentsTooltip": "Acompanhamento de transações financeiras",
+    "reports": "Relatórios",
+    "reportsTooltip": "Ferramentas de análise e relatórios",
+    "toggleMobileMenu": "Abrir menu móvel",
+    "closeMenu": "Fechar menu",
+    "version": "Versão 1.0.0"
+  },
+  "breadcrumb": {
+    "ariaLabel": "Navegação",
+    "dashboard": "Painel",
+    "properties": "Condomínios",
+    "propertyDetail": "Detalhe do condomínio",
+    "owners": "Proprietários",
+    "payments": "Pagamentos",
+    "reports": "Relatórios",
+    "profile": "Perfil",
+    "account": "Definições da conta",
+    "help": "Ajuda e suporte"
+  },
+  "profile": {
+    "profileSettings": "Definições de perfil",
+    "accountSettings": "Definições da conta",
+    "helpSupport": "Ajuda e suporte",
+    "signOut": "Terminar sessão",
+    "propertyManager": "Gestor de condomínio"
+  },
+  "locale": {
+    "label": "Idioma",
+    "en": "Inglês",
+    "pt": "Português"
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Adicionar",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar",
+    "close": "Fechar",
+    "confirm": "Confirmar",
+    "viewAll": "Ver todos",
+    "viewMore": "Ver mais"
+  },
+  "status": {
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "pending": "Pendente",
+    "paid": "Pago",
+    "overdue": "Em atraso"
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "title": "Relatórios e Análises",
+  "subtitle": "Gerar insights e exportar relatórios financeiros",
+  "controlPanel": {
+    "dateRange": "Intervalo de datas",
+    "selectDateRange": "Seleccionar intervalo",
+    "quickSelect": "Selecção rápida",
+    "last30Days": "Últimos 30 dias",
+    "last3Months": "Últimos 3 meses",
+    "last6Months": "Últimos 6 meses",
+    "lastYear": "Último ano",
+    "yearToDate": "Ano até à data",
+    "reportType": "Tipo de relatório",
+    "properties": "Condomínios",
+    "allProperties": "Todos os condomínios",
+    "reset": "Repor",
+    "apply": "Aplicar",
+    "reportTypes": {
+      "financialSummary": "Resumo financeiro",
+      "collectionRates": "Taxas de cobrança",
+      "ownerStatements": "Extratos de proprietários",
+      "outstandingBalances": "Saldos em dívida",
+      "propertyPerformance": "Desempenho por condomínio",
+      "paymentTrends": "Tendências de pagamento"
+    }
+  },
+  "reportTemplates": {
+    "title": "Modelos de relatório",
+    "subtitle": "Acesso rápido a relatórios frequentes",
+    "createCustom": "Criar modelo personalizado",
+    "templates": {
+      "monthlyCollection": {
+        "name": "Resumo mensal de cobranças",
+        "description": "Visão completa do desempenho de cobrança mensal"
+      },
+      "annualOwnerStatements": {
+        "name": "Extratos anuais de proprietários",
+        "description": "Extratos anuais completos para todos os proprietários"
+      },
+      "propertyPerformance": {
+        "name": "Análise de desempenho por condomínio",
+        "description": "Métricas detalhadas de desempenho por condomínio"
+      },
+      "outstandingBalances": {
+        "name": "Relatório de saldos em dívida",
+        "description": "Pagamentos pendentes e análise de antiguidade"
+      },
+      "paymentTrends": {
+        "name": "Análise de tendências de pagamento",
+        "description": "Padrões históricos e previsão de pagamentos"
+      },
+      "boardSummary": {
+        "name": "Resumo para reunião de administração",
+        "description": "Resumo executivo para apresentações à administração"
+      }
+    }
+  },
+  "chartsSection": {
+    "title": "Painel de análises",
+    "subtitle": "Gráficos interactivos e métricas de desempenho",
+    "tabs": {
+      "collectionTrends": "Tendências de cobrança",
+      "propertyPerformance": "Desempenho por condomínio",
+      "paymentDistribution": "Distribuição de pagamentos"
+    },
+    "collectionTrendsAria": "Gráfico de tendências de cobrança",
+    "propertyPerformanceAria": "Gráfico de desempenho por condomínio",
+    "paymentDistributionAria": "Gráfico circular de distribuição de pagamentos",
+    "methodBreakdown": "Distribuição por método de pagamento",
+    "paymentsCount": "{count} pagamentos",
+    "dataUpdated": "Dados actualizados há 5 minutos",
+    "tooltipCollected": "Cobrado",
+    "tooltipTarget": "Meta",
+    "tooltipOutstanding": "Em dívida",
+    "tooltipCollectionRate": "Taxa de cobrança",
+    "tooltipPayments": "Pagamentos"
+  },
+  "dataTables": {
+    "title": "Relatórios detalhados",
+    "subtitle": "Tabelas de apoio com capacidade de exportação",
+    "excel": "Excel",
+    "pdf": "PDF",
+    "tabs": {
+      "propertyPerformance": "Desempenho por condomínio",
+      "collectionSummary": "Resumo de cobranças",
+      "paymentMethods": "Métodos de pagamento"
+    },
+    "columns": {
+      "property": "Condomínio",
+      "units": "Frações",
+      "collected": "Cobrado",
+      "outstanding": "Em dívida",
+      "collectionRate": "Taxa de cobrança",
+      "status": "Estado",
+      "period": "Período",
+      "target": "Meta",
+      "variance": "Variação",
+      "achievement": "Cumprimento",
+      "paymentMethod": "Método de pagamento",
+      "transactions": "Transacções",
+      "totalAmount": "Valor total",
+      "percentage": "Percentagem",
+      "average": "Média"
+    },
+    "status": {
+      "excellent": "Excelente",
+      "good": "Bom",
+      "needsAttention": "Requer atenção"
+    }
+  },
+  "generateReportSection": {
+    "title": "Gerar relatório personalizado",
+    "subtitle": "Crie e agende relatórios personalizados com campos seleccionados",
+    "collapse": "Recolher",
+    "expand": "Expandir",
+    "reportName": "Nome do relatório *",
+    "reportNamePlaceholder": "Introduza o nome do relatório",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Breve descrição do relatório",
+    "reportFormat": "Formato do relatório",
+    "deliveryMethod": "Método de entrega",
+    "schedule": "Agendamento",
+    "recipients": "Destinatários",
+    "emailPlaceholder": "Introduza o endereço de email",
+    "dataFields": "Campos de dados a incluir *",
+    "additionalOptions": "Opções adicionais",
+    "includeCharts": "Incluir gráficos",
+    "includeRawData": "Incluir tabelas de dados brutos",
+    "fieldsSelected": "{count} campos seleccionados",
+    "saveTemplate": "Guardar modelo",
+    "generateReport": "Gerar relatório",
+    "collapsedHint": "Gere relatórios rapidamente com modelos predefinidos ou crie relatórios personalizados",
+    "quickFinancial": "Relatório financeiro rápido",
+    "customReport": "Relatório personalizado",
+    "formats": {
+      "pdf": "Documento PDF",
+      "excel": "Folha Excel",
+      "csv": "Dados CSV",
+      "html": "Relatório web"
+    },
+    "delivery": {
+      "manual": "Descarregar manualmente",
+      "email": "Entrega por email",
+      "scheduled": "Entrega agendada"
+    },
+    "schedules": {
+      "daily": "Diário",
+      "weekly": "Semanal",
+      "monthly": "Mensal",
+      "quarterly": "Trimestral",
+      "annually": "Anual"
+    },
+    "fieldCategories": {
+      "Basic": "Básico",
+      "Financial": "Financeiro",
+      "Operations": "Operações",
+      "Governance": "Governança",
+      "Legal": "Legal"
+    },
+    "fields": {
+      "propertyInfo": "Informação do condomínio",
+      "ownerDetails": "Dados do proprietário",
+      "unitInfo": "Informação da fração",
+      "paymentHistory": "Histórico de pagamentos",
+      "outstandingBalances": "Saldos em dívida",
+      "collectionRates": "Taxas de cobrança",
+      "maintenanceRequests": "Pedidos de manutenção",
+      "boardMinutes": "Actas de administração",
+      "budgetVariance": "Variação orçamental",
+      "complianceStatus": "Estado de conformidade"
+    },
+    "validation": {
+      "nameRequired": "Introduza um nome para o relatório",
+      "fieldsRequired": "Seleccione pelo menos um campo para incluir no relatório"
+    }
+  }
+}

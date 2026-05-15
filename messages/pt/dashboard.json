@@ -1,0 +1,75 @@
+{
+  "title": "Painel",
+  "welcome": "Bem-vindo, {name}. Aqui está uma análise dos seus condomínios.",
+  "stats": {
+    "totalProperties": "Total de Condomínios",
+    "totalUnits": "Total de Frações",
+    "collectionRate": "Taxa de cobrança",
+    "outstandingPayments": "Pagamentos fora de prazo",
+    "addedThisMonth": "+2 este mês",
+    "occupancy": "95% ocupado",
+    "aboveTarget": "Acima da meta",
+    "overdueCount": "23 fora de prazo"
+  },
+  "charts": {
+    "collectionTrends": "Tendências Mensais de Cobrança",
+    "collected": "Cobrado",
+    "target": "Meta",
+    "collectionTrendsAria": "Gráfico de tendências mensais de cobrança",
+    "propertyDistribution": "Distribuição de Condomínios",
+    "propertyDistributionAria": "Gráfico de distribuição de condomínios",
+    "propertiesTooltip": "Condomínios",
+    "unitsCount": "{count} frações"
+  },
+  "distribution": {
+    "large": "Grandes",
+    "medium": "Médios",
+    "small": "Pequenos"
+  },
+  "recentActivity": {
+    "title": "Actividades recentes",
+    "viewAll": "Ver todos",
+    "viewMore": "Ver mais actividades",
+    "minutesAgo": "há {count} minutos",
+    "hoursAgo": "há {count} horas",
+    "daysAgo": "há {count} dias"
+  },
+  "quickActions": {
+    "title": "Acções",
+    "addProperty": "Adicionar Propriedade",
+    "addPropertyDesc": "Registe novo condomínio",
+    "addOwner": "Adicionar Proprietário",
+    "addOwnerDesc": "Registe proprietário de fração",
+    "addPayment": "Adicionar Pagamento",
+    "addPaymentDesc": "Registe o pagamento de quotas",
+    "generateReport": "Gerar Relatório Financeiro",
+    "generateReportDesc": "Crie relatórios financeiros",
+    "manageOwners": "Gerir Proprietários"
+  },
+  "mockActivities": {
+    "paymentReceived": "Pagamento Recebido",
+    "newOwner": "Novo Proprietário Adicionado",
+    "propertyUpdated": "Propriedade Atualizada",
+    "paymentOverdue": "Pagamento Fora de Prazo",
+    "maintenanceRequest": "Pedido de Manutenção"
+  },
+  "upcomingPayments": {
+    "title": "Pagamentos futuros",
+    "viewAll": "Ver todos",
+    "unitProperty": "Fração {unit} • {property}",
+    "status": {
+      "overdue": "Em atraso",
+      "dueSoon": "Vence em breve",
+      "upcoming": "Próximo"
+    },
+    "dueDate": {
+      "overdue": "{days} dias em atraso",
+      "today": "Vence hoje",
+      "tomorrow": "Vence amanhã",
+      "inDays": "Vence em {days} dias"
+    },
+    "record": "Registar",
+    "managePayments": "Gerir Pagamentos",
+    "sendReminders": "Enviar Avisos"
+  }
+}

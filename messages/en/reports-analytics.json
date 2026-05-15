@@ -1,0 +1,177 @@
+{
+  "title": "Reports & Analytics",
+  "subtitle": "Generate insights and export financial reports",
+  "controlPanel": {
+    "dateRange": "Date Range",
+    "selectDateRange": "Select Date Range",
+    "quickSelect": "Quick Select",
+    "last30Days": "Last 30 Days",
+    "last3Months": "Last 3 Months",
+    "last6Months": "Last 6 Months",
+    "lastYear": "Last Year",
+    "yearToDate": "Year to Date",
+    "reportType": "Report Type",
+    "properties": "Properties",
+    "allProperties": "All Properties",
+    "reset": "Reset",
+    "apply": "Apply",
+    "reportTypes": {
+      "financialSummary": "Financial Summary",
+      "collectionRates": "Collection Rates",
+      "ownerStatements": "Owner Statements",
+      "outstandingBalances": "Outstanding Balances",
+      "propertyPerformance": "Property Performance",
+      "paymentTrends": "Payment Trends"
+    }
+  },
+  "reportTemplates": {
+    "title": "Report Templates",
+    "subtitle": "Quick access to commonly used reports",
+    "createCustom": "Create Custom Template",
+    "templates": {
+      "monthlyCollection": {
+        "name": "Monthly Collection Summary",
+        "description": "Complete overview of monthly collection performance"
+      },
+      "annualOwnerStatements": {
+        "name": "Annual Owner Statements",
+        "description": "Comprehensive yearly statements for all property owners"
+      },
+      "propertyPerformance": {
+        "name": "Property Performance Analysis",
+        "description": "Detailed performance metrics for each property"
+      },
+      "outstandingBalances": {
+        "name": "Outstanding Balances Report",
+        "description": "Current outstanding payments and aging analysis"
+      },
+      "paymentTrends": {
+        "name": "Payment Trends Analysis",
+        "description": "Historical payment patterns and forecasting"
+      },
+      "boardSummary": {
+        "name": "Board Meeting Summary",
+        "description": "Executive summary for board presentations"
+      }
+    }
+  },
+  "chartsSection": {
+    "title": "Analytics Dashboard",
+    "subtitle": "Interactive charts and performance metrics",
+    "tabs": {
+      "collectionTrends": "Collection Trends",
+      "propertyPerformance": "Property Performance",
+      "paymentDistribution": "Payment Distribution"
+    },
+    "collectionTrendsAria": "Collection Trends Chart",
+    "propertyPerformanceAria": "Property Performance Chart",
+    "paymentDistributionAria": "Payment Distribution Pie Chart",
+    "methodBreakdown": "Payment Method Breakdown",
+    "paymentsCount": "{count} payments",
+    "dataUpdated": "Data updated 5 minutes ago",
+    "tooltipCollected": "Collected",
+    "tooltipTarget": "Target",
+    "tooltipOutstanding": "Outstanding",
+    "tooltipCollectionRate": "Collection Rate",
+    "tooltipPayments": "Payments"
+  },
+  "dataTables": {
+    "title": "Detailed Reports",
+    "subtitle": "Supporting data tables with export capabilities",
+    "excel": "Excel",
+    "pdf": "PDF",
+    "tabs": {
+      "propertyPerformance": "Property Performance",
+      "collectionSummary": "Collection Summary",
+      "paymentMethods": "Payment Methods"
+    },
+    "columns": {
+      "property": "Property",
+      "units": "Units",
+      "collected": "Collected",
+      "outstanding": "Outstanding",
+      "collectionRate": "Collection Rate",
+      "status": "Status",
+      "period": "Period",
+      "target": "Target",
+      "variance": "Variance",
+      "achievement": "Achievement",
+      "paymentMethod": "Payment Method",
+      "transactions": "Transactions",
+      "totalAmount": "Total Amount",
+      "percentage": "Percentage",
+      "average": "Average"
+    },
+    "status": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "needsAttention": "Needs Attention"
+    }
+  },
+  "generateReportSection": {
+    "title": "Generate Custom Report",
+    "subtitle": "Create and schedule custom reports with selected data fields",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "reportName": "Report Name *",
+    "reportNamePlaceholder": "Enter report name",
+    "description": "Description",
+    "descriptionPlaceholder": "Brief description of the report",
+    "reportFormat": "Report Format",
+    "deliveryMethod": "Delivery Method",
+    "schedule": "Schedule",
+    "recipients": "Recipients",
+    "emailPlaceholder": "Enter email address",
+    "dataFields": "Data Fields to Include *",
+    "additionalOptions": "Additional Options",
+    "includeCharts": "Include charts and graphs",
+    "includeRawData": "Include raw data tables",
+    "fieldsSelected": "{count} fields selected",
+    "saveTemplate": "Save Template",
+    "generateReport": "Generate Report",
+    "collapsedHint": "Quickly generate reports using predefined templates or create custom reports",
+    "quickFinancial": "Quick Financial Report",
+    "customReport": "Custom Report",
+    "formats": {
+      "pdf": "PDF Document",
+      "excel": "Excel Spreadsheet",
+      "csv": "CSV Data",
+      "html": "Web Report"
+    },
+    "delivery": {
+      "manual": "Manual Download",
+      "email": "Email Delivery",
+      "scheduled": "Scheduled Delivery"
+    },
+    "schedules": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "annually": "Annually"
+    },
+    "fieldCategories": {
+      "Basic": "Basic",
+      "Financial": "Financial",
+      "Operations": "Operations",
+      "Governance": "Governance",
+      "Legal": "Legal"
+    },
+    "fields": {
+      "propertyInfo": "Property Information",
+      "ownerDetails": "Owner Details",
+      "unitInfo": "Unit Information",
+      "paymentHistory": "Payment History",
+      "outstandingBalances": "Outstanding Balances",
+      "collectionRates": "Collection Rates",
+      "maintenanceRequests": "Maintenance Requests",
+      "boardMinutes": "Board Minutes",
+      "budgetVariance": "Budget Variance",
+      "complianceStatus": "Compliance Status"
+    },
+    "validation": {
+      "nameRequired": "Please enter a report name",
+      "fieldsRequired": "Please select at least one field to include in the report"
+    }
+  }
+}

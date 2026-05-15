@@ -1,0 +1,68 @@
+{
+  "brand": "CondoAI",
+  "metadata": {
+    "title": "CondoAI",
+    "description": "Your favorite condo management app"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "dashboardTooltip": "Portfolio overview and key metrics",
+    "properties": "Properties",
+    "propertiesTooltip": "Property portfolio management",
+    "owners": "Owners",
+    "ownersTooltip": "Owner database and contact management",
+    "payments": "Payments",
+    "paymentsTooltip": "Financial transaction tracking",
+    "reports": "Reports",
+    "reportsTooltip": "Analytics and reporting tools",
+    "toggleMobileMenu": "Toggle mobile menu",
+    "closeMenu": "Close menu",
+    "version": "Version 1.0.0"
+  },
+  "breadcrumb": {
+    "ariaLabel": "Breadcrumb",
+    "dashboard": "Dashboard",
+    "properties": "Properties",
+    "propertyDetail": "Property detail",
+    "owners": "Owners",
+    "payments": "Payments",
+    "reports": "Reports",
+    "profile": "Profile",
+    "account": "Account Settings",
+    "help": "Help & Support"
+  },
+  "profile": {
+    "profileSettings": "Profile Settings",
+    "accountSettings": "Account Settings",
+    "helpSupport": "Help & Support",
+    "signOut": "Sign Out",
+    "propertyManager": "Property Manager"
+  },
+  "locale": {
+    "label": "Language",
+    "en": "English",
+    "pt": "Portuguese"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "close": "Close",
+    "confirm": "Confirm",
+    "viewAll": "View all",
+    "viewMore": "View more"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "paid": "Paid",
+    "overdue": "Overdue"
+  }
+}

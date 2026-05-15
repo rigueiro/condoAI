@@ -1,0 +1,24 @@
+{
+  "title": "Occurrences",
+  "subtitle": "Track maintenance and incident reports",
+  "addOccurrence": "Add Occurrence",
+  "modal": {
+    "addTitle": "Add New Occurrence",
+    "editTitle": "Edit Occurrence",
+    "personalInfo": "Occurrence Details",
+    "title": "Title",
+    "titlePlaceholder": "Enter occurrence title",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe the occurrence",
+    "property": "Property",
+    "priority": "Priority",
+    "status": "Status",
+    "save": "Save Occurrence",
+    "update": "Update Occurrence",
+    "cancel": "Cancel",
+    "validation": {
+      "titleRequired": "Occurrence title is required",
+      "descriptionRequired": "Please enter a description of the occurrence"
+    }
+  }
+}
