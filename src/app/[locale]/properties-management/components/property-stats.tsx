@@ -1,6 +1,7 @@
 import Icon from "@/components/icon";
 import React from "react";
 import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 import { Property } from "../types";
 
 type StatCardProps = {
@@ -17,6 +18,7 @@ interface PropertyStatsProps {
 
 function PropertyStats({ properties }: PropertyStatsProps) {
   const t = useTranslations("propertiesManagement.stats");
+  const { formatCurrency } = useFormatCurrency();
   const stats = React.useMemo(() => {
     const totalProperties = properties.length;
     const totalUnits = properties.reduce(
@@ -110,7 +112,7 @@ function PropertyStats({ properties }: PropertyStatsProps) {
             icon="Building2"
             title={t("properties")}
             value={stats.totalProperties}
-            subtitle="{t('activeProperties')}"
+            subtitle={t("activeProperties")}
           />
 
           <StatCard
@@ -124,15 +126,15 @@ function PropertyStats({ properties }: PropertyStatsProps) {
             icon="Users"
             title={t("occupancy")}
             value={`${stats.averageOccupancy.toFixed(1)}%`}
-            subtitle="{t('portfolioWide')}"
+            subtitle={t("portfolioWide")}
             color="accent"
           />
 
           <StatCard
             icon="DollarSign"
             title={t("monthlyRevenue")}
-            value={`$${stats.totalRevenue.toLocaleString()}`}
-            subtitle="{t('fromOccupied')}"
+            value={formatCurrency(stats.totalRevenue)}
+            subtitle={t("fromOccupied")}
             color="success"
           />
         </div>

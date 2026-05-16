@@ -1,6 +1,7 @@
 // src/pages/payment-tracking/components/PaymentHistoryTable.jsx
 import React, { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import type { MockPayment } from "../__fixtures__/mock-payments";
 
@@ -77,14 +78,7 @@ function PaymentHistoryTable({
     });
   }, [payments, sortConfig]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  const { formatCurrency } = useFormatCurrency();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {

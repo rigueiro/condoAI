@@ -2,12 +2,14 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import { Owner } from "./types";
 
 function OwnerStatistics({ owners }: { owners: Owner[] }) {
   const t = useTranslations("ownersManagement.stats");
   const tStatus = useTranslations("ownersManagement.status");
+  const { formatCurrency } = useFormatCurrency();
 
   const totalOwners = owners.length;
   const unitsOccupied = owners.length;
@@ -52,7 +54,7 @@ function OwnerStatistics({ owners }: { owners: Owner[] }) {
     },
     {
       label: t("outstandingBalance"),
-      value: `€${totalOutstanding.toLocaleString()}`,
+      value: formatCurrency(totalOutstanding),
       icon: "DollarSign",
       color: "text-warning",
       bgColor: "bg-warning-50",

@@ -52,7 +52,7 @@
     "deleteProperty": "Delete property",
     "built": "Built {year}",
     "occupied": "{percent}% occupied",
-    "avgFee": "Avg: ${amount}",
+    "avgFee": "Avg: {amount}",
     "unitsLabel": "Units:",
     "feeRange": "Fee Range:",
     "occupancy": "Occupancy:",

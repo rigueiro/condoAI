@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
@@ -30,6 +31,7 @@ function RecordPaymentModal({
   const t = useTranslations("paymentTracking.recordPaymentModal");
   const tVal = useTranslations("paymentTracking.recordPaymentModal.validation");
   const tMethods = useTranslations("paymentTracking.paymentMethods");
+  const { formatCurrency, currencySymbol } = useFormatCurrency();
   const [errors, setErrors] = useState<ErrorsType>({});
 
   const paymentMethodKeys = [
@@ -255,7 +257,7 @@ function RecordPaymentModal({
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary">
-                  $
+                  {currencySymbol}
                 </span>
                 <Input
                   type="number"
@@ -326,11 +328,12 @@ function RecordPaymentModal({
               <div className="flex items-center space-x-2">
                 <Icon name="Info" size={16} className="text-primary" />
                 <span className="text-sm text-primary font-medium">
-                  Payment Amount:{" "}
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                  }).format(parseFloat(formData.amount) || 0)}
+                  {t("paymentAmountPreview", {
+                    amount: formatCurrency(parseFloat(formData.amount) || 0, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }),
+                  })}
                 </span>
               </div>
             </div>

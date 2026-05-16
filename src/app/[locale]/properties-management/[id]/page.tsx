@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import Header from "@/components/ui/header";
@@ -15,6 +16,7 @@ import { mockOccurrences } from "@/app/[locale]/occurrences/__fixtures__/mock-oc
 
 function PropertyDetailPage() {
   const t = useTranslations("propertiesManagement.detail");
+  const { formatPriceString } = useFormatCurrency();
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
 
@@ -150,7 +152,7 @@ function PropertyDetailPage() {
                 <div>
                   <span className="text-text-secondary">{t("feeRange")} </span>
                   <span className="font-medium text-text-primary">
-                    {property.monthlyFeeRange}
+                    {formatPriceString(property.monthlyFeeRange)}
                   </span>
                 </div>
               </div>

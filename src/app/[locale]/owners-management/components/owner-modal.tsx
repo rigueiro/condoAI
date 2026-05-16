@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, ChangeEvent, SyntheticEvent } from "react";
 import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import { Owner } from "./types";
 
@@ -27,6 +28,7 @@ type Errors = {
 
 function OwnerModal({ owner, properties, onClose, onSave }: Props) {
   const t = useTranslations("ownersManagement.modal");
+  const { currencySymbol } = useFormatCurrency();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -268,7 +270,7 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary">
-                    $
+                    {currencySymbol}
                   </span>
                   <input
                     type="number"

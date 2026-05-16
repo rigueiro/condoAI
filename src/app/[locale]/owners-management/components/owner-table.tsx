@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import Image from "@/components/image";
 import { Owner, PaymentStatus } from "./types";
@@ -28,6 +29,7 @@ function OwnerTable({
 }: Props) {
   const t = useTranslations("ownersManagement.table");
   const tStatus = useTranslations("ownersManagement.status");
+  const { formatCurrency } = useFormatCurrency();
   const [sortConfig, setSortConfig] = useState<{
     key: SortKey | null;
     direction: SortDirection;
@@ -200,7 +202,7 @@ function OwnerTable({
                   <div
                     className={`text-sm font-medium ${owner.currentBalance > 0 ? "text-error" : "text-success"}`}
                   >
-                    ${owner.currentBalance.toLocaleString()}
+                    {formatCurrency(owner.currentBalance)}
                   </div>
                 </td>
                 <td className="px-6 py-4">
@@ -295,7 +297,7 @@ function OwnerTable({
                     <div
                       className={`text-sm font-medium ${owner.currentBalance > 0 ? "text-error" : "text-success"}`}
                     >
-                      ${owner.currentBalance.toLocaleString()}
+                      {formatCurrency(owner.currentBalance)}
                     </div>
                     {getPaymentStatusBadge(owner.paymentStatus)}
                   </div>

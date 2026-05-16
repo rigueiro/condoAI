@@ -1,6 +1,7 @@
 // src/pages/reports-analytics/components/DataTables.jsx
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
 
@@ -40,14 +41,7 @@ function DataTables({
     direction: "asc" | "desc";
   }>({ key: null, direction: "asc" });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  const { formatCurrency } = useFormatCurrency();
 
   const formatPercentage = (value: number) => {
     return `${value.toFixed(1)}%`;

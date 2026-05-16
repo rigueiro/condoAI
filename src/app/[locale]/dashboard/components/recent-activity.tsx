@@ -3,6 +3,7 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 
 type Activity = {
   id: number | string;
@@ -17,6 +18,7 @@ type Activity = {
 
 function RecentActivity({ activities }: { activities: Activity[] }) {
   const t = useTranslations("dashboard.recentActivity");
+  const { formatCurrency } = useFormatCurrency();
 
   const formatTimeAgo = (timestamp: number | Date) => {
     if (timestamp instanceof Date) {
@@ -93,7 +95,7 @@ function RecentActivity({ activities }: { activities: Activity[] }) {
               {activity.amount && (
                 <div className="mt-2">
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success-50 text-success-700">
-                    +${activity.amount.toLocaleString()}
+                    +{formatCurrency(activity.amount)}
                   </span>
                 </div>
               )}

@@ -2,6 +2,7 @@ import Icon from "@/components/icon";
 import { Link } from "@/i18n/navigation";
 import React from "react";
 import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 import { Property } from "../types";
 
 interface PropertyTableProps {
@@ -26,6 +27,7 @@ function PropertyTable({
   onDelete,
 }: PropertyTableProps) {
   const t = useTranslations("propertiesManagement.table");
+  const { formatCurrency, formatPriceString } = useFormatCurrency();
   const getSortIcon = (columnKey: string) => {
     if (sortConfig.key !== columnKey) {
       return (
@@ -163,10 +165,10 @@ function PropertyTable({
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-text-primary font-medium">
-                    {property.monthlyFeeRange}
+                    {formatPriceString(property.monthlyFeeRange)}
                   </div>
                   <div className="text-xs text-text-secondary">
-                    {t('avgFee', { amount: property.averageFee })}
+                    {t("avgFee", { amount: formatCurrency(property.averageFee) })}
                   </div>
                 </td>
                 <td className="px-6 py-4">
@@ -256,7 +258,7 @@ function PropertyTable({
               <div>
                 <span className="text-text-secondary">{t('feeRange')}</span>
                 <span className="ml-2 font-medium text-text-primary">
-                  {property.monthlyFeeRange}
+                  {formatPriceString(property.monthlyFeeRange)}
                 </span>
               </div>
               <div>

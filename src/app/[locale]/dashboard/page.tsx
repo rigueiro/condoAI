@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 
 import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
@@ -27,7 +28,7 @@ import { fetcher } from "@/app/mocks/mocks-utils";
 
 function Dashboard() {
   const t = useTranslations("dashboard");
-  const locale = useLocale();
+  const { formatCurrency } = useFormatCurrency();
   // TODO const { data, error } = useSWR("/api/dashboard", fetcher);
 
   const [currentUser] = useState({
@@ -44,7 +45,7 @@ function Dashboard() {
     totalUnits: 486,
     monthlyCollectionRate: 92.5,
     outstandingPayments: 125000,
-    currency: "$",
+    currency: "EUR",
   };
 
   const collectionTrends = [
@@ -156,15 +157,6 @@ function Dashboard() {
   const handleLogout = () => {
     // Handle logout logic
     console.log("Logout clicked");
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(locale === "pt" ? "pt-PT" : "en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
   };
 
   const formatPercentage = (value: number) => {

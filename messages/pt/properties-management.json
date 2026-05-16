@@ -52,7 +52,7 @@
     "deleteProperty": "Eliminar condomínio",
     "built": "Construído em {year}",
     "occupied": "{percent}% ocupado",
-    "avgFee": "Média: {amount}€",
+    "avgFee": "Média: {amount}",
     "unitsLabel": "Frações:",
     "feeRange": "Quotas:",
     "occupancy": "Ocupação:",

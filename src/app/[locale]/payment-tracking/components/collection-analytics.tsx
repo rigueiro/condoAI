@@ -1,6 +1,7 @@
 import Icon from "@/components/icon";
 import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 import {
   LineChart,
   Line,
@@ -55,14 +56,7 @@ function CollectionAnalytics({
     return key ? tMethods(key as "bankTransfer") : method;
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  const { formatCurrency } = useFormatCurrency();
 
   // Generate monthly trends data (mock data for demo)
   const monthlyTrends = useMemo(() => {

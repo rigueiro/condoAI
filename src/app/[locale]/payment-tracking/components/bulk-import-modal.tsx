@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Button from "@/components/ui/button";
 import Icon from "@/components/icon";
 import useSWR from "swr";
@@ -28,6 +29,7 @@ interface BulkImportModalProps {
 
 function BulkImportModal({ isOpen, onClose, onSubmit }: BulkImportModalProps) {
   const t = useTranslations("paymentTracking.bulkImportModal");
+  const { formatCurrency } = useFormatCurrency();
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -433,7 +435,7 @@ function BulkImportModal({ isOpen, onClose, onSubmit }: BulkImportModalProps) {
                             {row.unit}
                           </td>
                           <td className="px-4 py-2 text-sm text-text-primary">
-                            ${row.amount}
+                            {formatCurrency(row.amount)}
                           </td>
                           <td className="px-4 py-2 text-sm text-text-primary">
                             {row.date}

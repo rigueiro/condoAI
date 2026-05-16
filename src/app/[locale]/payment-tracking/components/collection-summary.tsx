@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 
 type CollectionData = {
   currentMonth: {
@@ -27,15 +28,7 @@ function CollectionSummary({
   collectionData: CollectionData;
 }) {
   const t = useTranslations("paymentTracking.collectionSummary");
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  const { formatCurrency } = useFormatCurrency();
 
   const formatPercentage = (value: number) => {
     return `${value.toFixed(1)}%`;
@@ -185,7 +178,7 @@ function CollectionSummary({
                       {property.name}
                     </h3>
                     <span
-                      className={`text-sm font-medium ${getCollectionRateColor(property.collectionRate)}`}
+                      className={`text-sm mr-4 font-medium ${getCollectionRateColor(property.collectionRate)}`}
                     >
                       {formatPercentage(property.collectionRate)}
                     </span>
