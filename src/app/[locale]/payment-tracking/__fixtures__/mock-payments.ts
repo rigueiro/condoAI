@@ -1,6 +1,7 @@
 export interface MockPayment {
   id: number;
   date: string;
+  ownerId?: string;
   ownerName: string;
   property: string;
   propertyId?: string;
@@ -90,5 +91,47 @@ export const mockPayments: MockPayment[] = [
     status: "disputed",
     receiptNumber: "RCP-2024-0110",
     timestamp: "2024-01-10T16:00:00Z",
+  },
+  {
+    id: 7,
+    date: "2024-01-15",
+    ownerId: "1",
+    ownerName: "Sarah Johnson",
+    property: "Sunset Gardens",
+    propertyId: "1",
+    unit: "A-101",
+    amount: 2500,
+    paymentMethod: "Bank Transfer",
+    status: "completed",
+    receiptNumber: "RCP-2024-0107",
+    timestamp: "2024-01-15T10:30:00Z",
+  },
+  {
+    id: 8,
+    date: "2024-02-01",
+    ownerId: "2",
+    ownerName: "Robert Chen",
+    property: "Ocean View Towers",
+    propertyId: "2",
+    unit: "B-205",
+    amount: 2400,
+    paymentMethod: "Credit Card",
+    status: "completed",
+    receiptNumber: "RCP-2024-0108",
+    timestamp: "2024-02-01T15:45:00Z",
+  },
+  {
+    id: 9,
+    date: "2024-01-28",
+    ownerId: "3",
+    ownerName: "Maria Rodriguez",
+    property: "Sunset Gardens",
+    propertyId: "1",
+    unit: "C-302",
+    amount: 750,
+    paymentMethod: "Bank Transfer",
+    status: "pending",
+    receiptNumber: "RCP-2024-0109",
+    timestamp: "2024-01-28T09:15:00Z",
   },
 ];

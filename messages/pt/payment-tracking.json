@@ -1,8 +1,8 @@
 {
-  "title": "Acompanhamento de Pagamentos",
+  "title": "Gestão de Pagamentos",
   "subtitle": "Monitorizar cobranças e histórico de pagamentos",
   "recordPayment": "Registar Pagamento",
-  "bulkImport": "Importação em massa",
+  "bulkImport": "Importar por CSV",
   "exportReport": "Exportar relatório",
   "collectionSummary": {
     "totalCollected": "Total cobrado",

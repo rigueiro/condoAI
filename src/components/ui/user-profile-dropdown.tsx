@@ -106,7 +106,7 @@ function UserProfileDropdown({
       {isOpen && (
         <div className="absolute bg-secondary-50 right-0 mt-2 w-64 bg-surface rounded-lg shadow-modal border border-border-light z-1010 animate-fade-in">
           <div className="p-4 border-b border-border-light">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 overflow-hidden">
               <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-medium">
                 {user.avatar ? (
                   <img
@@ -118,7 +118,7 @@ function UserProfileDropdown({
                   getInitials(user.name)
                 )}
               </div>
-              <div>
+              <div className="w-full">
                 <div className="font-medium text-text-primary">{user.name}</div>
                 <div className="text-sm text-text-secondary overflow-hidden truncate text-ellipsis">
                   {user.email}

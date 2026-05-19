@@ -38,6 +38,20 @@ function Breadcrumb() {
       ];
     }
 
+    if (
+      path.startsWith("/owners-management/") &&
+      path !== "/owners-management"
+    ) {
+      return [
+        {
+          label: t("owners"),
+          path: "/owners-management",
+          isActive: false,
+        },
+        { label: t("ownerDetail"), path, isActive: true },
+      ];
+    }
+
     const breadcrumbs: { label: string; path: string; isActive: boolean }[] =
       [];
     let currentRoute = routeConfig[path as keyof typeof routeConfig];

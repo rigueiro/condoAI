@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import Image from "@/components/image";
@@ -81,7 +82,7 @@ function OwnerTable({
 
     return (
       <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.color}`}
+        className={`inline-flex text-overflow-wrap-nowrap truncate text-ellipsis items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.color}`}
       >
         {label}
       </span>
@@ -179,9 +180,12 @@ function OwnerTable({
                       />
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-text-primary">
+                      <Link
+                        href={`/owners-management/${owner.id}`}
+                        className="text-sm font-medium text-text-primary hover:text-primary transition-smooth"
+                      >
                         {owner.name}
-                      </div>
+                      </Link>
                       <div className="text-sm text-text-secondary">
                         {owner.email}
                       </div>
@@ -222,12 +226,13 @@ function OwnerTable({
                     >
                       <Icon name="Edit2" size={16} />
                     </button>
-                    <button
+                    <Link
+                      href={`/owners-management/${owner.id}`}
                       className="p-1 text-text-secondary hover:text-accent transition-smooth"
                       title={t("viewPaymentHistory")}
                     >
                       <Icon name="CreditCard" size={16} />
-                    </button>
+                    </Link>
                     <button
                       className="p-1 text-text-secondary hover:text-warning transition-smooth"
                       title={t("sendNotification")}
@@ -270,9 +275,12 @@ function OwnerTable({
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-sm font-medium text-text-primary">
+                    <Link
+                      href={`/owners-management/${owner.id}`}
+                      className="text-sm font-medium text-text-primary hover:text-primary transition-smooth"
+                    >
                       {owner.name}
-                    </h3>
+                    </Link>
                     <p className="text-sm text-text-secondary">
                       {owner.unit} • {owner.property}
                     </p>

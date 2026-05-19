@@ -88,7 +88,7 @@ function OwnerFilters({ filters, onFiltersChange, properties }: Props) {
           <select
             value={filters.property}
             onChange={(e) => handleFilterChange("property", e.target.value)}
-            className="w-full px-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth appearance-none bg-surface"
+            className="w-full pr-[26px] text-ellipsis px-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth appearance-none bg-surface"
           >
             <option value="">{t("allProperties")}</option>
             {properties.map((property) => (
@@ -110,7 +110,7 @@ function OwnerFilters({ filters, onFiltersChange, properties }: Props) {
             onChange={(e) =>
               handleFilterChange("paymentStatus", e.target.value)
             }
-            className="w-full px-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth appearance-none bg-surface"
+            className="w-full pr-[26px] text-ellipsis px-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth appearance-none bg-surface"
           >
             <option value="">{t("allPaymentStatus")}</option>
             <option value="current">{tStatus("current")}</option>
