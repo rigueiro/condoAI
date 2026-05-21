@@ -18,14 +18,6 @@ function ReportsAnalytics() {
   const t = useTranslations("reportsAnalytics");
   //TODO const { data, error } = useSWR("/api/reports/analytics");
 
-  const [currentUser] = useState({
-    id: "1",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@condomanager.com",
-    role: "Property Manager",
-    avatar: null,
-  });
-
   const [filters, setFilters] = useState<Filters>({
     dateRange: {
       start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // Last year
@@ -96,10 +88,6 @@ function ReportsAnalytics() {
     ],
   });
 
-  const handleLogout = () => {
-    console.log("Logout clicked");
-  };
-
   const handleFilterChange = (newFilters: Partial<Filters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
   };
@@ -116,7 +104,7 @@ function ReportsAnalytics() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header currentUser={currentUser} onLogout={handleLogout} />
+      <Header />
 
       <main className="pt-20 px-6 pb-8">
         <div className="max-w-7xl mx-auto px-6 py-8">

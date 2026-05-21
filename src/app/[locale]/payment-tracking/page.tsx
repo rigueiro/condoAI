@@ -30,13 +30,6 @@ interface Filters {
 
 function PaymentTracking() {
   const t = useTranslations("paymentTracking");
-  const [currentUser] = useState({
-    id: "1",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@condomanager.com",
-    role: "Property Manager",
-    avatar: null,
-  });
 
   const [isRecordPaymentModalOpen, setIsRecordPaymentModalOpen] =
     useState(false);
@@ -120,10 +113,6 @@ function PaymentTracking() {
   };
 
   const [paymentHistory, setPaymentHistory] = useState<Payment[]>([...mockPayments]);
-
-  const handleLogout = () => {
-    console.log("Logout clicked");
-  };
 
   const handleRecordPayment = (paymentData: Payment) => {
     const newPayment: Payment = {
@@ -224,7 +213,7 @@ function PaymentTracking() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header currentUser={currentUser} onLogout={handleLogout} />
+      <Header />
 
       <main className="pt-20 px-6 pb-8">
         <div className="max-w-7xl mx-auto px-6 py-8">

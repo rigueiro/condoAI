@@ -36,13 +36,6 @@ function OwnersManagement() {
     paymentStatus: "",
     balanceRange: "",
   });
-  const user = {
-    id: "",
-    role: "admin",
-    name: "Rafael Rigueiro",
-    email: "",
-    avatar: "",
-  };
 
   // const { data, error } = useSWR("/api/owners", fetcher);
 
@@ -124,14 +117,9 @@ function OwnersManagement() {
     }
   };
 
-  const handleLogout = () => {
-    console.log("Logging out...");
-    // In real app, this would clear auth state and redirect to login
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      <Header currentUser={user} onLogout={handleLogout} />
+      <Header />
 
       <div className="pt-20">
         <div className="max-w-7xl mx-auto px-6 py-8">

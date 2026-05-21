@@ -5,7 +5,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import "../globals.css";
-import { AuthProvider } from "@/app/providers/auth-provider";
+import { AuthProvider } from "@/lib/auth";
 import { routing } from "@/i18n/routing";
 
 const geistSans = Geist({

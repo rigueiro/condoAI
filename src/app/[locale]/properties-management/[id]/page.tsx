@@ -79,19 +79,10 @@ function PropertyDetailPage() {
     };
   }, [property]);
 
-  const [currentUser] = useState({
-    id: "1",
-    name: "Rafael Rigueiro",
-    email: "",
-    role: "admin",
-  });
-
-  const handleLogout = () => console.log("Logging out...");
-
   if (!id || !property) {
     return (
       <div className="min-h-screen bg-background">
-        <Header currentUser={currentUser} onLogout={handleLogout} />
+        <Header />
         <main className="pt-20">
           <div className="max-w-7xl mx-auto px-6 py-8">
             <Breadcrumb />
@@ -133,7 +124,7 @@ function PropertyDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header currentUser={currentUser} onLogout={handleLogout} />
+      <Header />
 
       <main className="pt-20">
         <div className="max-w-7xl mx-auto px-6 py-8">

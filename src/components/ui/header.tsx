@@ -6,17 +6,14 @@ import Icon from "../icon";
 import UserProfileDropdown from "./user-profile-dropdown";
 import MobileNavigationDrawer from "./mobile-navigation-drawer";
 import LocaleSwitcher from "@/components/locale-switcher";
-import { Link, usePathname } from "@/i18n/navigation";
-import { User } from "@/app/types";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { useAuth } from "@/lib/auth";
 
-interface Props {
-  currentUser: User;
-  onLogout?: () => void;
-}
-
-function Header({ currentUser, onLogout }: Props) {
+function Header() {
   const t = useTranslations("common");
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigationItems = useMemo(
@@ -55,19 +52,26 @@ function Header({ currentUser, onLogout }: Props) {
     [t],
   );
 
-  const isActivePath = (path: string) => pathname === path;
+  const isActivePath = useCallback(
+    (path: string) => pathname === path,
+    [pathname],
+  );
 
-  const handleMobileMenuToggle = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  const handleMobileMenuToggle = useCallback(() => {
+    setIsMobileMenuOpen((prev) => !prev);
+  }, []);
 
-  const handleMobileMenuClose = () => {
+  const handleMobileMenuClose = useCallback(() => {
     setIsMobileMenuOpen(false);
-  };
+  }, []);
 
-  const handleLogout = useCallback(() => {
-    onLogout?.();
-  }, [onLogout]);
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout();
+    } finally {
+      router.push("/login");
+    }
+  }, [logout, router]);
 
   return (
     <>
@@ -109,7 +113,7 @@ function Header({ currentUser, onLogout }: Props) {
             <div className="flex items-center space-x-4">
               <LocaleSwitcher />
               <UserProfileDropdown
-                currentUser={currentUser}
+                currentUser={user}
                 onLogout={handleLogout}
               />
 

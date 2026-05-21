@@ -42,15 +42,6 @@ function OwnerDetailPage() {
     );
   }, [owner]);
 
-  const [currentUser] = useState({
-    id: "1",
-    name: "Rafael Rigueiro",
-    email: "",
-    role: "admin",
-  });
-
-  const handleLogout = () => console.log("Logging out...");
-
   const getPaymentStatusBadge = (status: PaymentStatus) => {
     const statusConfig = {
       current: { color: "text-success", bg: "bg-success-100" },
@@ -75,7 +66,7 @@ function OwnerDetailPage() {
   if (!id || !owner) {
     return (
       <div className="min-h-screen bg-background">
-        <Header currentUser={currentUser} onLogout={handleLogout} />
+        <Header />
         <main className="pt-20">
           <div className="max-w-7xl mx-auto px-6 py-8">
             <Breadcrumb />
@@ -107,7 +98,7 @@ function OwnerDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header currentUser={currentUser} onLogout={handleLogout} />
+      <Header />
 
       <main className="pt-20">
         <div className="max-w-7xl mx-auto px-6 py-8">

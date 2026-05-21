@@ -112,12 +112,6 @@ function PropertiesManagement() {
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property>();
-  const [currentUser] = useState({
-    id: "1",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@propertyhub.com",
-    role: "Property Manager",
-  });
 
   // TODO const { data, error } = useSWR("/api/properties", fetcher);
 
@@ -298,14 +292,9 @@ function PropertiesManagement() {
     window.URL.revokeObjectURL(url);
   };
 
-  const handleLogout = () => {
-    // Handle logout logic
-    console.log("Logging out...");
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      <Header currentUser={currentUser} onLogout={handleLogout} />
+      <Header />
 
       <main className="pt-20">
         <div className="max-w-7xl mx-auto px-6 py-8">

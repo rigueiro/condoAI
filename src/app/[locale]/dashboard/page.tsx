@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
+import { useUser } from "@/lib/auth";
 
 import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
@@ -29,15 +30,8 @@ import { fetcher } from "@/app/mocks/mocks-utils";
 function Dashboard() {
   const t = useTranslations("dashboard");
   const { formatCurrency } = useFormatCurrency();
+  const user = useUser();
   // TODO const { data, error } = useSWR("/api/dashboard", fetcher);
-
-  const [currentUser] = useState({
-    id: "1",
-    name: "Rafael",
-    email: "sarah.johnson@condomanager.com",
-    role: "Property Manager",
-    avatar: null,
-  });
 
   // Mock dashboard data
   const dashboardStats = {
@@ -154,18 +148,13 @@ function Dashboard() {
     },
   ];
 
-  const handleLogout = () => {
-    // Handle logout logic
-    console.log("Logout clicked");
-  };
-
   const formatPercentage = (value: number) => {
     return `${value.toFixed(1)}%`;
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <Header currentUser={currentUser} onLogout={handleLogout} />
+      <Header />
 
       <main className="pt-20 px-6 pb-8">
         <div className="max-w-7xl mx-auto px-6 py-8">
@@ -177,7 +166,7 @@ function Dashboard() {
               {t("title")}
             </h1>
             <p className="text-text-secondary">
-              {t("welcome", { name: currentUser.name })}
+              {t("welcome", { name: user?.name ?? "" })}
             </p>
           </div>
 

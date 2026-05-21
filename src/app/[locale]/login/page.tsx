@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import Icon from "@/components/icon";
 import LocaleSwitcher from "@/components/locale-switcher";
-import { useAuth } from "@/app/providers/use-auth";
+import { useAuth } from "@/lib/auth";
 
 type Errors = {
   [key: string]: string;
@@ -15,7 +15,7 @@ function Login() {
   const t = useTranslations("login");
   const tAuth = useTranslations("auth");
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, isLoading } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -23,7 +23,6 @@ function Login() {
     rememberMe: false,
   });
   const [errors, setErrors] = useState<Errors>({});
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -66,14 +65,13 @@ function Login() {
       return;
     }
 
-    setIsLoading(true);
-
     try {
-      await login(formData.email, formData.password);
+      await login(formData.email, formData.password, {
+        rememberMe: formData.rememberMe,
+      });
       router.push("/dashboard");
     } catch (error) {
       const err = error as Error;
-      console.error("Login error:", err.message);
       const messageKey = err.message;
       const authErrorKeys = [
         "invalidCredentials",
@@ -87,8 +85,6 @@ function Login() {
           ? tAuth(messageKey as (typeof authErrorKeys)[number])
           : tAuth("loginFailed"),
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
