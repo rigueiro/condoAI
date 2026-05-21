@@ -14,6 +14,7 @@ export interface AuthContextValue {
     options?: { rememberMe?: boolean },
   ) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (updates: Partial<User>) => Promise<User>;
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(

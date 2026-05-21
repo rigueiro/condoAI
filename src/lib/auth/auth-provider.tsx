@@ -65,6 +65,20 @@ const writeStoredUser = (user: User, rememberMe: boolean): void => {
   }
 };
 
+/**
+ * Persist updates to the currently signed-in user, preserving the
+ * storage tier (remember-me vs session-only) that was used at sign-in.
+ */
+const persistUpdatedUser = (user: User): void => {
+  if (typeof window === "undefined") return;
+  const serialized = JSON.stringify(user);
+  if (window.localStorage.getItem(STORAGE_KEY)) {
+    window.localStorage.setItem(STORAGE_KEY, serialized);
+  } else {
+    window.sessionStorage.setItem(SESSION_STORAGE_KEY, serialized);
+  }
+};
+
 const clearStoredUser = (): void => {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(STORAGE_KEY);
@@ -119,6 +133,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+  const updateUser = useCallback(
+    async (updates: Partial<User>): Promise<User> => {
+      const current = readStoredUser();
+      if (!current) {
+        throw new Error("notAuthenticated");
+      }
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const next: User = { ...current, ...updates, id: current.id };
+      setUser(next);
+      persistUpdatedUser(next);
+      return next;
+    },
+    [],
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -127,8 +156,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       error,
       login,
       logout,
+      updateUser,
     }),
-    [user, isLoading, error, login, logout],
+    [user, isLoading, error, login, logout, updateUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

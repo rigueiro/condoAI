@@ -1,0 +1,104 @@
+{
+  "title": "Definições de perfil",
+  "subtitle": "Gere as suas informações pessoais, segurança e preferências",
+  "saved": "Alterações guardadas com sucesso",
+  "saveError": "Não foi possível guardar as alterações. Tente novamente.",
+  "sections": {
+    "personalInfo": "Informações pessoais",
+    "personalInfoSubtitle": "Atualize o seu nome, email e dados de contacto",
+    "security": "Segurança",
+    "securitySubtitle": "Gere a sua palavra-passe e o acesso à conta",
+    "preferences": "Preferências",
+    "preferencesSubtitle": "Personalize o idioma e as opções de apresentação",
+    "notifications": "Notificações",
+    "notificationsSubtitle": "Escolha sobre o que pretende ser notificado",
+    "dangerZone": "Zona de risco",
+    "dangerZoneSubtitle": "Ações irreversíveis sobre a sua conta"
+  },
+  "avatar": {
+    "title": "Fotografia de perfil",
+    "description": "PNG ou JPG até 2MB. Imagens quadradas ficam melhor.",
+    "upload": "Carregar fotografia",
+    "remove": "Remover fotografia",
+    "invalidType": "Apenas são permitidas imagens PNG ou JPG.",
+    "tooLarge": "A imagem tem de ser inferior a 2MB."
+  },
+  "personalInfo": {
+    "fullName": "Nome completo",
+    "fullNamePlaceholder": "O seu nome completo",
+    "email": "Endereço de email",
+    "emailPlaceholder": "voce@exemplo.com",
+    "phone": "Número de telefone",
+    "phonePlaceholder": "+351 912 345 678",
+    "role": "Função",
+    "roleHint": "A sua função é gerida pelo administrador da organização.",
+    "save": "Guardar alterações",
+    "saving": "A guardar...",
+    "cancel": "Cancelar",
+    "validation": {
+      "nameRequired": "O nome é obrigatório",
+      "nameTooShort": "O nome tem de ter pelo menos 2 caracteres",
+      "emailRequired": "O email é obrigatório",
+      "emailInvalid": "Introduza um email válido",
+      "phoneInvalid": "Introduza um número de telefone válido"
+    }
+  },
+  "security": {
+    "currentPassword": "Palavra-passe atual",
+    "newPassword": "Nova palavra-passe",
+    "confirmPassword": "Confirmar nova palavra-passe",
+    "passwordHint": "Use pelo menos 8 caracteres com letras e números.",
+    "changePassword": "Atualizar palavra-passe",
+    "updating": "A atualizar...",
+    "passwordUpdated": "A sua palavra-passe foi atualizada.",
+    "twoFactor": "Autenticação de dois fatores",
+    "twoFactorDesc": "Adicione uma camada extra de segurança com uma aplicação autenticadora.",
+    "twoFactorEnabled": "Ativada",
+    "twoFactorDisabled": "Desativada",
+    "enable": "Ativar",
+    "disable": "Desativar",
+    "activeSessions": "Sessões ativas",
+    "activeSessionsDesc": "Termine a sessão em todos os outros dispositivos onde tem a sua conta aberta.",
+    "signOutAll": "Terminar sessão noutros dispositivos",
+    "validation": {
+      "currentRequired": "A palavra-passe atual é obrigatória",
+      "newRequired": "A nova palavra-passe é obrigatória",
+      "tooShort": "A palavra-passe tem de ter pelo menos 8 caracteres",
+      "noMatch": "As palavras-passe não coincidem",
+      "sameAsCurrent": "A nova palavra-passe tem de ser diferente da atual"
+    }
+  },
+  "preferences": {
+    "language": "Idioma",
+    "languageDesc": "Escolha o idioma utilizado em toda a aplicação.",
+    "theme": "Tema",
+    "themeDesc": "Selecione o seu esquema de cores preferido.",
+    "themeLight": "Claro",
+    "themeDark": "Escuro",
+    "themeSystem": "Sistema",
+    "currency": "Moeda",
+    "currencyDesc": "Moeda predefinida utilizada para valores na aplicação.",
+    "dateFormat": "Formato da data",
+    "dateFormatDesc": "Como as datas são apresentadas na aplicação."
+  },
+  "notifications": {
+    "email": "Notificações por email",
+    "emailDesc": "Receba atualizações importantes por email.",
+    "payments": "Atividade de pagamentos",
+    "paymentsDesc": "Seja notificado quando receber pagamentos ou estes estiverem em atraso.",
+    "occurrences": "Atualizações de ocorrências",
+    "occurrencesDesc": "Receba alertas quando forem criadas ou resolvidas novas ocorrências.",
+    "weeklyDigest": "Resumo semanal",
+    "weeklyDigestDesc": "Um resumo semanal da atividade do seu portfólio."
+  },
+  "dangerZone": {
+    "deleteAccount": "Eliminar conta",
+    "deleteAccountDesc": "Elimine permanentemente a sua conta e todos os dados associados. Esta ação não pode ser anulada.",
+    "delete": "Eliminar conta",
+    "confirmTitle": "Eliminar a sua conta?",
+    "confirmDesc": "Esta ação irá remover permanentemente o seu perfil e todos os dados associados. Escreva ELIMINAR para confirmar.",
+    "confirmPlaceholder": "Escreva ELIMINAR para confirmar",
+    "confirm": "Compreendo, eliminar a minha conta",
+    "cancel": "Cancelar"
+  }
+}

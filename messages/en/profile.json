@@ -1,0 +1,104 @@
+{
+  "title": "Profile Settings",
+  "subtitle": "Manage your personal information, security, and preferences",
+  "saved": "Changes saved successfully",
+  "saveError": "Unable to save changes. Please try again.",
+  "sections": {
+    "personalInfo": "Personal Information",
+    "personalInfoSubtitle": "Update your name, email, and contact details",
+    "security": "Security",
+    "securitySubtitle": "Manage your password and account access",
+    "preferences": "Preferences",
+    "preferencesSubtitle": "Customize the language and display options",
+    "notifications": "Notifications",
+    "notificationsSubtitle": "Choose what you want to be notified about",
+    "dangerZone": "Danger Zone",
+    "dangerZoneSubtitle": "Irreversible actions for your account"
+  },
+  "avatar": {
+    "title": "Profile photo",
+    "description": "PNG, JPG up to 2MB. Square images look best.",
+    "upload": "Upload photo",
+    "remove": "Remove photo",
+    "invalidType": "Only PNG or JPG images are allowed.",
+    "tooLarge": "The image must be smaller than 2MB."
+  },
+  "personalInfo": {
+    "fullName": "Full name",
+    "fullNamePlaceholder": "Your full name",
+    "email": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "phone": "Phone number",
+    "phonePlaceholder": "+351 912 345 678",
+    "role": "Role",
+    "roleHint": "Your role is managed by your organization administrator.",
+    "save": "Save changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameTooShort": "Name must be at least 2 characters",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "phoneInvalid": "Please enter a valid phone number"
+    }
+  },
+  "security": {
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "passwordHint": "Use at least 8 characters with a mix of letters and numbers.",
+    "changePassword": "Update password",
+    "updating": "Updating...",
+    "passwordUpdated": "Your password has been updated.",
+    "twoFactor": "Two-factor authentication",
+    "twoFactorDesc": "Add an extra layer of security with an authenticator app.",
+    "twoFactorEnabled": "Enabled",
+    "twoFactorDisabled": "Disabled",
+    "enable": "Enable",
+    "disable": "Disable",
+    "activeSessions": "Active sessions",
+    "activeSessionsDesc": "Sign out of all other devices currently logged into your account.",
+    "signOutAll": "Sign out everywhere else",
+    "validation": {
+      "currentRequired": "Current password is required",
+      "newRequired": "New password is required",
+      "tooShort": "Password must be at least 8 characters",
+      "noMatch": "Passwords do not match",
+      "sameAsCurrent": "New password must be different from the current one"
+    }
+  },
+  "preferences": {
+    "language": "Language",
+    "languageDesc": "Choose the language used across the application.",
+    "theme": "Theme",
+    "themeDesc": "Select your preferred color scheme.",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "currency": "Currency",
+    "currencyDesc": "Default currency used for amounts in the app.",
+    "dateFormat": "Date format",
+    "dateFormatDesc": "How dates are displayed throughout the app."
+  },
+  "notifications": {
+    "email": "Email notifications",
+    "emailDesc": "Receive important updates by email.",
+    "payments": "Payment activity",
+    "paymentsDesc": "Get notified when payments are received or overdue.",
+    "occurrences": "Occurrence updates",
+    "occurrencesDesc": "Receive alerts when new occurrences are created or resolved.",
+    "weeklyDigest": "Weekly digest",
+    "weeklyDigestDesc": "A weekly summary of your portfolio activity."
+  },
+  "dangerZone": {
+    "deleteAccount": "Delete account",
+    "deleteAccountDesc": "Permanently delete your account and all associated data. This action cannot be undone.",
+    "delete": "Delete account",
+    "confirmTitle": "Delete your account?",
+    "confirmDesc": "This will permanently remove your profile and all associated data. Type DELETE to confirm.",
+    "confirmPlaceholder": "Type DELETE to confirm",
+    "confirm": "I understand, delete my account",
+    "cancel": "Cancel"
+  }
+}
