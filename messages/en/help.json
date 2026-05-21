@@ -1,0 +1,150 @@
+{
+  "title": "Help & Support",
+  "subtitle": "Find answers, browse guides, or reach out to our support team",
+  "search": {
+    "placeholder": "Search the help center...",
+    "noResults": "No articles match \"{query}\".",
+    "noResultsHint": "Try a different keyword or browse the categories below.",
+    "resultsTitle": "{count, plural, =1 {# result} other {# results}} for \"{query}\""
+  },
+  "categories": {
+    "title": "Browse by topic",
+    "subtitle": "Pick a topic to find guides, tutorials, and best practices.",
+    "articleCount": "{count, plural, =1 {# article} other {# articles}}",
+    "items": {
+      "gettingStarted": {
+        "title": "Getting started",
+        "description": "Set up your account, invite your team, and import data."
+      },
+      "properties": {
+        "title": "Properties & units",
+        "description": "Manage condominiums, units, and floor plans."
+      },
+      "owners": {
+        "title": "Owners & residents",
+        "description": "Keep contacts, leases, and ownership history up to date."
+      },
+      "payments": {
+        "title": "Payments & billing",
+        "description": "Track fees, reconcile receipts, and handle disputes."
+      },
+      "reports": {
+        "title": "Reports & analytics",
+        "description": "Build dashboards and export financial reports."
+      },
+      "account": {
+        "title": "Account & security",
+        "description": "Manage your subscription, team access, and security."
+      }
+    }
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "subtitle": "Quick answers to the questions we hear the most.",
+    "items": {
+      "resetPassword": {
+        "question": "How do I reset my password?",
+        "answer": "Open your profile settings and use the security section to set a new password. If you forgot the current one, use the \"Forgot password\" link on the sign-in page and follow the email instructions."
+      },
+      "inviteTeam": {
+        "question": "How do I invite team members?",
+        "answer": "Go to Account Settings → Team members → Invite member. Enter their email, choose a role (admin, manager, staff or viewer), and we will email them an invitation link."
+      },
+      "importPayments": {
+        "question": "Can I bulk import payments?",
+        "answer": "Yes. In Payment Tracking, click Bulk Import and upload a CSV file. We provide a downloadable template with the required columns."
+      },
+      "changePlan": {
+        "question": "How do I change my subscription plan?",
+        "answer": "Open Account Settings → Subscription, choose a billing cycle, and pick the plan that fits your portfolio. Upgrades take effect immediately, downgrades at the next renewal."
+      },
+      "exportData": {
+        "question": "Can I export my data?",
+        "answer": "All tables and reports in CondoAI can be exported as CSV or PDF using the Export button in the page toolbar. You can also generate custom reports in Reports & Analytics."
+      },
+      "languages": {
+        "question": "Which languages are supported?",
+        "answer": "CondoAI is fully available in English and Portuguese. You can change your language at any time from your profile preferences."
+      }
+    }
+  },
+  "contact": {
+    "title": "Contact support",
+    "subtitle": "Can't find what you're looking for? Send us a message and we'll get back to you within one business day.",
+    "subject": "Subject",
+    "subjectPlaceholder": "Briefly describe the issue",
+    "category": "Category",
+    "categories": {
+      "billing": "Billing",
+      "technical": "Technical issue",
+      "feature": "Feature request",
+      "other": "Other"
+    },
+    "priority": "Priority",
+    "priorities": {
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "message": "Message",
+    "messagePlaceholder": "Tell us what's happening, the steps to reproduce it, and any context that may help...",
+    "attachments": "Attachments",
+    "attachmentsHint": "PNG, JPG, or PDF up to 5MB.",
+    "submit": "Send message",
+    "sending": "Sending...",
+    "success": "Thanks! Your message has been sent. We will reply by email soon.",
+    "validation": {
+      "subjectRequired": "Subject is required",
+      "messageRequired": "Please describe your issue",
+      "messageTooShort": "Please add a bit more detail (at least 20 characters)"
+    },
+    "channels": {
+      "email": "Email us",
+      "emailValue": "support@condoai.pt",
+      "phone": "Call us",
+      "phoneValue": "+351 21 000 0000",
+      "phoneHours": "Mon–Fri, 9:00–18:00 WET",
+      "chat": "Live chat",
+      "chatValue": "Start a conversation",
+      "chatHours": "Available during business hours"
+    }
+  },
+  "resources": {
+    "title": "Helpful resources",
+    "subtitle": "Documentation, status, and ways to follow CondoAI.",
+    "items": {
+      "docs": {
+        "title": "Documentation",
+        "description": "Read product guides, tutorials, and API references."
+      },
+      "videos": {
+        "title": "Video tutorials",
+        "description": "Watch short walkthroughs of key workflows."
+      },
+      "changelog": {
+        "title": "What's new",
+        "description": "Browse the latest features and improvements."
+      },
+      "status": {
+        "title": "System status",
+        "description": "Check real-time uptime for CondoAI services."
+      },
+      "community": {
+        "title": "Community",
+        "description": "Connect with other property managers using CondoAI."
+      },
+      "roadmap": {
+        "title": "Roadmap",
+        "description": "See what we are building next and vote on ideas."
+      }
+    },
+    "open": "Open"
+  },
+  "system": {
+    "allOperational": "All systems operational",
+    "someIssues": "Some services degraded",
+    "majorOutage": "Major outage",
+    "version": "Version {version}"
+  }
+}

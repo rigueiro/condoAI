@@ -1,0 +1,150 @@
+{
+  "title": "Ajuda e suporte",
+  "subtitle": "Encontre respostas, consulte guias ou contacte a nossa equipa de suporte",
+  "search": {
+    "placeholder": "Pesquisar no centro de ajuda...",
+    "noResults": "Nenhum artigo corresponde a \"{query}\".",
+    "noResultsHint": "Experimente outra palavra-chave ou consulte as categorias abaixo.",
+    "resultsTitle": "{count, plural, =1 {# resultado} other {# resultados}} para \"{query}\""
+  },
+  "categories": {
+    "title": "Procurar por tema",
+    "subtitle": "Escolha um tema para encontrar guias, tutoriais e boas práticas.",
+    "articleCount": "{count, plural, =1 {# artigo} other {# artigos}}",
+    "items": {
+      "gettingStarted": {
+        "title": "Primeiros passos",
+        "description": "Configure a sua conta, convide a equipa e importe dados."
+      },
+      "properties": {
+        "title": "Condomínios e frações",
+        "description": "Gira condomínios, frações e plantas dos edifícios."
+      },
+      "owners": {
+        "title": "Proprietários e residentes",
+        "description": "Mantenha contactos, contratos e histórico de propriedade atualizados."
+      },
+      "payments": {
+        "title": "Pagamentos e faturação",
+        "description": "Acompanhe quotas, reconcilie recibos e trate de disputas."
+      },
+      "reports": {
+        "title": "Relatórios e análises",
+        "description": "Crie dashboards e exporte relatórios financeiros."
+      },
+      "account": {
+        "title": "Conta e segurança",
+        "description": "Gira a subscrição, acessos da equipa e segurança."
+      }
+    }
+  },
+  "faq": {
+    "title": "Perguntas frequentes",
+    "subtitle": "Respostas rápidas às perguntas que mais nos fazem.",
+    "items": {
+      "resetPassword": {
+        "question": "Como redefino a minha palavra-passe?",
+        "answer": "Abra as definições de perfil e utilize a secção de segurança para definir uma nova palavra-passe. Se esqueceu a atual, utilize o link \"Esqueci-me da palavra-passe\" na página de início de sessão e siga as instruções por email."
+      },
+      "inviteTeam": {
+        "question": "Como convido membros da equipa?",
+        "answer": "Aceda a Definições da conta → Membros da equipa → Convidar membro. Indique o email, escolha uma função (administrador, gestor, colaborador ou visualizador) e enviaremos o convite por email."
+      },
+      "importPayments": {
+        "question": "Posso importar pagamentos em massa?",
+        "answer": "Sim. Em Pagamentos, clique em Importação em massa e carregue um ficheiro CSV. Disponibilizamos um modelo descarregável com as colunas necessárias."
+      },
+      "changePlan": {
+        "question": "Como altero o meu plano de subscrição?",
+        "answer": "Abra Definições da conta → Subscrição, escolha o ciclo de faturação e selecione o plano adequado ao seu portfólio. Os upgrades são imediatos; os downgrades aplicam-se na próxima renovação."
+      },
+      "exportData": {
+        "question": "Posso exportar os meus dados?",
+        "answer": "Todas as tabelas e relatórios na CondoAI podem ser exportados em CSV ou PDF através do botão Exportar nas páginas. Pode ainda gerar relatórios personalizados em Relatórios e análises."
+      },
+      "languages": {
+        "question": "Que idiomas são suportados?",
+        "answer": "A CondoAI está totalmente disponível em português e inglês. Pode mudar de idioma a qualquer momento nas preferências do seu perfil."
+      }
+    }
+  },
+  "contact": {
+    "title": "Contactar o suporte",
+    "subtitle": "Não encontra o que procura? Envie-nos uma mensagem e responderemos no prazo de um dia útil.",
+    "subject": "Assunto",
+    "subjectPlaceholder": "Descreva brevemente o problema",
+    "category": "Categoria",
+    "categories": {
+      "billing": "Faturação",
+      "technical": "Problema técnico",
+      "feature": "Pedido de funcionalidade",
+      "other": "Outro"
+    },
+    "priority": "Prioridade",
+    "priorities": {
+      "low": "Baixa",
+      "normal": "Normal",
+      "high": "Alta",
+      "urgent": "Urgente"
+    },
+    "message": "Mensagem",
+    "messagePlaceholder": "Descreva o que está a acontecer, os passos para reproduzir e qualquer contexto que possa ajudar...",
+    "attachments": "Anexos",
+    "attachmentsHint": "PNG, JPG ou PDF até 5MB.",
+    "submit": "Enviar mensagem",
+    "sending": "A enviar...",
+    "success": "Obrigado! A sua mensagem foi enviada. Responderemos por email em breve.",
+    "validation": {
+      "subjectRequired": "O assunto é obrigatório",
+      "messageRequired": "Descreva o seu problema",
+      "messageTooShort": "Adicione mais detalhe (pelo menos 20 caracteres)"
+    },
+    "channels": {
+      "email": "Envie-nos um email",
+      "emailValue": "suporte@condoai.pt",
+      "phone": "Ligue-nos",
+      "phoneValue": "+351 21 000 0000",
+      "phoneHours": "Seg–Sex, 9:00–18:00 WET",
+      "chat": "Chat ao vivo",
+      "chatValue": "Iniciar conversa",
+      "chatHours": "Disponível em horário comercial"
+    }
+  },
+  "resources": {
+    "title": "Recursos úteis",
+    "subtitle": "Documentação, estado dos serviços e formas de acompanhar a CondoAI.",
+    "items": {
+      "docs": {
+        "title": "Documentação",
+        "description": "Consulte guias do produto, tutoriais e referências de API."
+      },
+      "videos": {
+        "title": "Vídeos tutoriais",
+        "description": "Veja demonstrações curtas dos principais fluxos."
+      },
+      "changelog": {
+        "title": "Novidades",
+        "description": "Consulte as últimas funcionalidades e melhorias."
+      },
+      "status": {
+        "title": "Estado do sistema",
+        "description": "Verifique a disponibilidade em tempo real dos serviços CondoAI."
+      },
+      "community": {
+        "title": "Comunidade",
+        "description": "Ligue-se a outros gestores de condomínios que utilizam a CondoAI."
+      },
+      "roadmap": {
+        "title": "Roteiro",
+        "description": "Saiba o que estamos a construir e vote nas ideias."
+      }
+    },
+    "open": "Abrir"
+  },
+  "system": {
+    "allOperational": "Todos os sistemas operacionais",
+    "someIssues": "Alguns serviços com problemas",
+    "majorOutage": "Grande interrupção",
+    "version": "Versão {version}"
+  }
+}

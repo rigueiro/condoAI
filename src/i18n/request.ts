@@ -15,6 +15,7 @@ const messageNamespaces = [
   "occurrences",
   "profile",
   "account",
+  "help",
 ] as const;
 
 const messageFiles: Record<(typeof messageNamespaces)[number], string> = {
@@ -30,6 +31,7 @@ const messageFiles: Record<(typeof messageNamespaces)[number], string> = {
   occurrences: "occurrences",
   profile: "profile",
   account: "account",
+  help: "help",
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {
