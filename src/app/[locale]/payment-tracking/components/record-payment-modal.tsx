@@ -196,7 +196,7 @@ function RecordPaymentModal({
             {/* Owner Selection */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-text-primary mb-2">
-                Owner <span className="text-error">*</span>
+                {t("owner")} <span className="text-error">*</span>
               </label>
               <select
                 value={formData.ownerName}
@@ -223,22 +223,34 @@ function RecordPaymentModal({
             {/* Property */}
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
-                Property <span className="text-error">*</span>
+                {t("property")} <span className="text-error">*</span>
               </label>
-              <Input
-                type="text"
+              <select
                 value={formData.property}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => handleInputChange("property", e.target.value)}
-                placeholder={t("propertyPlaceholder")}
-                error={errors.property}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  handleInputChange("property", e.target.value)
+                }
                 disabled={!!formData.ownerName}
-              />
+                className={`w-full rounded-lg border bg-surface px-3 py-2 text-sm text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-60 disabled:cursor-not-allowed ${
+                  errors.property ? "border-error" : "border-border-medium"
+                }`}
+              >
+                <option value="">{t("selectProperty")}</option>
+                {properties.map((property) => (
+                  <option key={property} value={property}>
+                    {property}
+                  </option>
+                ))}
+              </select>
+              {errors.property && (
+                <p className="text-error text-xs mt-1">{errors.property}</p>
+              )}
             </div>
 
             {/* Unit */}
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
-                Unit <span className="text-error">*</span>
+                {t("unit")} <span className="text-error">*</span>
               </label>
               <Input
                 type="text"
@@ -253,7 +265,7 @@ function RecordPaymentModal({
             {/* Amount */}
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
-                Amount <span className="text-error">*</span>
+                {t("amount")} <span className="text-error">*</span>
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary">
@@ -348,13 +360,13 @@ function RecordPaymentModal({
               disabled={isSubmitting}
               className="w-full sm:w-auto"
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               type="submit"
               loading={isSubmitting}
               iconName="Plus"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto text-white"
             >
               {isSubmitting ? t("recording") : t("save")}
             </Button>

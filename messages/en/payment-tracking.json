@@ -80,6 +80,7 @@
     "selectOwner": "Select an owner...",
     "property": "Property",
     "propertyPlaceholder": "Property name",
+    "selectProperty": "Select a property...",
     "unit": "Unit",
     "unitPlaceholder": "Unit number",
     "amount": "Amount",

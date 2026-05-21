@@ -80,6 +80,7 @@
     "selectOwner": "Seleccione um proprietário...",
     "property": "Condomínio",
     "propertyPlaceholder": "Nome do condomínio",
+    "selectProperty": "Seleccione um condomínio...",
     "unit": "Fração",
     "unitPlaceholder": "Número da fração",
     "amount": "Valor",
