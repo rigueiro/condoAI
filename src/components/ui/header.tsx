@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import Icon from "../icon";
 import UserProfileDropdown from "./user-profile-dropdown";
 import MobileNavigationDrawer from "./mobile-navigation-drawer";
-import LocaleSwitcher from "@/components/locale-switcher";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
 
@@ -111,7 +110,6 @@ function Header() {
             </nav>
 
             <div className="flex items-center space-x-4">
-              <LocaleSwitcher />
               <UserProfileDropdown
                 currentUser={user}
                 onLogout={handleLogout}
