@@ -5,8 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import Select from "@/components/ui/select";
-
-type Theme = "light" | "dark" | "system";
+import { useTheme, type Theme } from "@/lib/theme";
 
 interface SelectFieldProps {
   id: string;
@@ -59,7 +58,7 @@ function PreferencesSection() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [theme, setTheme] = useState<Theme>("system");
+  const { theme, setTheme } = useTheme();
   const [currency, setCurrency] = useState("EUR");
   const [dateFormat, setDateFormat] = useState("dd/MM/yyyy");
 
