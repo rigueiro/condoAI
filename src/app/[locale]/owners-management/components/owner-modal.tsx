@@ -4,6 +4,7 @@ import React, { useState, useEffect, ChangeEvent, SyntheticEvent } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
+import Select from "@/components/ui/select";
 import { Owner } from "./types";
 
 interface Props {
@@ -220,27 +221,18 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
                 <label className="block text-sm font-medium text-text-primary mb-2">
                   {t("property")}
                 </label>
-                <div className="relative">
-                  <select
-                    value={formData.propertyId}
-                    onChange={(e) => handleChange("propertyId", e.target.value)}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth appearance-none bg-surface ${
-                      errors.propertyId ? "border-error" : "border-border-light"
-                    }`}
-                  >
-                    <option value="">{t("selectProperty")}</option>
-                    {properties.map((property) => (
-                      <option key={property.id} value={property.id}>
-                        {property.name}
-                      </option>
-                    ))}
-                  </select>
-                  <Icon
-                    name="ChevronDown"
-                    size={20}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary pointer-events-none"
-                  />
-                </div>
+                <Select
+                  value={formData.propertyId}
+                  onChange={(e) => handleChange("propertyId", e.target.value)}
+                  invalid={Boolean(errors.propertyId)}
+                >
+                  <option value="">{t("selectProperty")}</option>
+                  {properties.map((property) => (
+                    <option key={property.id} value={property.id}>
+                      {property.name}
+                    </option>
+                  ))}
+                </Select>
                 {errors.propertyId && (
                   <p className="mt-1 text-sm text-error">{errors.propertyId}</p>
                 )}

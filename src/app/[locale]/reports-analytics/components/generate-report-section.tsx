@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
+import Select from "@/components/ui/select";
 
 type Field = {
   id: string;
@@ -273,7 +274,7 @@ function GenerateReportSection({
               <label className="block text-sm font-medium text-text-primary mb-2">
                 Delivery Method
               </label>
-              <select
+              <Select
                 value={reportConfig.delivery}
                 onChange={(e) =>
                   setReportConfig((prev) => ({
@@ -281,14 +282,13 @@ function GenerateReportSection({
                     delivery: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-2 border border-border-light rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {deliveryOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             {reportConfig.delivery === "scheduled" && (
@@ -296,7 +296,7 @@ function GenerateReportSection({
                 <label className="block text-sm font-medium text-text-primary mb-2">
                   Schedule
                 </label>
-                <select
+                <Select
                   value={reportConfig.schedule}
                   onChange={(e) =>
                     setReportConfig((prev) => ({
@@ -304,14 +304,13 @@ function GenerateReportSection({
                       schedule: e.target.value,
                     }))
                   }
-                  className="w-full px-4 py-2 border border-border-light rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   {scheduleOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
             )}
 

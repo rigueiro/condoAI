@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
+import Select from "@/components/ui/select";
 import type { TeamMember, TeamRole, TeamStatus } from "../types";
 
 interface TeamMembersSectionProps {
@@ -138,19 +139,18 @@ function InviteModal({ open, onClose, onSubmit }: InviteModalProps) {
             >
               {t("roleLabel")}
             </label>
-            <select
+            <Select
               id="invite-role"
               value={role}
               onChange={(event) => setRole(event.target.value as TeamRole)}
               disabled={isSubmitting}
-              className="w-full rounded-lg border border-border-medium bg-surface px-3 py-2 text-sm text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-60"
             >
               {ROLE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
                   {tRoles(option)}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
@@ -288,19 +288,19 @@ function TeamMembersSection({
                       {tRoles(member.role)}
                     </span>
                   ) : (
-                    <select
+                    <Select
                       value={member.role}
                       onChange={(event) =>
                         onChangeRole(member, event.target.value as TeamRole)
                       }
-                      className="text-xs rounded-md border border-border-medium bg-surface px-2 py-1 text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent"
+                      selectSize="sm"
                     >
                       {ROLE_OPTIONS.map((option) => (
                         <option key={option} value={option}>
                           {tRoles(option)}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   )}
                 </td>
                 <td className="py-3 pr-4">

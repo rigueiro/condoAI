@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
+import Select from "@/components/ui/select";
 
 export default function LocaleSwitcher() {
   const t = useTranslations("common.locale");
@@ -19,11 +20,11 @@ export default function LocaleSwitcher() {
       <label htmlFor="locale-switcher" className="sr-only">
         {t("label")}
       </label>
-      <select
+      <Select
         id="locale-switcher"
         value={locale}
         onChange={(e) => handleChange(e.target.value as Locale)}
-        className="text-sm border border-border-medium rounded-lg px-2 py-1.5 bg-surface text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
+        selectSize="sm"
         aria-label={t("label")}
       >
         {routing.locales.map((loc) => (
@@ -31,7 +32,7 @@ export default function LocaleSwitcher() {
             {t(loc)}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
+import Select from "@/components/ui/select";
 
 type ErrorsType = { [key: string]: string };
 
@@ -198,12 +199,10 @@ function RecordPaymentModal({
               <label className="block text-sm font-medium text-text-primary mb-2">
                 {t("owner")} <span className="text-error">*</span>
               </label>
-              <select
+              <Select
                 value={formData.ownerName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => handleInputChange("ownerName", e.target.value)}
-                className={`w-full rounded-lg border bg-surface px-3 py-2 text-sm text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent ${
-                  errors.ownerName ? "border-error" : "border-border-medium"
-                }`}
+                onChange={(e) => handleInputChange("ownerName", e.target.value)}
+                invalid={Boolean(errors.ownerName)}
               >
                 <option value="">{t("selectOwner")}</option>
                 {owners.map((owner) => (
@@ -214,7 +213,7 @@ function RecordPaymentModal({
                     {owner.name} - {owner.property} Unit {owner.unit}
                   </option>
                 ))}
-              </select>
+              </Select>
               {errors.ownerName && (
                 <p className="text-error text-xs mt-1">{errors.ownerName}</p>
               )}
@@ -225,15 +224,11 @@ function RecordPaymentModal({
               <label className="block text-sm font-medium text-text-primary mb-2">
                 {t("property")} <span className="text-error">*</span>
               </label>
-              <select
+              <Select
                 value={formData.property}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  handleInputChange("property", e.target.value)
-                }
+                onChange={(e) => handleInputChange("property", e.target.value)}
                 disabled={!!formData.ownerName}
-                className={`w-full rounded-lg border bg-surface px-3 py-2 text-sm text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-60 disabled:cursor-not-allowed ${
-                  errors.property ? "border-error" : "border-border-medium"
-                }`}
+                invalid={Boolean(errors.property)}
               >
                 <option value="">{t("selectProperty")}</option>
                 {properties.map((property) => (
@@ -241,7 +236,7 @@ function RecordPaymentModal({
                     {property}
                   </option>
                 ))}
-              </select>
+              </Select>
               {errors.property && (
                 <p className="text-error text-xs mt-1">{errors.property}</p>
               )}
@@ -289,19 +284,18 @@ function RecordPaymentModal({
               <label className="block text-sm font-medium text-text-primary mb-2">
                 {t("paymentMethod")}
               </label>
-              <select
+              <Select
                 value={formData.paymentMethod}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                onChange={(e) =>
                   handleInputChange("paymentMethod", e.target.value)
                 }
-                className="w-full rounded-lg border border-border-medium bg-surface px-3 py-2 text-sm text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 {paymentMethodKeys.map((key) => (
                   <option key={key} value={methodValues[key]}>
                     {tMethods(key)}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             {/* {t("paymentDate")} */}

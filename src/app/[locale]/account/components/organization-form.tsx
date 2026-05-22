@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
+import Select from "@/components/ui/select";
 import type { Organization } from "../types";
 
 interface OrganizationFormProps {
@@ -177,19 +178,18 @@ function OrganizationForm({ organization, onSave }: OrganizationFormProps) {
           >
             {t("country")}
           </label>
-          <select
+          <Select
             id="org-country"
             value={form.country}
             onChange={(event) => handleField("country", event.target.value)}
             disabled={isSaving}
-            className="w-full rounded-lg border border-border-medium bg-surface px-3 py-2 text-sm text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-60"
           >
             {COUNTRIES.map((country) => (
               <option key={country.value} value={country.value}>
                 {country.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
+import Select from "@/components/ui/select";
 
 interface PaymentFiltersProps {
   filters: {
@@ -137,12 +138,9 @@ function PaymentFilters({
 
           {/* Property Filter */}
           <div className="lg:w-48">
-            <select
+            <Select
               value={localFilters.property}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                handleFilterChange("property", e.target.value)
-              }
-              className="w-full rounded-lg border border-border-medium bg-surface px-3 py-2 text-sm text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent"
+              onChange={(e) => handleFilterChange("property", e.target.value)}
             >
               <option value="">{t("allProperties")}</option>
               {uniqueProperties.map((property) => (
@@ -150,24 +148,21 @@ function PaymentFilters({
                   {property}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           {/* Status Filter */}
           <div className="lg:w-40">
-            <select
+            <Select
               value={localFilters.status}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                handleFilterChange("status", e.target.value)
-              }
-              className="w-full rounded-lg border border-border-medium bg-surface px-3 py-2 text-sm text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent"
+              onChange={(e) => handleFilterChange("status", e.target.value)}
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           {/* Toggle Advanced Filters */}

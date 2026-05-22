@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
+import Select from "@/components/ui/select";
 import { format } from "date-fns";
 
 type DataRange = {
@@ -159,24 +160,16 @@ function ControlPanel({
           <label className="block text-sm font-medium text-text-primary mb-2">
             {t("reportType")}
           </label>
-          <div className="relative">
-            <select
-              value={filters?.reportType || "financial-summary"}
-              onChange={handleReportTypeChange}
-              className="w-full px-4 py-2 bg-surface border border-border-light rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            >
-              {reportTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-            <Icon
-              name="ChevronDown"
-              size={16}
-              className="absolute right-3 top-3 text-text-secondary pointer-events-none"
-            />
-          </div>
+          <Select
+            value={filters?.reportType || "financial-summary"}
+            onChange={handleReportTypeChange}
+          >
+            {reportTypes.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </Select>
         </div>
         <div className="flex-1 min-w-0">
           <label className="block text-sm font-medium text-text-primary mb-2">

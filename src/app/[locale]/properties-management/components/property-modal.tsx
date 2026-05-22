@@ -1,6 +1,7 @@
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
+import Select from "@/components/ui/select";
 import { Property } from "../types";
 
 type Errors = {
@@ -249,15 +250,11 @@ function PropertyModal({
                   <label className="block text-sm font-medium text-text-primary mb-2">
                     {t("buildingType")} *
                   </label>
-                  <select
+                  <Select
                     name="buildingType"
                     value={formData.buildingType}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth ${
-                      errors.buildingType
-                        ? "border-error"
-                        : "border-border-medium"
-                    }`}
+                    invalid={Boolean(errors.buildingType)}
                   >
                     <option value="">{t("buildingTypePlaceholder")}</option>
                     {buildingTypes.map((type) => (
@@ -265,7 +262,7 @@ function PropertyModal({
                         {t(`buildingTypes.${type.key}`)}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   {errors.buildingType && (
                     <p className="mt-1 text-sm text-error">
                       {errors.buildingType}
@@ -319,18 +316,17 @@ function PropertyModal({
                   <label className="block text-sm font-medium text-text-primary mb-2">
                     {t("status")}
                   </label>
-                  <select
+                  <Select
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-border-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth"
                   >
                     {statusOptions.map((status) => (
                       <option key={status.key} value={status.value}>
                         {t(`statuses.${status.key}`)}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               </div>
             </div>

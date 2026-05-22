@@ -1,4 +1,5 @@
 import Icon from "@/components/icon";
+import Select from "@/components/ui/select";
 import React from "react";
 import { useTranslations } from "next-intl";
 
@@ -76,44 +77,28 @@ function PropertyFilters({
         {/* Filters */}
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
           {/* Location Filter */}
-          <div className="relative">
-            <select
-              value={locationFilter}
-              onChange={(e) => onLocationChange(e.target.value)}
-              className="appearance-none bg-surface border border-border-medium rounded-lg px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-smooth"
-            >
-              {locationOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <Icon
-              name="ChevronDown"
-              size={16}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-text-secondary pointer-events-none"
-            />
-          </div>
+          <Select
+            value={locationFilter}
+            onChange={(e) => onLocationChange(e.target.value)}
+          >
+            {locationOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
 
           {/* Unit Range Filter */}
-          <div className="relative">
-            <select
-              value={unitRangeFilter}
-              onChange={(e) => onUnitRangeChange(e.target.value)}
-              className="appearance-none bg-surface border border-border-medium rounded-lg px-4 py-2 pr-8 text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-smooth"
-            >
-              {unitRangeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <Icon
-              name="ChevronDown"
-              size={16}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-text-secondary pointer-events-none"
-            />
-          </div>
+          <Select
+            value={unitRangeFilter}
+            onChange={(e) => onUnitRangeChange(e.target.value)}
+          >
+            {unitRangeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
 
           {/* Clear Filters */}
           {hasActiveFilters && (

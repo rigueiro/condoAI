@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
+import Select from "@/components/ui/select";
 
 type Theme = "light" | "dark" | "system";
 
@@ -35,18 +36,18 @@ function SelectField({
         </label>
         <p className="text-xs text-text-secondary mt-1">{description}</p>
       </div>
-      <select
+      <Select
         id={id}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="text-sm rounded-lg border border-border-medium bg-surface px-3 py-2 text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent sm:min-w-[180px]"
+        containerClassName="sm:min-w-[180px]"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

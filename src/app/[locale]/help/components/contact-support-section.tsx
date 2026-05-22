@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
+import Select from "@/components/ui/select";
 
 type SupportCategory = "billing" | "technical" | "feature" | "other";
 type SupportPriority = "low" | "normal" | "high" | "urgent";
@@ -119,21 +120,20 @@ function ContactSupportSection() {
             >
               {t("category")}
             </label>
-            <select
+            <Select
               id="support-category"
               value={form.category}
               onChange={(event) =>
                 handleField("category", event.target.value as SupportCategory)
               }
               disabled={isSending}
-              className="w-full rounded-lg border border-border-medium bg-surface px-3 py-2 text-sm text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-60"
             >
               {CATEGORIES.map((option) => (
                 <option key={option} value={option}>
                   {tCat(option)}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
@@ -143,21 +143,20 @@ function ContactSupportSection() {
             >
               {t("priority")}
             </label>
-            <select
+            <Select
               id="support-priority"
               value={form.priority}
               onChange={(event) =>
                 handleField("priority", event.target.value as SupportPriority)
               }
               disabled={isSending}
-              className="w-full rounded-lg border border-border-medium bg-surface px-3 py-2 text-sm text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-60"
             >
               {PRIORITIES.map((option) => (
                 <option key={option} value={option}>
                   {tPri(option)}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 

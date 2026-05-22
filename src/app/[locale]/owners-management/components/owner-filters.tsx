@@ -3,6 +3,7 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
+import Select from "@/components/ui/select";
 import { PaymentStatus } from "./types";
 
 interface Props {
@@ -84,64 +85,40 @@ function OwnerFilters({ filters, onFiltersChange, properties }: Props) {
           />
         </div>
 
-        <div className="relative">
-          <select
-            value={filters.property}
-            onChange={(e) => handleFilterChange("property", e.target.value)}
-            className="w-full pr-[26px] text-ellipsis px-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth appearance-none bg-surface"
-          >
-            <option value="">{t("allProperties")}</option>
-            {properties.map((property) => (
-              <option key={property.id} value={property.name}>
-                {property.name}
-              </option>
-            ))}
-          </select>
-          <Icon
-            name="ChevronDown"
-            size={20}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary pointer-events-none"
-          />
-        </div>
+        <Select
+          value={filters.property}
+          onChange={(e) => handleFilterChange("property", e.target.value)}
+          className="text-ellipsis"
+        >
+          <option value="">{t("allProperties")}</option>
+          {properties.map((property) => (
+            <option key={property.id} value={property.name}>
+              {property.name}
+            </option>
+          ))}
+        </Select>
 
-        <div className="relative">
-          <select
-            value={filters.paymentStatus}
-            onChange={(e) =>
-              handleFilterChange("paymentStatus", e.target.value)
-            }
-            className="w-full pr-[26px] text-ellipsis px-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth appearance-none bg-surface"
-          >
-            <option value="">{t("allPaymentStatus")}</option>
-            <option value="current">{tStatus("current")}</option>
-            <option value="pending">{tStatus("pending")}</option>
-            <option value="overdue">{tStatus("overdue")}</option>
-          </select>
-          <Icon
-            name="ChevronDown"
-            size={20}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary pointer-events-none"
-          />
-        </div>
+        <Select
+          value={filters.paymentStatus}
+          onChange={(e) => handleFilterChange("paymentStatus", e.target.value)}
+          className="text-ellipsis"
+        >
+          <option value="">{t("allPaymentStatus")}</option>
+          <option value="current">{tStatus("current")}</option>
+          <option value="pending">{tStatus("pending")}</option>
+          <option value="overdue">{tStatus("overdue")}</option>
+        </Select>
 
-        <div className="relative">
-          <select
-            value={filters.balanceRange}
-            onChange={(e) => handleFilterChange("balanceRange", e.target.value)}
-            className="w-full px-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth appearance-none bg-surface"
-          >
-            <option value="">{t("allBalances")}</option>
-            <option value="zero">{t("balanceZero")}</option>
-            <option value="low">{t("balanceLow")}</option>
-            <option value="medium">{t("balanceMedium")}</option>
-            <option value="high">{t("balanceHigh")}</option>
-          </select>
-          <Icon
-            name="ChevronDown"
-            size={20}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary pointer-events-none"
-          />
-        </div>
+        <Select
+          value={filters.balanceRange}
+          onChange={(e) => handleFilterChange("balanceRange", e.target.value)}
+        >
+          <option value="">{t("allBalances")}</option>
+          <option value="zero">{t("balanceZero")}</option>
+          <option value="low">{t("balanceLow")}</option>
+          <option value="medium">{t("balanceMedium")}</option>
+          <option value="high">{t("balanceHigh")}</option>
+        </Select>
       </div>
 
       {hasActiveFilters && (
