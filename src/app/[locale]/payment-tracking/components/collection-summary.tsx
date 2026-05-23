@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
+import { Link } from "@/i18n/navigation";
 
 type CollectionData = {
   currentMonth: {
@@ -175,7 +176,12 @@ function CollectionSummary({
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="font-semibold text-text-primary">
-                      {property.name}
+                      <Link
+                        href={`/properties-management/${property.id}`}
+                        className="hover:text-primary hover:underline transition-smooth"
+                      >
+                        {property.name}
+                      </Link>
                     </h3>
                     <span
                       className={`text-sm mr-4 font-medium ${getCollectionRateColor(property.collectionRate)}`}
