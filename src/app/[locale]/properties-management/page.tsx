@@ -11,6 +11,7 @@ import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 import { Property, SortConfig } from "./types";
+import { downloadCsv } from "@/lib/export-csv";
 
 import useSWR from "swr";
 import { fetcher } from "@/app/mocks/mocks-utils";
@@ -260,36 +261,26 @@ function PropertiesManagement() {
     const selectedData = properties.filter((p) =>
       selectedProperties.includes(p.id),
     );
-    const csvContent = [
-      [
-        t("csvHeaders.name"),
-        t("csvHeaders.address"),
-        t("csvHeaders.totalUnits"),
-        t("csvHeaders.occupiedUnits"),
-        t("csvHeaders.monthlyFeeRange"),
-        t("csvHeaders.collectionRate"),
-        t("csvHeaders.status"),
-      ],
-      ...selectedData.map((p) => [
-        p.name,
-        p.address,
-        p.totalUnits,
-        p.occupiedUnits,
-        p.monthlyFeeRange,
-        `${p.collectionRate}%`,
-        p.status,
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
+    const headers = [
+      t("csvHeaders.name"),
+      t("csvHeaders.address"),
+      t("csvHeaders.totalUnits"),
+      t("csvHeaders.occupiedUnits"),
+      t("csvHeaders.monthlyFeeRange"),
+      t("csvHeaders.collectionRate"),
+      t("csvHeaders.status"),
+    ];
+    const rows = selectedData.map((p) => [
+      p.name,
+      p.address,
+      p.totalUnits,
+      p.occupiedUnits,
+      p.monthlyFeeRange,
+      `${p.collectionRate}%`,
+      p.status,
+    ]);
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "properties-export.csv";
-    a.click();
-    window.URL.revokeObjectURL(url);
+    downloadCsv(headers, rows, "properties-export.csv");
   };
 
   return (

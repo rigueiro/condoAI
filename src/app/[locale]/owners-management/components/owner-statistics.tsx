@@ -5,11 +5,7 @@ import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import { Owner } from "./types";
-
-const escapeCsv = (value: string | number) => {
-  const str = String(value ?? "");
-  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-};
+import { downloadCsv } from "@/lib/export-csv";
 
 function OwnerStatistics({ owners }: { owners: Owner[] }) {
   const t = useTranslations("ownersManagement.stats");
@@ -67,46 +63,32 @@ function OwnerStatistics({ owners }: { owners: Owner[] }) {
   ];
 
   const handleExportList = () => {
-    const rows = [
-      [
-        t("csvHeaders.name"),
-        t("csvHeaders.email"),
-        t("csvHeaders.phone"),
-        t("csvHeaders.unit"),
-        t("csvHeaders.property"),
-        t("csvHeaders.paymentStatus"),
-        t("csvHeaders.currentBalance"),
-        t("csvHeaders.monthlyFee"),
-        t("csvHeaders.lastPayment"),
-        t("csvHeaders.joinDate"),
-      ],
-      ...owners.map((owner) => [
-        owner.name,
-        owner.email,
-        owner.phone ?? "",
-        owner.unit,
-        owner.property,
-        owner.paymentStatus ? tStatus(owner.paymentStatus) : "",
-        owner.currentBalance,
-        owner.monthlyFee ?? "",
-        owner.lastPayment,
-        owner.joinDate,
-      ]),
+    const headers = [
+      t("csvHeaders.name"),
+      t("csvHeaders.email"),
+      t("csvHeaders.phone"),
+      t("csvHeaders.unit"),
+      t("csvHeaders.property"),
+      t("csvHeaders.paymentStatus"),
+      t("csvHeaders.currentBalance"),
+      t("csvHeaders.monthlyFee"),
+      t("csvHeaders.lastPayment"),
+      t("csvHeaders.joinDate"),
     ];
+    const rows = owners.map((owner) => [
+      owner.name,
+      owner.email,
+      owner.phone ?? "",
+      owner.unit,
+      owner.property,
+      owner.paymentStatus ? tStatus(owner.paymentStatus) : "",
+      owner.currentBalance,
+      owner.monthlyFee ?? "",
+      owner.lastPayment,
+      owner.joinDate,
+    ]);
 
-    const csvContent = rows
-      .map((row) => row.map(escapeCsv).join(","))
-      .join("\n");
-
-    const blob = new Blob([`\uFEFF${csvContent}`], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "owners-export.csv";
-    a.click();
-    window.URL.revokeObjectURL(url);
+    downloadCsv(headers, rows, "owners-export.csv");
   };
 
   const paymentStatusStats = [
