@@ -50,7 +50,19 @@
     "quickActions": "Acções rápidas",
     "sendReminders": "Enviar lembretes de pagamento",
     "exportList": "Exportar lista de proprietários",
-    "generateReports": "Gerar relatórios"
+    "generateReports": "Gerar relatórios",
+    "csvHeaders": {
+      "name": "Nome",
+      "email": "Email",
+      "phone": "Telefone",
+      "unit": "Fração",
+      "property": "Condomínio",
+      "paymentStatus": "Estado de pagamento",
+      "currentBalance": "Saldo atual",
+      "monthlyFee": "Quota mensal",
+      "lastPayment": "Último pagamento",
+      "joinDate": "Membro desde"
+    }
   },
   "modal": {
     "addTitle": "Adicionar proprietário",

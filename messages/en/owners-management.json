@@ -50,7 +50,19 @@
     "quickActions": "Quick Actions",
     "sendReminders": "Send Payment Reminders",
     "exportList": "Export Owner List",
-    "generateReports": "Generate Reports"
+    "generateReports": "Generate Reports",
+    "csvHeaders": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "unit": "Unit",
+      "property": "Property",
+      "paymentStatus": "Payment Status",
+      "currentBalance": "Current Balance",
+      "monthlyFee": "Monthly Fee",
+      "lastPayment": "Last Payment",
+      "joinDate": "Member Since"
+    }
   },
   "modal": {
     "addTitle": "Add New Owner",
