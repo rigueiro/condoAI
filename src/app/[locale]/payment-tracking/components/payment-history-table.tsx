@@ -15,6 +15,48 @@ interface PaymentHistoryTableProps {
   onMarkDisputed: (payment: any) => void;
 }
 
+interface SortConfig {
+  key: keyof MockPayment | null;
+  direction: "asc" | "desc";
+}
+
+function SortableHeader({
+  children,
+  sortKey,
+  className = "",
+  sortConfig,
+  onSort,
+}: {
+  children: React.ReactNode;
+  sortKey: keyof MockPayment;
+  className?: string;
+  sortConfig: SortConfig;
+  onSort: (key: keyof MockPayment) => void;
+}) {
+  return (
+    <th
+      className={`px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider cursor-pointer hover:bg-secondary-50 transition-smooth ${className}`}
+      onClick={() => onSort(sortKey)}
+    >
+      <div className="flex items-center space-x-1">
+        <span>{children}</span>
+        <div className="flex flex-col">
+          <Icon
+            name="ChevronUp"
+            size={12}
+            className={`${sortConfig.key === sortKey && sortConfig.direction === "asc" ? "text-primary" : "text-secondary-300"}`}
+          />
+          <Icon
+            name="ChevronDown"
+            size={12}
+            className={`${sortConfig.key === sortKey && sortConfig.direction === "desc" ? "text-primary" : "text-secondary-300"} -mt-1`}
+          />
+        </div>
+      </div>
+    </th>
+  );
+}
+
 function PaymentHistoryTable({
   payments,
   selectedPayments,
@@ -41,10 +83,10 @@ function PaymentHistoryTable({
     return key ? tMethods(key as "bankTransfer") : method;
   };
 
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof MockPayment | null;
-    direction: "asc" | "desc";
-  }>({ key: null, direction: "asc" });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: null,
+    direction: "asc",
+  });
 
   const handleSort = (key: keyof MockPayment) => {
     let direction: "asc" | "desc" = "asc";
@@ -142,37 +184,6 @@ function PaymentHistoryTable({
     return methodIcons[method] || "CreditCard";
   };
 
-  const SortableHeader = ({
-    children,
-    sortKey,
-    className = "",
-  }: {
-    children: React.ReactNode;
-    sortKey: keyof MockPayment;
-    className?: string;
-  }) => (
-    <th
-      className={`px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider cursor-pointer hover:bg-secondary-50 transition-smooth ${className}`}
-      onClick={() => handleSort(sortKey)}
-    >
-      <div className="flex items-center space-x-1">
-        <span>{children}</span>
-        <div className="flex flex-col">
-          <Icon
-            name="ChevronUp"
-            size={12}
-            className={`${sortConfig.key === sortKey && sortConfig.direction === "asc" ? "text-primary" : "text-secondary-300"}`}
-          />
-          <Icon
-            name="ChevronDown"
-            size={12}
-            className={`${sortConfig.key === sortKey && sortConfig.direction === "desc" ? "text-primary" : "text-secondary-300"} -mt-1`}
-          />
-        </div>
-      </div>
-    </th>
-  );
-
   const allSelected =
     payments.length > 0 && selectedPayments.length === payments.length;
   const someSelected =
@@ -214,12 +225,48 @@ function PaymentHistoryTable({
                   className="rounded border-border-medium text-primary focus:ring-primary"
                 />
               </th>
-              <SortableHeader sortKey="date">{t("date")}</SortableHeader>
-              <SortableHeader sortKey="ownerName">{t("owner")}</SortableHeader>
-              <SortableHeader sortKey="property">{t("propertyUnit")}</SortableHeader>
-              <SortableHeader sortKey="amount">{t("amount")}</SortableHeader>
-              <SortableHeader sortKey="paymentMethod">{t("method")}</SortableHeader>
-              <SortableHeader sortKey="status">{t("status")}</SortableHeader>
+              <SortableHeader
+                sortKey="date"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("date")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="ownerName"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("owner")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="property"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("propertyUnit")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="amount"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("amount")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="paymentMethod"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("method")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="status"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("status")}
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                 {t("actions")}
               </th>

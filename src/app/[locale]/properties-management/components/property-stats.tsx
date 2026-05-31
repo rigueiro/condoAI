@@ -16,6 +16,33 @@ interface PropertyStatsProps {
   properties: Property[];
 }
 
+function StatCard({
+  icon,
+  title,
+  value,
+  subtitle,
+  color = "primary",
+}: StatCardProps) {
+  return (
+    <div className="bg-surface rounded-lg border border-border-light p-4">
+      <div className="flex items-center space-x-3">
+        <div
+          className={`w-10 h-10 bg-${color}-50 rounded-lg flex items-center justify-center`}
+        >
+          <Icon name={icon} size={20} color={`var(--color-${color})`} />
+        </div>
+        <div>
+          <p className="text-sm text-text-secondary">{title}</p>
+          <p className="text-lg font-semibold text-text-primary">{value}</p>
+          {subtitle && (
+            <p className="text-xs text-text-secondary">{subtitle}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PropertyStats({ properties }: PropertyStatsProps) {
   const t = useTranslations("propertiesManagement.stats");
   const { formatCurrency } = useFormatCurrency();
@@ -74,31 +101,6 @@ function PropertyStats({ properties }: PropertyStatsProps) {
       buildingTypes,
     };
   }, [properties]);
-
-  const StatCard = ({
-    icon,
-    title,
-    value,
-    subtitle,
-    color = "primary",
-  }: StatCardProps) => (
-    <div className="bg-surface rounded-lg border border-border-light p-4">
-      <div className="flex items-center space-x-3">
-        <div
-          className={`w-10 h-10 bg-${color}-50 rounded-lg flex items-center justify-center`}
-        >
-          <Icon name={icon} size={20} color={`var(--color-${color})`} />
-        </div>
-        <div>
-          <p className="text-sm text-text-secondary">{title}</p>
-          <p className="text-lg font-semibold text-text-primary">{value}</p>
-          {subtitle && (
-            <p className="text-xs text-text-secondary">{subtitle}</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="space-y-6">

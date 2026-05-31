@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, ChangeEvent, SyntheticEvent } from "react";
+import React, { useState, ChangeEvent, SyntheticEvent } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
@@ -30,31 +30,17 @@ type Errors = {
 function OwnerModal({ owner, properties, onClose, onSave }: Props) {
   const t = useTranslations("ownersManagement.modal");
   const { currencySymbol } = useFormatCurrency();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    unit: "",
-    propertyId: "",
-    emergencyContact: "",
-    monthlyFee: "",
-  });
+  const [formData, setFormData] = useState(() => ({
+    name: owner?.name || "",
+    email: owner?.email || "",
+    phone: owner?.phone || "",
+    unit: owner?.unit || "",
+    propertyId: owner?.propertyId || "",
+    emergencyContact: owner?.emergencyContact || "",
+    monthlyFee: owner?.monthlyFee || "",
+  }));
 
   const [errors, setErrors] = useState<Errors>({});
-
-  useEffect(() => {
-    if (owner) {
-      setFormData({
-        name: owner.name || "",
-        email: owner.email || "",
-        phone: owner.phone || "",
-        unit: owner.unit || "",
-        propertyId: owner.propertyId || "",
-        emergencyContact: owner.emergencyContact || "",
-        monthlyFee: owner.monthlyFee || "",
-      });
-    }
-  }, [owner]);
 
   const validateForm = () => {
     const newErrors: Errors = {};

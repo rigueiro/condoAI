@@ -9,15 +9,10 @@ interface Props {
 
 function Image({ src, alt = "Image Name", className = "", ...props }: Props) {
   return (
-    <img
-      src={src}
-      alt={alt}
-      className={className}
-      onError={(e) => {
-        // e.target.src = "/assets/images/no_image.png";
-      }}
-      {...props}
-    />
+    // Generic wrapper for arbitrary/dynamic external URLs (e.g. user avatars),
+    // where next/image's domain config and optimization aren't a good fit.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} className={className} {...props} />
   );
 }
 

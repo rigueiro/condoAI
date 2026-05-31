@@ -20,6 +20,48 @@ interface Props {
   onDeleteOwner: (ownerId: string) => void;
 }
 
+interface SortConfig {
+  key: SortKey | null;
+  direction: SortDirection;
+}
+
+function SortableHeader({
+  children,
+  sortKey,
+  className = "",
+  sortConfig,
+  onSort,
+}: {
+  children: string;
+  sortKey: SortKey;
+  className?: string;
+  sortConfig: SortConfig;
+  onSort: (key: SortKey) => void;
+}) {
+  return (
+    <th
+      className={`px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider cursor-pointer hover:bg-secondary-50 transition-smooth ${className}`}
+      onClick={() => onSort(sortKey)}
+    >
+      <div className="flex items-center space-x-1">
+        <span>{children}</span>
+        <div className="flex flex-col">
+          <Icon
+            name="ChevronUp"
+            size={12}
+            className={`${sortConfig.key === sortKey && sortConfig.direction === "asc" ? "text-primary" : "text-secondary-300"}`}
+          />
+          <Icon
+            name="ChevronDown"
+            size={12}
+            className={`${sortConfig.key === sortKey && sortConfig.direction === "desc" ? "text-primary" : "text-secondary-300"} -mt-1`}
+          />
+        </div>
+      </div>
+    </th>
+  );
+}
+
 function OwnerTable({
   owners,
   selectedOwners,
@@ -31,10 +73,10 @@ function OwnerTable({
   const t = useTranslations("ownersManagement.table");
   const tStatus = useTranslations("ownersManagement.status");
   const { formatCurrency } = useFormatCurrency();
-  const [sortConfig, setSortConfig] = useState<{
-    key: SortKey | null;
-    direction: SortDirection;
-  }>({ key: null, direction: "asc" });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: null,
+    direction: "asc",
+  });
 
   const handleSort = (key: SortKey) => {
     let direction: SortDirection = "asc";
@@ -89,37 +131,6 @@ function OwnerTable({
     );
   };
 
-  const SortableHeader = ({
-    children,
-    sortKey,
-    className = "",
-  }: {
-    children: string;
-    sortKey: SortKey;
-    className?: string;
-  }) => (
-    <th
-      className={`px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider cursor-pointer hover:bg-secondary-50 transition-smooth ${className}`}
-      onClick={() => handleSort(sortKey)}
-    >
-      <div className="flex items-center space-x-1">
-        <span>{children}</span>
-        <div className="flex flex-col">
-          <Icon
-            name="ChevronUp"
-            size={12}
-            className={`${sortConfig.key === sortKey && sortConfig.direction === "asc" ? "text-primary" : "text-secondary-300"}`}
-          />
-          <Icon
-            name="ChevronDown"
-            size={12}
-            className={`${sortConfig.key === sortKey && sortConfig.direction === "desc" ? "text-primary" : "text-secondary-300"} -mt-1`}
-          />
-        </div>
-      </div>
-    </th>
-  );
-
   const allSelected =
     owners.length > 0 && selectedOwners.length === owners.length;
   const someSelected =
@@ -143,12 +154,46 @@ function OwnerTable({
                   className="rounded border-border-medium text-primary focus:ring-primary"
                 />
               </th>
-              <SortableHeader sortKey="name">{t("owner")}</SortableHeader>
-              <SortableHeader sortKey="unit">{t("unit")}</SortableHeader>
-              <SortableHeader sortKey="property">{t("property")}</SortableHeader>
-              <SortableHeader sortKey="currentBalance">{t("balance")}</SortableHeader>
-              <SortableHeader sortKey="paymentStatus">{t("status")}</SortableHeader>
-              <SortableHeader sortKey="lastPayment">
+              <SortableHeader
+                sortKey="name"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("owner")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="unit"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("unit")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="property"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("property")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="currentBalance"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("balance")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="paymentStatus"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("status")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="lastPayment"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
                 {t("lastPayment")}
               </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">

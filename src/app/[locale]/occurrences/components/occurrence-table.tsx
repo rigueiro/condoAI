@@ -19,6 +19,48 @@ interface Props {
   onDeleteOccurrence: (id: string) => void;
 }
 
+interface SortConfig {
+  key: SortKey | null;
+  direction: SortDirection;
+}
+
+function SortableHeader({
+  children,
+  sortKey,
+  className = "",
+  sortConfig,
+  onSort,
+}: {
+  children: string;
+  sortKey: SortKey;
+  className?: string;
+  sortConfig: SortConfig;
+  onSort: (key: SortKey) => void;
+}) {
+  return (
+    <th
+      className={`px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider cursor-pointer hover:bg-secondary-50 transition-smooth ${className}`}
+      onClick={() => onSort(sortKey)}
+    >
+      <div className="flex items-center space-x-1">
+        <span>{children}</span>
+        <div className="flex flex-col">
+          <Icon
+            name="ChevronUp"
+            size={12}
+            className={`${sortConfig.key === sortKey && sortConfig.direction === "asc" ? "text-primary" : "text-secondary-300"}`}
+          />
+          <Icon
+            name="ChevronDown"
+            size={12}
+            className={`${sortConfig.key === sortKey && sortConfig.direction === "desc" ? "text-primary" : "text-secondary-300"} -mt-1`}
+          />
+        </div>
+      </div>
+    </th>
+  );
+}
+
 function OccurrenceTable({
   occurrences,
   selectedOccurrences,
@@ -31,10 +73,10 @@ function OccurrenceTable({
   const tState = useTranslations("occurrences.states");
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
-  const [sortConfig, setSortConfig] = useState<{
-    key: SortKey | null;
-    direction: SortDirection;
-  }>({ key: null, direction: "asc" });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: null,
+    direction: "asc",
+  });
 
   const handleSort = (key: SortKey) => {
     let direction: SortDirection = "asc";
@@ -84,37 +126,6 @@ function OccurrenceTable({
     );
   };
 
-  const SortableHeader = ({
-    children,
-    sortKey,
-    className = "",
-  }: {
-    children: string;
-    sortKey: SortKey;
-    className?: string;
-  }) => (
-    <th
-      className={`px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider cursor-pointer hover:bg-secondary-50 transition-smooth ${className}`}
-      onClick={() => handleSort(sortKey)}
-    >
-      <div className="flex items-center space-x-1">
-        <span>{children}</span>
-        <div className="flex flex-col">
-          <Icon
-            name="ChevronUp"
-            size={12}
-            className={`${sortConfig.key === sortKey && sortConfig.direction === "asc" ? "text-primary" : "text-secondary-300"}`}
-          />
-          <Icon
-            name="ChevronDown"
-            size={12}
-            className={`${sortConfig.key === sortKey && sortConfig.direction === "desc" ? "text-primary" : "text-secondary-300"} -mt-1`}
-          />
-        </div>
-      </div>
-    </th>
-  );
-
   const allSelected =
     occurrences.length > 0 &&
     selectedOccurrences.length === occurrences.length;
@@ -140,12 +151,46 @@ function OccurrenceTable({
                   className="rounded border-border-medium text-primary focus:ring-primary"
                 />
               </th>
-              <SortableHeader sortKey="title">{t("occurrence")}</SortableHeader>
-              <SortableHeader sortKey="category">{t("category")}</SortableHeader>
-              <SortableHeader sortKey="property">{t("property")}</SortableHeader>
-              <SortableHeader sortKey="priority">{t("priority")}</SortableHeader>
-              <SortableHeader sortKey="state">{t("state")}</SortableHeader>
-              <SortableHeader sortKey="reportedAt">
+              <SortableHeader
+                sortKey="title"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("occurrence")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="category"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("category")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="property"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("property")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="priority"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("priority")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="state"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
+                {t("state")}
+              </SortableHeader>
+              <SortableHeader
+                sortKey="reportedAt"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              >
                 {t("reportedAt")}
               </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">

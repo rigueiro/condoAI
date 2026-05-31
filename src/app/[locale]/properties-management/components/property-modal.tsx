@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, ChangeEvent } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
@@ -15,6 +15,22 @@ interface PropertyModalProps {
   property?: Property; // If editing, the existing property data
 }
 
+const buildFormData = (property?: Property): Property => ({
+  id: "",
+  lastUpdated: "",
+  name: property?.name ?? "",
+  address: property?.address ?? "",
+  totalUnits: property?.totalUnits ?? 0,
+  occupiedUnits: property?.occupiedUnits ?? 0,
+  monthlyFeeRange: property?.monthlyFeeRange ?? "",
+  averageFee: property?.averageFee ?? 0,
+  collectionRate: property?.collectionRate ?? 0,
+  amenities: property?.amenities || [],
+  buildingType: property?.buildingType ?? "",
+  yearBuilt: property?.yearBuilt ?? 0,
+  status: property?.status || "Active",
+});
+
 function PropertyModal({
   isOpen,
   onClose,
@@ -22,23 +38,20 @@ function PropertyModal({
   property,
 }: PropertyModalProps) {
   const t = useTranslations("propertiesManagement.modal");
-  const [formData, setFormData] = useState<Property>({
-    id: "",
-    name: "",
-    address: "",
-    totalUnits: 0,
-    occupiedUnits: 0,
-    monthlyFeeRange: "",
-    averageFee: 0,
-    collectionRate: 0,
-    amenities: [],
-    buildingType: "",
-    yearBuilt: 0,
-    status: "Active",
-    lastUpdated: "",
-  });
+  const [formData, setFormData] = useState<Property>(() =>
+    buildFormData(property),
+  );
 
   const [errors, setErrors] = useState<Errors>({});
+
+  // Reset the form whenever the modal opens or targets a different property,
+  // adjusting state during render instead of in an effect.
+  const [syncKey, setSyncKey] = useState({ property, isOpen });
+  if (syncKey.property !== property || syncKey.isOpen !== isOpen) {
+    setSyncKey({ property, isOpen });
+    setFormData(buildFormData(property));
+    setErrors({});
+  }
 
   const amenityOptions: { key: string; value: string }[] = [
     { key: "swimmingPool", value: "Swimming Pool" },
@@ -68,43 +81,6 @@ function PropertyModal({
     { key: "inactive", value: "Inactive" },
     { key: "underConstruction", value: "Under Construction" },
   ];
-
-  useEffect(() => {
-    if (property) {
-      setFormData({
-        id: "",
-        lastUpdated: "",
-        name: property.name,
-        address: property.address,
-        totalUnits: property.totalUnits,
-        occupiedUnits: property.occupiedUnits,
-        monthlyFeeRange: property.monthlyFeeRange,
-        averageFee: property.averageFee,
-        collectionRate: property.collectionRate,
-        amenities: property.amenities || [],
-        buildingType: property.buildingType,
-        yearBuilt: property.yearBuilt,
-        status: property.status || "Active",
-      });
-    } else {
-      setFormData({
-        id: "",
-        lastUpdated: "",
-        name: "",
-        address: "",
-        totalUnits: 0,
-        occupiedUnits: 0,
-        monthlyFeeRange: "",
-        averageFee: 0,
-        collectionRate: 0,
-        amenities: [],
-        buildingType: "",
-        yearBuilt: 0,
-        status: "Active",
-      });
-    }
-    setErrors({});
-  }, [property, isOpen]);
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,

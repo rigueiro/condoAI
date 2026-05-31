@@ -98,7 +98,7 @@ function PaymentFilters({
     const end = new Date().toISOString().split("T")[0];
     const start =
       days > 0
-        ? new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+        ? new Date(new Date().getTime() - days * 24 * 60 * 60 * 1000)
             .toISOString()
             .split("T")[0]
         : end;

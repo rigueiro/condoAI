@@ -5,7 +5,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
 } from "react";
 import {
   DEFAULT_THEME,
@@ -34,9 +34,6 @@ const getSystemTheme = (): ResolvedTheme => {
     : "light";
 };
 
-const resolveTheme = (theme: Theme): ResolvedTheme =>
-  theme === "system" ? getSystemTheme() : theme;
-
 const applyTheme = (resolved: ResolvedTheme): void => {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
@@ -44,36 +41,54 @@ const applyTheme = (resolved: ResolvedTheme): void => {
   root.style.colorScheme = resolved;
 };
 
+// Local listeners so an in-app `setTheme` call notifies `useSyncExternalStore`
+// subscribers (the native `storage` event only fires across tabs).
+const themeListeners = new Set<() => void>();
+
+const subscribeTheme = (onChange: () => void): (() => void) => {
+  themeListeners.add(onChange);
+  if (typeof window !== "undefined") {
+    window.addEventListener("storage", onChange);
+  }
+  return () => {
+    themeListeners.delete(onChange);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("storage", onChange);
+    }
+  };
+};
+
+const subscribeSystemTheme = (onChange: () => void): (() => void) => {
+  if (typeof window === "undefined") return () => {};
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+};
+
 interface ThemeProviderProps {
   children: ReactNode;
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
+  const theme = useSyncExternalStore(
+    subscribeTheme,
+    readStoredTheme,
+    () => DEFAULT_THEME,
+  );
+  const systemTheme = useSyncExternalStore(
+    subscribeSystemTheme,
+    getSystemTheme,
+    () => "light" as ResolvedTheme,
+  );
+
+  const resolvedTheme: ResolvedTheme =
+    theme === "system" ? systemTheme : theme;
 
   useEffect(() => {
-    const stored = readStoredTheme();
-    const resolved = resolveTheme(stored);
-    setThemeState(stored);
-    setResolvedTheme(resolved);
-    applyTheme(resolved);
-  }, []);
-
-  useEffect(() => {
-    if (theme !== "system" || typeof window === "undefined") return;
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (event: MediaQueryListEvent) => {
-      const next: ResolvedTheme = event.matches ? "dark" : "light";
-      setResolvedTheme(next);
-      applyTheme(next);
-    };
-    media.addEventListener("change", handler);
-    return () => media.removeEventListener("change", handler);
-  }, [theme]);
+    applyTheme(resolvedTheme);
+  }, [resolvedTheme]);
 
   const setTheme = useCallback((next: Theme) => {
-    setThemeState(next);
     if (typeof window !== "undefined") {
       try {
         window.localStorage.setItem(THEME_STORAGE_KEY, next);
@@ -81,9 +96,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         // Storage may be unavailable (private mode, etc.); ignore silently.
       }
     }
-    const resolved = resolveTheme(next);
-    setResolvedTheme(resolved);
-    applyTheme(resolved);
+    themeListeners.forEach((listener) => listener());
   }, []);
 
   const value = useMemo<ThemeContextValue>(

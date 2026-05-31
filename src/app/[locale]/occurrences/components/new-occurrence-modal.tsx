@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  ChangeEvent,
-  SyntheticEvent,
-  JSX,
-} from "react";
+import React, { useState, ChangeEvent, SyntheticEvent, JSX } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
@@ -68,24 +62,22 @@ function NewOccurrenceModal({
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
 
-  const [formData, setFormData] = useState<FormState>(emptyForm);
+  const [formData, setFormData] = useState<FormState>(() =>
+    occurrence
+      ? {
+          title: occurrence.title || "",
+          description: occurrence.description || "",
+          category: occurrence.category || "MAINTENANCE",
+          propertyId: occurrence.propertyId || "",
+          unit: occurrence.unit || "",
+          reportedBy: occurrence.reportedBy || "",
+          assignedTo: occurrence.assignedTo || "",
+          priority: occurrence.priority || "MEDIUM",
+          state: occurrence.state || "Open",
+        }
+      : emptyForm,
+  );
   const [errors, setErrors] = useState<Errors>({});
-
-  useEffect(() => {
-    if (occurrence) {
-      setFormData({
-        title: occurrence.title || "",
-        description: occurrence.description || "",
-        category: occurrence.category || "MAINTENANCE",
-        propertyId: occurrence.propertyId || "",
-        unit: occurrence.unit || "",
-        reportedBy: occurrence.reportedBy || "",
-        assignedTo: occurrence.assignedTo || "",
-        priority: occurrence.priority || "MEDIUM",
-        state: occurrence.state || "Open",
-      });
-    }
-  }, [occurrence]);
 
   const validateForm = () => {
     const newErrors: Errors = {};

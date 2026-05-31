@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "../icon";
+import Image from "@/components/image";
 import { Link } from "@/i18n/navigation";
 import type { User } from "@/app/types";
 
@@ -100,7 +101,7 @@ function UserProfileDropdown({
       >
         <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
           {displayUser.avatar ? (
-            <img
+            <Image
               src={displayUser.avatar}
               alt={displayUser.name}
               className="w-8 h-8 rounded-full object-cover"
@@ -128,7 +129,7 @@ function UserProfileDropdown({
             <div className="flex items-center space-x-3 overflow-hidden">
               <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-medium">
                 {displayUser.avatar ? (
-                  <img
+                  <Image
                     src={displayUser.avatar}
                     alt={displayUser.name}
                     className="w-10 h-10 rounded-full object-cover"

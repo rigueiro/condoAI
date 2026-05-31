@@ -18,14 +18,14 @@ function ReportsAnalytics() {
   const t = useTranslations("reportsAnalytics");
   //TODO const { data, error } = useSWR("/api/reports/analytics");
 
-  const [filters, setFilters] = useState<Filters>({
+  const [filters, setFilters] = useState<Filters>(() => ({
     dateRange: {
       start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // Last year
       end: new Date(),
     },
     selectedProperties: [],
     reportType: "financial-summary",
-  });
+  }));
 
   const [reportData, setReportData] = useState({
     financialSummary: {

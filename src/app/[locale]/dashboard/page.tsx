@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import { useUser } from "@/lib/auth";
@@ -32,6 +32,9 @@ function Dashboard() {
   const { formatCurrency } = useFormatCurrency();
   const user = useUser();
   // TODO const { data, error } = useSWR("/api/dashboard", fetcher);
+
+  // Stable reference time captured once so mock timestamps stay idempotent across renders.
+  const [now] = useState(() => Date.now());
 
   // Mock dashboard data
   const dashboardStats = {
@@ -67,7 +70,7 @@ function Dashboard() {
       title: t("mockActivities.paymentReceived"),
       description: "Unit 4B - Oceanview Towers - Monthly Fee",
       amount: 2500,
-      timestamp: new Date(Date.now() - 300000),
+      timestamp: new Date(now - 300000),
       icon: "CreditCard",
       iconColor: "var(--color-success)",
     },
@@ -76,7 +79,7 @@ function Dashboard() {
       type: "owner",
       title: t("mockActivities.newOwner"),
       description: "Michael Chen - Unit 7A - Sunset Gardens",
-      timestamp: new Date(Date.now() - 1800000),
+      timestamp: new Date(now - 1800000),
       icon: "UserPlus",
       iconColor: "var(--color-primary)",
     },
@@ -85,7 +88,7 @@ function Dashboard() {
       type: "property",
       title: t("mockActivities.propertyUpdated"),
       description: "Marina Heights - Amenities information updated",
-      timestamp: new Date(Date.now() - 3600000),
+      timestamp: new Date(now - 3600000),
       icon: "Building2",
       iconColor: "var(--color-accent)",
     },
@@ -94,7 +97,7 @@ function Dashboard() {
       type: "payment",
       title: t("mockActivities.paymentOverdue"),
       description: "Unit 2C - Parkview Complex - 15 days overdue",
-      timestamp: new Date(Date.now() - 7200000),
+      timestamp: new Date(now - 7200000),
       icon: "AlertTriangle",
       iconColor: "var(--color-warning)",
     },
@@ -103,7 +106,7 @@ function Dashboard() {
       type: "maintenance",
       title: t("mockActivities.maintenanceRequest"),
       description: "Elevator service scheduled - Tower A",
-      timestamp: new Date(Date.now() - 10800000),
+      timestamp: new Date(now - 10800000),
       icon: "Wrench",
       iconColor: "var(--color-secondary)",
     },
@@ -116,7 +119,7 @@ function Dashboard() {
       unit: "3A",
       property: "Oceanview Towers",
       amount: 2500,
-      dueDate: new Date(Date.now() + 86400000 * 3),
+      dueDate: new Date(now + 86400000 * 3),
       status: PaymentStatus.Pending,
     },
     {
@@ -125,7 +128,7 @@ function Dashboard() {
       unit: "5B",
       property: "Marina Heights",
       amount: 3200,
-      dueDate: new Date(Date.now() + 86400000 * 5),
+      dueDate: new Date(now + 86400000 * 5),
       status: PaymentStatus.Paid,
     },
     {
@@ -134,7 +137,7 @@ function Dashboard() {
       unit: "1C",
       property: "Sunset Gardens",
       amount: 1800,
-      dueDate: new Date(Date.now() - 86400000 * 2),
+      dueDate: new Date(now - 86400000 * 2),
       status: PaymentStatus.Overdue,
     },
     {
@@ -143,7 +146,7 @@ function Dashboard() {
       unit: "8A",
       property: "Parkview Complex",
       amount: 2100,
-      dueDate: new Date(Date.now() + 86400000 * 7),
+      dueDate: new Date(now + 86400000 * 7),
       status: PaymentStatus.Pending,
     },
   ];

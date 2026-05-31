@@ -1,5 +1,5 @@
 import Icon from "@/components/icon";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import {
@@ -43,18 +43,21 @@ function CollectionAnalytics({
   const tStatus = useTranslations("paymentTracking.status");
   const tMethods = useTranslations("paymentTracking.paymentMethods");
 
-  const translateMethod = (method: string) => {
-    const keyMap: Record<string, string> = {
-      "Bank Transfer": "bankTransfer",
-      "Credit Card": "creditCard",
-      Check: "check",
-      Cash: "cash",
-      Online: "online",
-      "Online Payment": "onlinePayment",
-    };
-    const key = keyMap[method];
-    return key ? tMethods(key as "bankTransfer") : method;
-  };
+  const translateMethod = useCallback(
+    (method: string) => {
+      const keyMap: Record<string, string> = {
+        "Bank Transfer": "bankTransfer",
+        "Credit Card": "creditCard",
+        Check: "check",
+        Cash: "cash",
+        Online: "online",
+        "Online Payment": "onlinePayment",
+      };
+      const key = keyMap[method];
+      return key ? tMethods(key as "bankTransfer") : method;
+    },
+    [tMethods],
+  );
 
   const { formatCurrency } = useFormatCurrency();
 
@@ -95,7 +98,7 @@ function CollectionAnalytics({
       value: count,
       color: colors[method] ?? "#6B7280",
     }));
-  }, [paymentHistory, tMethods]);
+  }, [paymentHistory, translateMethod]);
 
   // Payment status distribution
   const statusDistribution = useMemo(() => {
