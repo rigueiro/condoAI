@@ -42,6 +42,12 @@ function Header() {
         tooltip: t("nav.paymentsTooltip"),
       },
       {
+        label: t("nav.occurrences"),
+        path: "/occurrences",
+        icon: "ClipboardList",
+        tooltip: t("nav.occurrencesTooltip"),
+      },
+      {
         label: t("nav.reports"),
         path: "/reports-analytics",
         icon: "BarChart3",

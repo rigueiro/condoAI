@@ -21,6 +21,9 @@ import { mockOccurrences } from "@/app/[locale]/occurrences/__fixtures__/mock-oc
 
 function PropertyDetailPage() {
   const t = useTranslations("propertiesManagement.detail");
+  const tOccCategory = useTranslations("occurrences.categories");
+  const tOccState = useTranslations("occurrences.states");
+  const tOccPriority = useTranslations("occurrences.priorities");
   const { formatPriceString } = useFormatCurrency();
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
@@ -192,30 +195,32 @@ function PropertyDetailPage() {
                   ) : (
                     <ul className="divide-y divide-border-light">
                       {propertyOccurrences.map((occ) => (
-                        <li
-                          key={occ.id}
-                          className="px-6 py-4 hover:bg-secondary-50 transition-smooth"
-                        >
+                        <li key={occ.id}>
+                          <Link
+                            href={`/occurrences/${occ.id}`}
+                            className="block px-6 py-4 hover:bg-secondary-50 transition-smooth"
+                          >
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div>
                               <p className="font-medium text-text-primary">
                                 {occ.title}
                               </p>
                               <p className="text-sm text-text-secondary">
-                                {occ.category} •{" "}
+                                {tOccCategory(occ.category)} •{" "}
                                 {t("unit", { unit: occ.unit ?? "—" })} •{" "}
                                 {occ.reportedAt}
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-medium text-text-secondary">
-                                {occ.priority}
+                                {tOccPriority(occ.priority)}
                               </span>
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-text-primary">
-                                {occ.state}
+                                {tOccState(occ.state)}
                               </span>
                             </div>
                           </div>
+                          </Link>
                         </li>
                       ))}
                     </ul>

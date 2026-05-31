@@ -68,19 +68,31 @@ export enum AnnouncementType {
   Event = "EVENT",
 }
 
+export interface OccurrenceComment {
+  id: string;
+  author: string;
+  message: string;
+  createdAt: string; // ISO date
+}
+
+export type OccurrenceStateKey = keyof typeof OccurrenceState;
+export type OccurrencePriorityValue = `${OccurrencePriority}`;
+export type OccurrenceCategoryValue = `${OccurrenceCategory}`;
+
 export interface Occurrence {
   id: string;
   name?: string;
   propertyId?: string;
+  property?: string; // Property name for display
   title: string; // e.g., "Leak in bathroom ceiling"
   description: string;
-  category: string; // e.g., "Plumbing", "Noise Complaint", "Parking Violation"
+  category: OccurrenceCategoryValue; // e.g., "MAINTENANCE", "NOISE"
   unit?: string; // Unit number or apartment ID
   reportedBy: string; // User ID or name
   reportedAt: string; // ISO date
-  state: keyof typeof OccurrenceState;
-  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+  state: OccurrenceStateKey;
+  priority: OccurrencePriorityValue;
   assignedTo?: string; // Staff/maintenance user ID
   photos?: string[]; // Array of image URLs
-  comments?: Comment[]; // Internal + resident visible comments
+  comments?: OccurrenceComment[]; // Internal + resident visible comments
 }

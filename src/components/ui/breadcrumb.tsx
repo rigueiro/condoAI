@@ -17,6 +17,7 @@ function Breadcrumb() {
     },
     "/owners-management": { labelKey: "owners" as const, parent: "/dashboard" },
     "/payment-tracking": { labelKey: "payments" as const, parent: "/dashboard" },
+    "/occurrences": { labelKey: "occurrences" as const, parent: "/dashboard" },
     "/reports-analytics": { labelKey: "reports" as const, parent: "/dashboard" },
     "/profile": { labelKey: "profile" as const, parent: "/dashboard" },
     "/account": { labelKey: "account" as const, parent: "/dashboard" },
@@ -49,6 +50,17 @@ function Breadcrumb() {
           isActive: false,
         },
         { label: t("ownerDetail"), path, isActive: true },
+      ];
+    }
+
+    if (path.startsWith("/occurrences/") && path !== "/occurrences") {
+      return [
+        {
+          label: t("occurrences"),
+          path: "/occurrences",
+          isActive: false,
+        },
+        { label: t("occurrenceDetail"), path, isActive: true },
       ];
     }
 
