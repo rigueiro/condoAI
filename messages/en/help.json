@@ -44,7 +44,7 @@
     "items": {
       "resetPassword": {
         "question": "How do I reset my password?",
-        "answer": "Open your profile settings and use the security section to set a new password. If you forgot the current one, use the \"Forgot password\" link on the sign-in page and follow the email instructions."
+        "answer": "If you are signed in, open Profile → Security and set a new password. If you forgot it, use \"Forgot your password?\" on the sign-in page, enter your email, and follow the reset link (it expires in one hour)."
       },
       "inviteTeam": {
         "question": "How do I invite team members?",

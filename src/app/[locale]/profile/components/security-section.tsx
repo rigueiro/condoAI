@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
+import { MIN_PASSWORD_LENGTH, useAuth } from "@/lib/auth";
 
 type Field = "currentPassword" | "newPassword" | "confirmPassword";
 
@@ -19,6 +20,8 @@ const INITIAL_STATE: FormState = {
 function SecuritySection() {
   const t = useTranslations("profile.security");
   const tVal = useTranslations("profile.security.validation");
+  const tAuth = useTranslations("auth");
+  const { changePassword } = useAuth();
 
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -29,6 +32,7 @@ function SecuritySection() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
   const handleField = (field: Field, value: string) => {
@@ -37,6 +41,7 @@ function SecuritySection() {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
     if (successMessage) setSuccessMessage(null);
+    if (formError) setFormError(null);
   };
 
   const toggleVisibility = (field: Field) => {
@@ -50,8 +55,8 @@ function SecuritySection() {
     }
     if (!form.newPassword) {
       next.newPassword = tVal("newRequired");
-    } else if (form.newPassword.length < 8) {
-      next.newPassword = tVal("tooShort");
+    } else if (form.newPassword.length < MIN_PASSWORD_LENGTH) {
+      next.newPassword = tVal("tooShort", { min: MIN_PASSWORD_LENGTH });
     } else if (form.newPassword === form.currentPassword) {
       next.newPassword = tVal("sameAsCurrent");
     }
@@ -66,10 +71,21 @@ function SecuritySection() {
     event.preventDefault();
     if (!validate()) return;
     setIsSaving(true);
+    setFormError(null);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await changePassword(form.currentPassword, form.newPassword);
       setForm(INITIAL_STATE);
       setSuccessMessage(t("passwordUpdated"));
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "passwordChangeFailed";
+      if (message === "incorrectCurrentPassword") {
+        setErrors({ currentPassword: tAuth("incorrectCurrentPassword") });
+      } else if (message === "sameAsCurrentPassword") {
+        setErrors({ newPassword: tAuth("sameAsCurrentPassword") });
+      } else {
+        setFormError(tAuth("passwordChangeFailed"));
+      }
     } finally {
       setIsSaving(false);
     }
@@ -128,7 +144,7 @@ function SecuritySection() {
 
         <p className="mt-3 text-xs text-text-secondary flex items-start gap-1.5">
           <Icon name="Info" size={14} className="mt-0.5 flex-shrink-0" />
-          <span>{t("passwordHint")}</span>
+          <span>{t("passwordHint", { min: MIN_PASSWORD_LENGTH })}</span>
         </p>
 
         {successMessage && (
@@ -139,6 +155,13 @@ function SecuritySection() {
               color="var(--color-success)"
             />
             <span className="text-sm text-success">{successMessage}</span>
+          </div>
+        )}
+
+        {formError && (
+          <div className="mt-4 p-3 bg-error-50 border border-error-100 rounded-lg flex items-center gap-2">
+            <Icon name="AlertCircle" size={16} color="var(--color-error)" />
+            <span className="text-sm text-error">{formError}</span>
           </div>
         )}
 

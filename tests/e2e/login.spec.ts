@@ -77,7 +77,7 @@ test.describe("Login page", () => {
     await page.getByRole("button", { name: "Entrar" }).click();
 
     await expect(
-      page.getByText("A senha deve ter pelo menos 6 caracteres"),
+      page.getByText("A senha deve ter pelo menos 8 caracteres"),
     ).toBeVisible();
   });
 

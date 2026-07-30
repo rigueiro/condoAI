@@ -47,7 +47,7 @@
     "currentPassword": "Current password",
     "newPassword": "New password",
     "confirmPassword": "Confirm new password",
-    "passwordHint": "Use at least 8 characters with a mix of letters and numbers.",
+    "passwordHint": "Use at least {min} characters with a mix of letters and numbers.",
     "changePassword": "Update password",
     "updating": "Updating...",
     "passwordUpdated": "Your password has been updated.",
@@ -63,7 +63,7 @@
     "validation": {
       "currentRequired": "Current password is required",
       "newRequired": "New password is required",
-      "tooShort": "Password must be at least 8 characters",
+      "tooShort": "Password must be at least {min} characters",
       "noMatch": "Passwords do not match",
       "sameAsCurrent": "New password must be different from the current one"
     }

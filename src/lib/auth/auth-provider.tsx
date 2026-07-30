@@ -8,24 +8,39 @@ import {
   useState,
 } from "react";
 import type { User } from "@/app/types";
-import { AuthContext, type AuthContextValue } from "./auth-context";
+import {
+  AuthContext,
+  type AuthContextValue,
+  type PasswordResetRequestResult,
+} from "./auth-context";
+import {
+  changeStoredPassword,
+  consumeResetToken,
+  createResetToken,
+  DEMO_EMAIL,
+  isKnownAccount,
+  peekResetToken,
+  verifyCredentials,
+} from "./credentials";
 
 const STORAGE_KEY = "condoai.user";
 const SESSION_STORAGE_KEY = "condoai.user.session";
 
 const DEMO_USER: User = {
   id: "1",
-  email: "admin@condoai.pt",
+  email: DEMO_EMAIL,
   name: "Rafael Rigueiro",
   role: "Property Manager",
   avatar: null,
 };
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const simulateLogin = (email: string, password: string): Promise<User> =>
   new Promise((resolve, reject) => {
     setTimeout(() => {
-      if (email === "admin@condoai.pt" && password === "admin123") {
-        resolve({ ...DEMO_USER, email });
+      if (verifyCredentials(email, password)) {
+        resolve({ ...DEMO_USER, email: email.trim().toLowerCase() });
       } else {
         reject(new Error("invalidCredentials"));
       }
@@ -139,11 +154,72 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (!current) {
         throw new Error("notAuthenticated");
       }
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await delay(300);
       const next: User = { ...current, ...updates, id: current.id };
       setUser(next);
       persistUpdatedUser(next);
       return next;
+    },
+    [],
+  );
+
+  /**
+   * Always resolves for valid email format callers — never reveals whether
+   * the account exists. Demo accounts also get a one-time token so the
+   * reset can continue without a real mailer.
+   */
+  const requestPasswordReset = useCallback(
+    async (email: string): Promise<PasswordResetRequestResult> => {
+      setError(null);
+      await delay(700);
+      if (!isKnownAccount(email)) {
+        return {};
+      }
+      const record = createResetToken(email);
+      return { demoResetToken: record.token };
+    },
+    [],
+  );
+
+  const validateResetToken = useCallback(
+    async (token: string): Promise<{ email: string }> => {
+      await delay(200);
+      return peekResetToken(token);
+    },
+    [],
+  );
+
+  const resetPassword = useCallback(
+    async (token: string, newPassword: string): Promise<void> => {
+      setError(null);
+      try {
+        await delay(500);
+        consumeResetToken(token, newPassword);
+        // Force re-login with the new password.
+        setUser(null);
+        clearStoredUser();
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "passwordResetFailed";
+        setError(message);
+        throw err;
+      }
+    },
+    [],
+  );
+
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string): Promise<void> => {
+      setError(null);
+      try {
+        await delay(500);
+        changeStoredPassword(currentPassword, newPassword);
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "passwordChangeFailed";
+        setError(message);
+        throw err;
+      }
     },
     [],
   );
@@ -157,8 +233,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
       login,
       logout,
       updateUser,
+      requestPasswordReset,
+      validateResetToken,
+      resetPassword,
+      changePassword,
     }),
-    [user, isLoading, error, login, logout, updateUser],
+    [
+      user,
+      isLoading,
+      error,
+      login,
+      logout,
+      updateUser,
+      requestPasswordReset,
+      validateResetToken,
+      resetPassword,
+      changePassword,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

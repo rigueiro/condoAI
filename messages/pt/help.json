@@ -44,7 +44,7 @@
     "items": {
       "resetPassword": {
         "question": "Como redefino a minha palavra-passe?",
-        "answer": "Abra as definições de perfil e utilize a secção de segurança para definir uma nova palavra-passe. Se esqueceu a atual, utilize o link \"Esqueci-me da palavra-passe\" na página de início de sessão e siga as instruções por email."
+        "answer": "Se estiver autenticado, abra Perfil → Segurança e defina uma nova palavra-passe. Se a esqueceu, use \"Esqueceu a senha?\" na página de início de sessão, introduza o email e siga o link de recuperação (expira em uma hora)."
       },
       "inviteTeam": {
         "question": "Como convido membros da equipa?",

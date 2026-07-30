@@ -8,11 +8,10 @@
   "passwordLabel": "Password",
   "passwordPlaceholder": "Enter your password",
   "passwordRequired": "Password is required",
-  "passwordMinLength": "Password must be at least 6 characters",
+  "passwordMinLength": "Password must be at least {min} characters",
   "forgotPassword": "Forgot your password?",
   "rememberMe": "Remember me",
   "signInButton": "Sign In",
   "signingInButton": "Signing in...",
-  "forgotPasswordAlert": "Password reset functionality would be implemented here. For demo, use: admin@condoai.pt / admin123",
   "footer": "© {year} CondoAI. All rights reserved."
 }

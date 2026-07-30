@@ -47,7 +47,7 @@
     "currentPassword": "Palavra-passe atual",
     "newPassword": "Nova palavra-passe",
     "confirmPassword": "Confirmar nova palavra-passe",
-    "passwordHint": "Use pelo menos 8 caracteres com letras e números.",
+    "passwordHint": "Use pelo menos {min} caracteres com letras e números.",
     "changePassword": "Atualizar palavra-passe",
     "updating": "A atualizar...",
     "passwordUpdated": "A sua palavra-passe foi atualizada.",
@@ -63,7 +63,7 @@
     "validation": {
       "currentRequired": "A palavra-passe atual é obrigatória",
       "newRequired": "A nova palavra-passe é obrigatória",
-      "tooShort": "A palavra-passe tem de ter pelo menos 8 caracteres",
+      "tooShort": "A palavra-passe tem de ter pelo menos {min} caracteres",
       "noMatch": "As palavras-passe não coincidem",
       "sameAsCurrent": "A nova palavra-passe tem de ser diferente da atual"
     }
