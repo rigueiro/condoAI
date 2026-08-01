@@ -15,4 +15,10 @@ export type Owner = {
   joinDate: string; // ISO date string
   emergencyContact?: string;
   monthlyFee?: string;
+  /** Owner NIF (from domain) */
+  taxId?: string;
+  /** Unit permillage (‰) */
+  unitPermillage?: number;
+  /** Auto-calculated monthly quota in EUR */
+  monthlyQuota?: number;
 };

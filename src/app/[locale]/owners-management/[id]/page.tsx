@@ -213,6 +213,14 @@ function OwnerDetailPage() {
                       </dd>
                     </div>
                   )}
+                  {owner.taxId && (
+                    <div>
+                      <dt className="text-text-secondary">{t("taxId")}</dt>
+                      <dd className="font-medium text-text-primary">
+                        {owner.taxId}
+                      </dd>
+                    </div>
+                  )}
                   {owner.emergencyContact && (
                     <div>
                       <dt className="text-text-secondary">
@@ -229,6 +237,14 @@ function OwnerDetailPage() {
                       {owner.unit}
                     </dd>
                   </div>
+                  {owner.unitPermillage != null && (
+                    <div>
+                      <dt className="text-text-secondary">{t("permillage")}</dt>
+                      <dd className="font-medium text-text-primary">
+                        {owner.unitPermillage}‰
+                      </dd>
+                    </div>
+                  )}
                   <div>
                     <dt className="text-text-secondary">{t("property")}</dt>
                     <dd>
@@ -246,11 +262,13 @@ function OwnerDetailPage() {
                       {owner.joinDate}
                     </dd>
                   </div>
-                  {owner.monthlyFee && (
+                  {(owner.monthlyQuota != null || owner.monthlyFee) && (
                     <div>
                       <dt className="text-text-secondary">{t("monthlyFee")}</dt>
                       <dd className="font-medium text-text-primary">
-                        {owner.monthlyFee}
+                        {owner.monthlyQuota != null
+                          ? formatCurrency(owner.monthlyQuota)
+                          : owner.monthlyFee}
                       </dd>
                     </div>
                   )}

@@ -23,11 +23,10 @@ function PropertyFilters({
   const t = useTranslations("propertiesManagement.filters");
   const locationOptions = [
     { value: "", label: t("allLocations") },
-    { value: "downtown", label: t("locations.downtown") },
-    { value: "riverside", label: t("locations.riverside") },
-    { value: "green valley", label: t("locations.greenValley") },
-    { value: "business", label: t("locations.business") },
-    { value: "lakeside", label: t("locations.lakeside") },
+    { value: "lisboa", label: t("locations.lisboa") },
+    { value: "cascais", label: t("locations.cascais") },
+    { value: "porto", label: t("locations.porto") },
+    { value: "matosinhos", label: t("locations.matosinhos") },
   ];
 
   const unitRangeOptions = [

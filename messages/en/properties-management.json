@@ -26,11 +26,10 @@
     "chipLocation": "Location:",
     "chipSize": "Size:",
     "locations": {
-      "downtown": "Downtown District",
-      "riverside": "Riverside District",
-      "greenValley": "Green Valley",
-      "business": "Business District",
-      "lakeside": "Lakeside"
+      "lisboa": "Lisboa",
+      "cascais": "Cascais",
+      "porto": "Porto",
+      "matosinhos": "Matosinhos"
     },
     "sizes": {
       "small": "Small (≤30 units)",
@@ -172,6 +171,8 @@
     "summary": "Summary",
     "propertyInfo": "Property information",
     "address": "Address",
+    "taxId": "Tax ID (NIF)",
+    "permillage": "Total permillage",
     "buildingType": "Building type",
     "yearBuilt": "Year built",
     "statistics": "Statistics",

@@ -3,12 +3,12 @@ import { Link } from "@/i18n/navigation";
 import React from "react";
 import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
-import { Property } from "../types";
+import { Property, SortConfig } from "../types";
 
 interface PropertyTableProps {
   properties: Property[];
   sortConfig: { key: string; direction: "asc" | "desc" };
-  onSort: (key: keyof Property) => void;
+  onSort: (key: SortConfig["key"]) => void;
   selectedProperties: string[];
   onSelectProperty: (id: string) => void;
   onSelectAll: () => void;

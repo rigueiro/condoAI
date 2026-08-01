@@ -5,6 +5,7 @@ import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import Select from "@/components/ui/select";
+import { mockOwners } from "@/fixtures/views";
 
 type ErrorsType = { [key: string]: string };
 
@@ -52,26 +53,16 @@ function RecordPaymentModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Mock data for dropdowns
-  const properties = [
-    "Oceanview Towers",
-    "Marina Heights",
-    "Sunset Gardens",
-    "Parkview Complex",
-    "City Center Condos",
-    "Riverside Plaza",
-  ];
+  const properties = mockOwners.map((o) => o.property).filter(
+    (name, index, arr) => arr.indexOf(name) === index,
+  );
 
-
-
-  // Mock owners data
-  const owners = [
-    { name: "Jennifer Martinez", property: "Oceanview Towers", unit: "4B" },
-    { name: "Michael Chen", property: "Marina Heights", unit: "7A" },
-    { name: "Sarah Williams", property: "Sunset Gardens", unit: "2C" },
-    { name: "Robert Kim", property: "Parkview Complex", unit: "5B" },
-    { name: "Lisa Thompson", property: "City Center Condos", unit: "1C" },
-    { name: "David Wilson", property: "Riverside Plaza", unit: "8A" },
-  ];
+  // Mock owners data from domain fixtures
+  const owners = mockOwners.map((o) => ({
+    name: o.name,
+    property: o.property,
+    unit: o.unit,
+  }));
 
   useEffect(() => {
     if (isOpen) {

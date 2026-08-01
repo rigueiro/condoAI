@@ -26,11 +26,10 @@
     "chipLocation": "Local:",
     "chipSize": "Tamanho:",
     "locations": {
-      "downtown": "Centro",
-      "riverside": "Ribeira",
-      "greenValley": "Vale Verde",
-      "business": "Zona empresarial",
-      "lakeside": "Margem do lago"
+      "lisboa": "Lisboa",
+      "cascais": "Cascais",
+      "porto": "Porto",
+      "matosinhos": "Matosinhos"
     },
     "sizes": {
       "small": "Pequeno (≤30 frações)",
@@ -172,6 +171,8 @@
     "summary": "Resumo",
     "propertyInfo": "Informação do condomínio",
     "address": "Morada",
+    "taxId": "NIF",
+    "permillage": "Permilagem total",
     "buildingType": "Tipo de edifício",
     "yearBuilt": "Ano de construção",
     "statistics": "Estatísticas",

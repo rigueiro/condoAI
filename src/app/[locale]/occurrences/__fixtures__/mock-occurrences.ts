@@ -1,16 +1,20 @@
 import { Occurrence } from "../types";
+import { mockCondominiums } from "@/fixtures/domain";
+
+const condoName = (id: string) =>
+  mockCondominiums.find((c) => c.id === id)?.name ?? id;
 
 export const mockOccurrences: Occurrence[] = [
   {
     id: "1",
     propertyId: "1",
-    property: "Sunset Gardens Condominiums",
+    property: condoName("1"),
     title: "Leak in bathroom ceiling",
     description:
       "Water dripping from the ceiling in the second-floor bathroom, likely coming from the unit above.",
     category: "LEAK_WATER_DAMAGE",
-    unit: "22",
-    reportedBy: "Maria Santos",
+    unit: "A-101",
+    reportedBy: "Ana Sofia Martins",
     reportedAt: "2025-09-12",
     state: "InProgress",
     priority: "HIGH",
@@ -19,7 +23,7 @@ export const mockOccurrences: Occurrence[] = [
     comments: [
       {
         id: "c1",
-        author: "Maria Santos",
+        author: "Ana Sofia Martins",
         message: "Getting worse since yesterday, please send someone soon.",
         createdAt: "2025-09-12",
       },
@@ -34,13 +38,13 @@ export const mockOccurrences: Occurrence[] = [
   {
     id: "2",
     propertyId: "2",
-    property: "Riverside Towers",
+    property: condoName("2"),
     title: "Elevator out of service",
     description:
       "Main elevator stuck on the ground floor and not responding to calls.",
     category: "ELEVATOR",
     unit: "Lobby",
-    reportedBy: "João Pereira",
+    reportedBy: "João Pedro Fernandes",
     reportedAt: "2025-09-20",
     state: "Open",
     priority: "URGENT",
@@ -51,13 +55,13 @@ export const mockOccurrences: Occurrence[] = [
   {
     id: "3",
     propertyId: "1",
-    property: "Sunset Gardens Condominiums",
+    property: condoName("1"),
     title: "Loud music after midnight",
     description:
-      "Repeated noise complaints about unit 14 playing loud music late at night.",
+      "Repeated noise complaints about unit C-302 playing loud music late at night.",
     category: "NOISE",
-    unit: "14",
-    reportedBy: "Ana Costa",
+    unit: "C-302",
+    reportedBy: "Ricardo Jorge Almeida",
     reportedAt: "2025-09-18",
     state: "Acknowledged",
     priority: "MEDIUM",
@@ -68,13 +72,13 @@ export const mockOccurrences: Occurrence[] = [
   {
     id: "4",
     propertyId: "4",
-    property: "Metropolitan Heights",
+    property: condoName("4"),
     title: "Car parked in reserved spot",
     description:
-      "An unidentified vehicle is repeatedly parking in the spot assigned to unit 31.",
+      "An unidentified vehicle is repeatedly parking in the spot assigned to unit D-150.",
     category: "PARKING",
-    unit: "31",
-    reportedBy: "Carlos Mendes",
+    unit: "D-150",
+    reportedBy: "Carlos Manuel Sousa",
     reportedAt: "2025-09-15",
     state: "WaitingForResident",
     priority: "LOW",
@@ -85,7 +89,7 @@ export const mockOccurrences: Occurrence[] = [
   {
     id: "5",
     propertyId: "3",
-    property: "Green Valley Residences",
+    property: condoName("3"),
     title: "Broken light in parking garage",
     description:
       "Several lights in the underground garage are out, making it unsafe at night.",
@@ -102,7 +106,7 @@ export const mockOccurrences: Occurrence[] = [
   {
     id: "6",
     propertyId: "5",
-    property: "Lakeside Commons",
+    property: condoName("5"),
     title: "Front gate not locking",
     description:
       "The main pedestrian gate does not lock properly, leaving the building accessible.",
@@ -119,13 +123,13 @@ export const mockOccurrences: Occurrence[] = [
   {
     id: "7",
     propertyId: "2",
-    property: "Riverside Towers",
+    property: condoName("2"),
     title: "Trash left in hallway",
     description:
-      "Garbage bags repeatedly left in the third-floor hallway outside unit 36.",
+      "Garbage bags repeatedly left in the second-floor hallway outside unit A-205.",
     category: "CLEANLINESS",
-    unit: "36",
-    reportedBy: "Rita Fernandes",
+    unit: "A-205",
+    reportedBy: "Inês Beatriz Costa",
     reportedAt: "2025-08-30",
     state: "Closed",
     priority: "LOW",
@@ -136,12 +140,12 @@ export const mockOccurrences: Occurrence[] = [
   {
     id: "8",
     propertyId: "4",
-    property: "Metropolitan Heights",
+    property: condoName("4"),
     title: "Dog off-leash in common area",
     description:
       "A resident's dog is frequently let loose in the shared garden against the rules.",
     category: "PET",
-    unit: "48",
+    unit: "D-150",
     reportedBy: "Hugo Martins",
     reportedAt: "2025-09-22",
     state: "Open",

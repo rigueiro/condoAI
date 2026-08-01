@@ -12,9 +12,13 @@ export type Property = {
   yearBuilt: number;
   status: string;
   lastUpdated: string;
+  /** Condominium NIF (from domain) */
+  taxId?: string;
+  /** Always 1000 for Portuguese condos */
+  totalPermillage?: number;
 };
 
 export type SortConfig = {
-  key: keyof Property;
+  key: "name" | "totalUnits" | "collectionRate" | "occupiedUnits" | "averageFee";
   direction: "asc" | "desc";
 };

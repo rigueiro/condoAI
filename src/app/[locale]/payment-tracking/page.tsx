@@ -13,10 +13,11 @@ import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Button from "@/components/ui/button";
 
-import useSWR from "swr";
-import { fetcher } from "@/app/mocks/mocks-utils";
-import { handlers } from "@/app/mocks/handlers";
 import { mockPayments } from "./__fixtures__/mock-payments";
+import {
+  buildCollectionFromProperties,
+  mockProperties,
+} from "@/fixtures/views";
 
 type Payment = (typeof mockPayments)[number];
 
@@ -43,74 +44,7 @@ function PaymentTracking() {
     searchTerm: "",
   });
 
-  // TODO const { data, error } = useSWR('/api/payment', handlers)
-
-  // Mock data for payment collections
-  const collectionData = {
-    currentMonth: {
-      totalTarget: 500000,
-      totalCollected: 462500,
-      collectionRate: 92.5,
-      outstandingBalance: 37500,
-      totalProperties: 24,
-    },
-    propertyBreakdown: [
-      {
-        id: 1,
-        name: "Oceanview Towers",
-        unitsCount: 48,
-        collected: 120000,
-        target: 130000,
-        collectionRate: 92.3,
-        outstanding: 10000,
-      },
-      {
-        id: 2,
-        name: "Marina Heights",
-        unitsCount: 36,
-        collected: 86400,
-        target: 90000,
-        collectionRate: 96.0,
-        outstanding: 3600,
-      },
-      {
-        id: 3,
-        name: "Sunset Gardens",
-        unitsCount: 24,
-        collected: 57600,
-        target: 60000,
-        collectionRate: 96.0,
-        outstanding: 2400,
-      },
-      {
-        id: 4,
-        name: "Parkview Complex",
-        unitsCount: 32,
-        collected: 76800,
-        target: 80000,
-        collectionRate: 96.0,
-        outstanding: 3200,
-      },
-      {
-        id: 5,
-        name: "City Center Condos",
-        unitsCount: 40,
-        collected: 96000,
-        target: 100000,
-        collectionRate: 96.0,
-        outstanding: 4000,
-      },
-      {
-        id: 6,
-        name: "Riverside Plaza",
-        unitsCount: 28,
-        collected: 25700,
-        target: 40000,
-        collectionRate: 64.3,
-        outstanding: 14300,
-      },
-    ],
-  };
+  const collectionData = buildCollectionFromProperties(mockProperties);
 
   const [paymentHistory, setPaymentHistory] = useState<Payment[]>([...mockPayments]);
 

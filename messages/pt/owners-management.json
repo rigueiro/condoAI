@@ -112,6 +112,8 @@
     "emergencyContact": "Contacto de emergência",
     "unit": "Fração",
     "property": "Condomínio",
+    "taxId": "NIF",
+    "permillage": "Permilagem",
     "joinDate": "Membro desde",
     "monthlyFee": "Quota mensal",
     "quickActions": "Acções rápidas",

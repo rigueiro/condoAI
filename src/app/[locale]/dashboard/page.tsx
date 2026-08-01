@@ -23,15 +23,12 @@ import {
 import RecentActivity from "./components/recent-activity";
 import QuickActions from "./components/quick-actions";
 import UpcomingPayments, { PaymentStatus } from "./components/upcoming-payments";
-
-import useSWR from "swr";
-import { fetcher } from "@/app/mocks/mocks-utils";
+import { mockOwners, mockProperties } from "@/fixtures/views";
 
 function Dashboard() {
   const t = useTranslations("dashboard");
   const { formatCurrency } = useFormatCurrency();
   const user = useUser();
-  // TODO const { data, error } = useSWR("/api/dashboard", fetcher);
 
   // Stable reference time captured once so mock timestamps stay idempotent across renders.
   const [now] = useState(() => Date.now());
@@ -68,8 +65,8 @@ function Dashboard() {
       id: 1,
       type: "payment",
       title: t("mockActivities.paymentReceived"),
-      description: "Unit 4B - Oceanview Towers - Monthly Fee",
-      amount: 2500,
+      description: `Fração A-101 - ${mockOwners[0].property} - Quota mensal`,
+      amount: mockOwners[0].monthlyQuota,
       timestamp: new Date(now - 300000),
       icon: "CreditCard",
       iconColor: "var(--color-success)",
@@ -78,7 +75,7 @@ function Dashboard() {
       id: 2,
       type: "owner",
       title: t("mockActivities.newOwner"),
-      description: "Michael Chen - Unit 7A - Sunset Gardens",
+      description: `${mockOwners[1].name} - Fração ${mockOwners[1].unit} - ${mockOwners[1].property}`,
       timestamp: new Date(now - 1800000),
       icon: "UserPlus",
       iconColor: "var(--color-primary)",
@@ -87,7 +84,7 @@ function Dashboard() {
       id: 3,
       type: "property",
       title: t("mockActivities.propertyUpdated"),
-      description: "Marina Heights - Amenities information updated",
+      description: `${mockProperties[1].name} - Regulamento interno atualizado`,
       timestamp: new Date(now - 3600000),
       icon: "Building2",
       iconColor: "var(--color-accent)",
@@ -96,7 +93,7 @@ function Dashboard() {
       id: 4,
       type: "payment",
       title: t("mockActivities.paymentOverdue"),
-      description: "Unit 2C - Parkview Complex - 15 days overdue",
+      description: `Fração ${mockOwners[4].unit} - ${mockOwners[4].property} - Quota em atraso`,
       timestamp: new Date(now - 7200000),
       icon: "AlertTriangle",
       iconColor: "var(--color-warning)",
@@ -105,51 +102,27 @@ function Dashboard() {
       id: 5,
       type: "maintenance",
       title: t("mockActivities.maintenanceRequest"),
-      description: "Elevator service scheduled - Tower A",
+      description: "Manutenção do elevador agendada - Torre do Tejo",
       timestamp: new Date(now - 10800000),
       icon: "Wrench",
       iconColor: "var(--color-secondary)",
     },
   ];
 
-  const upcomingPayments = [
-    {
-      id: 1,
-      ownerName: "Jennifer Martinez",
-      unit: "3A",
-      property: "Oceanview Towers",
-      amount: 2500,
-      dueDate: new Date(now + 86400000 * 3),
-      status: PaymentStatus.Pending,
-    },
-    {
-      id: 2,
-      ownerName: "Robert Kim",
-      unit: "5B",
-      property: "Marina Heights",
-      amount: 3200,
-      dueDate: new Date(now + 86400000 * 5),
-      status: PaymentStatus.Paid,
-    },
-    {
-      id: 3,
-      ownerName: "Lisa Thompson",
-      unit: "1C",
-      property: "Sunset Gardens",
-      amount: 1800,
-      dueDate: new Date(now - 86400000 * 2),
-      status: PaymentStatus.Overdue,
-    },
-    {
-      id: 4,
-      ownerName: "David Wilson",
-      unit: "8A",
-      property: "Parkview Complex",
-      amount: 2100,
-      dueDate: new Date(now + 86400000 * 7),
-      status: PaymentStatus.Pending,
-    },
-  ];
+  const upcomingPayments = mockOwners.slice(0, 4).map((owner, index) => ({
+    id: index + 1,
+    ownerName: owner.name,
+    unit: owner.unit,
+    property: owner.property,
+    amount: owner.monthlyQuota ?? 0,
+    dueDate: new Date(now + 86400000 * (index === 2 ? -2 : (index + 1) * 3)),
+    status:
+      index === 2
+        ? PaymentStatus.Overdue
+        : index === 1
+          ? PaymentStatus.Paid
+          : PaymentStatus.Pending,
+  }));
 
   const formatPercentage = (value: number) => {
     return `${value.toFixed(1)}%`;

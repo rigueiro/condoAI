@@ -100,25 +100,25 @@ function BulkImportModal({ isOpen, onClose, onSubmit }: BulkImportModalProps) {
       ],
       preview: [
         {
-          ownerName: "John Doe",
-          property: "Oceanview Towers",
-          unit: "4A",
+          ownerName: "Ana Sofia Martins",
+          property: "Condomínio Jardins da Amoreira",
+          unit: "A-101",
           amount: 2500,
           date: "2024-01-15",
           method: "Bank Transfer",
         },
         {
-          ownerName: "Jane Smith",
-          property: "Marina Heights",
-          unit: "7B",
+          ownerName: "João Pedro Fernandes",
+          property: "Edifício Torre do Tejo",
+          unit: "B-205",
           amount: 2400,
           date: "2024-01-15",
           method: "Credit Card",
         },
         {
-          ownerName: "Bob Johnson",
-          property: "Sunset Gardens",
-          unit: "2C",
+          ownerName: "Maria Clara Rodrigues",
+          property: "Condomínio Jardins da Amoreira",
+          unit: "C-302",
           amount: 2000,
           date: "2024-01-15",
           method: "Check",
@@ -165,8 +165,8 @@ function BulkImportModal({ isOpen, onClose, onSubmit }: BulkImportModalProps) {
     const csvContent =
       "data:text/csv;charset=utf-8," +
       "Owner Name,Property,Unit,Amount,Payment Date,Payment Method,Notes\n" +
-      "John Doe,Oceanview Towers,4A,2500,2024-01-15,Bank Transfer,Monthly fee\n" +
-      "Jane Smith,Marina Heights,7B,2400,2024-01-15,Credit Card,Monthly fee";
+      "Ana Sofia Martins,Condomínio Jardins da Amoreira,A-101,2500,2024-01-15,Bank Transfer,Monthly fee\n" +
+      "João Pedro Fernandes,Edifício Torre do Tejo,B-205,2400,2024-01-15,Credit Card,Monthly fee";
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");

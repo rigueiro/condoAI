@@ -10,13 +10,10 @@ import ChartsSection from "./components/charts-section";
 import DataTables from "./components/data-tables";
 import GenerateReportSection from "./components/generate-report-section";
 import type { Filters } from "./components/control-panel";
-
-import useSWR from "swr";
-import { fetcher } from "@/app/mocks/mocks-utils";
+import { mockProperties } from "@/fixtures/views";
 
 function ReportsAnalytics() {
   const t = useTranslations("reportsAnalytics");
-  //TODO const { data, error } = useSWR("/api/reports/analytics");
 
   const [filters, setFilters] = useState<Filters>(() => ({
     dateRange: {
@@ -43,43 +40,17 @@ function ReportsAnalytics() {
       { month: "Dec 2023", collected: 461000, target: 480000, rate: 96.0 },
       { month: "Jan 2024", collected: 472000, target: 500000, rate: 94.4 },
     ],
-    propertyPerformance: [
-      {
-        property: "Oceanview Towers",
-        units: 85,
-        collected: 212500,
-        outstanding: 15000,
-        rate: 93.4,
-      },
-      {
-        property: "Marina Heights",
-        units: 92,
-        collected: 184000,
-        outstanding: 18400,
-        rate: 90.9,
-      },
-      {
-        property: "Sunset Gardens",
-        units: 68,
-        collected: 136000,
-        outstanding: 8500,
-        rate: 94.1,
-      },
-      {
-        property: "Parkview Complex",
-        units: 75,
-        collected: 150000,
-        outstanding: 22500,
-        rate: 87.0,
-      },
-      {
-        property: "Mountain View",
-        units: 56,
-        collected: 112000,
-        outstanding: 7000,
-        rate: 94.1,
-      },
-    ],
+    propertyPerformance: mockProperties.map((p) => {
+      const target = p.averageFee * p.totalUnits;
+      const collected = Math.round(target * (p.collectionRate / 100));
+      return {
+        property: p.name,
+        units: p.totalUnits,
+        collected,
+        outstanding: Math.round(target - collected),
+        rate: p.collectionRate,
+      };
+    }),
     paymentDistribution: [
       { method: "Bank Transfer", count: 245, amount: 612500, percentage: 65.3 },
       { method: "Online Portal", count: 89, amount: 217800, percentage: 23.1 },

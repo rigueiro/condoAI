@@ -21,6 +21,16 @@ export interface Condominium {
     };
 }
 
+export interface Unit {
+    id: string;
+    condominiumId: string;
+    label: string; // Ex.: 'A-101'
+    floor: string | null;
+    permillage: number; // Fraction of Condominium.totalPermillage (sum = 1000)
+    type: 'apartment' | 'shop' | 'garage' | 'parking' | 'other';
+    areaSqm: number | null;
+}
+
 export interface Owner {
     id: string;
     fullName: string;

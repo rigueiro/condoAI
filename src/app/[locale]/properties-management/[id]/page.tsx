@@ -243,6 +243,22 @@ function PropertyDetailPage() {
                       {property.address}
                     </dd>
                   </div>
+                  {property.taxId && (
+                    <div>
+                      <dt className="text-text-secondary">{t("taxId")}</dt>
+                      <dd className="font-medium text-text-primary">
+                        {property.taxId}
+                      </dd>
+                    </div>
+                  )}
+                  {property.totalPermillage != null && (
+                    <div>
+                      <dt className="text-text-secondary">{t("permillage")}</dt>
+                      <dd className="font-medium text-text-primary">
+                        {property.totalPermillage}‰
+                      </dd>
+                    </div>
+                  )}
                   <div>
                     <dt className="text-text-secondary">{t("buildingType")}</dt>
                     <dd className="font-medium text-text-primary">
