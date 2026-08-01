@@ -9,7 +9,7 @@
   },
   "hero": {
     "headline": "Gestão de condomínios, organizada com clareza",
-    "subtitle": "Não é um CRM imobiliário genérico—um espaço moldado a quotas, assembleias, convocatórias, seguros e certificados.",
+    "subtitle": "Não é um CRM imobiliário genérico—um espaço moldado à finança de condomínio, assembleias, convocatórias, seguros e certificados.",
     "ctaPrimary": "Começar grátis",
     "ctaSecondary": "Entrar",
     "ctaDashboard": "Abrir painel"
@@ -47,8 +47,8 @@
       "description": "Uma base fiável de proprietários, com contactos ligados a cada fração."
     },
     "payments": {
-      "title": "Acompanhamento de quotas",
-      "description": "Registe pagamentos, identifique atrasos e acompanhe as cobranças mensais."
+      "title": "Finança de condomínio",
+      "description": "Quotas sozinhas não chegam—associe cobranças a despesas, saldo bancário e orçamento anual, do rascunho à aprovação."
     },
     "occurrences": {
       "title": "Manutenção e incidentes",
@@ -75,8 +75,8 @@
       "description": "Importe ou introduza edifícios, frações e os responsáveis por cada uma."
     },
     "step3": {
-      "title": "Acompanhe quotas e trabalho",
-      "description": "Registe pagamentos, monitore atrasos e gira ocorrências à medida que surgem."
+      "title": "Gira finança e o dia a dia",
+      "description": "Cobre quotas, registe despesas, acompanhe a conta bancária e faça o orçamento anual avançar de rascunho a aprovado."
     }
   },
   "trust": {
@@ -96,7 +96,7 @@
   },
   "cta": {
     "title": "Reúna os seus condomínios num só lugar",
-    "subtitle": "Comece com edifícios, proprietários e cobranças—com os conceitos de conformidade que a administração realmente precisa.",
+    "subtitle": "Comece com edifícios, proprietários e a finança completa do condomínio—com os conceitos de conformidade que a administração realmente precisa.",
     "button": "Criar conta",
     "login": "Entrar",
     "dashboard": "Continuar para o painel"

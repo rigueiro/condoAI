@@ -9,7 +9,7 @@
   },
   "hero": {
     "headline": "Condominium management, clearly organized",
-    "subtitle": "Not a generic property CRM—a workspace shaped around quotas, assemblies, summons, insurance, and certificates.",
+    "subtitle": "Not a generic property CRM—a workspace shaped around condo finance, assemblies, summons, insurance, and certificates.",
     "ctaPrimary": "Start free",
     "ctaSecondary": "Log in",
     "ctaDashboard": "Open dashboard"
@@ -47,8 +47,8 @@
       "description": "Maintain a reliable owner database with contacts linked to every unit."
     },
     "payments": {
-      "title": "Quota tracking",
-      "description": "Record payments, spot overdue balances, and stay on top of monthly collections."
+      "title": "Condo finance",
+      "description": "Quotas alone are incomplete—pair collections with expenses, bank balance, and annual budgets from draft to approved."
     },
     "occurrences": {
       "title": "Maintenance & incidents",
@@ -75,8 +75,8 @@
       "description": "Import or enter buildings, units, and the people responsible for each."
     },
     "step3": {
-      "title": "Track quotas & work",
-      "description": "Record payments, monitor overdue items, and manage occurrences as they arise."
+      "title": "Run finance & day-to-day",
+      "description": "Collect quotas, record expenses, watch the bank account, and keep the annual budget moving from draft to approved."
     }
   },
   "trust": {
@@ -96,7 +96,7 @@
   },
   "cta": {
     "title": "Bring your condominiums into one place",
-    "subtitle": "Start with properties, owners, and collections—backed by the compliance concepts administrators actually need.",
+    "subtitle": "Start with properties, owners, and full condo finance—backed by the compliance concepts administrators actually need.",
     "button": "Create your account",
     "login": "Log in",
     "dashboard": "Continue to dashboard"
