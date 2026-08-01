@@ -1,8 +1,104 @@
 {
   "brand": "CondoAI",
-  "tagline": "Gerir condomínios, proprietários e quotas num só lugar.",
-  "login": "Entrar",
-  "signup": "Criar conta",
-  "goToDashboard": "Ir para o painel",
-  "footer": "© {year} CondoAI."
+  "nav": {
+    "features": "Funcionalidades",
+    "howItWorks": "Como funciona",
+    "login": "Entrar",
+    "signup": "Começar",
+    "goToDashboard": "Ir para o painel"
+  },
+  "hero": {
+    "headline": "Gestão de condomínios, organizada com clareza",
+    "subtitle": "Acompanhe edifícios, proprietários, quotas e manutenção num espaço de trabalho calmo, feito para administradores.",
+    "ctaPrimary": "Começar grátis",
+    "ctaSecondary": "Entrar",
+    "ctaDashboard": "Abrir painel"
+  },
+  "preview": {
+    "navDashboard": "Painel",
+    "navProperties": "Condomínios",
+    "navPayments": "Pagamentos",
+    "collectionRate": "Taxa de cobrança",
+    "collectionValue": "94%",
+    "properties": "Condomínios",
+    "propertiesValue": "12",
+    "outstanding": "Em atraso",
+    "outstandingValue": "€2.840",
+    "upcomingTitle": "Quotas próximas",
+    "row1Unit": "Frac. 4B · Residencial Aurora",
+    "row1Amount": "€185",
+    "row1Due": "Vence em 3 dias",
+    "row2Unit": "Frac. 12 · Torre Mar",
+    "row2Amount": "€210",
+    "row2Due": "Vence em 5 dias",
+    "row3Unit": "Loja 1 · Centro Plaza",
+    "row3Amount": "€420",
+    "row3Due": "Vence em 8 dias"
+  },
+  "features": {
+    "title": "Tudo o que a sua administração precisa",
+    "subtitle": "Substitua folhas de cálculo dispersas por um sistema para o dia a dia da gestão de condomínios.",
+    "properties": {
+      "title": "Condomínios e frações",
+      "description": "Mantenha edifícios, frações e contactos estruturados e fáceis de encontrar."
+    },
+    "owners": {
+      "title": "Registos de proprietários",
+      "description": "Uma base fiável de proprietários, com contactos ligados a cada fração."
+    },
+    "payments": {
+      "title": "Acompanhamento de quotas",
+      "description": "Registe pagamentos, identifique atrasos e acompanhe as cobranças mensais."
+    },
+    "occurrences": {
+      "title": "Manutenção e incidentes",
+      "description": "Registe ocorrências, acompanhe o progresso e guarde o histórico por condomínio."
+    },
+    "reports": {
+      "title": "Relatórios e clareza",
+      "description": "Veja a saúde das cobranças e tendências do portefólio sem procurar em ficheiros."
+    }
+  },
+  "howItWorks": {
+    "title": "A funcionar em três passos",
+    "subtitle": "Um caminho simples desde a configuração até ao controlo do dia a dia.",
+    "step1": {
+      "title": "Crie a sua conta",
+      "description": "Registe-se e configure o espaço de administração em minutos."
+    },
+    "step2": {
+      "title": "Adicione condomínios e proprietários",
+      "description": "Importe ou introduza edifícios, frações e os responsáveis por cada uma."
+    },
+    "step3": {
+      "title": "Acompanhe quotas e trabalho",
+      "description": "Registe pagamentos, monitore atrasos e gira ocorrências à medida que surgem."
+    }
+  },
+  "trust": {
+    "title": "Feito para administração profissional",
+    "secure": {
+      "title": "Segurança desde a base",
+      "description": "Os seus dados operacionais ficam num espaço dedicado, com acesso autenticado."
+    },
+    "clarity": {
+      "title": "Clareza sem ruído",
+      "description": "Painéis e listas mostram o que precisa de atenção—sem dashboards confusos."
+    },
+    "local": {
+      "title": "Pensado para condomínios",
+      "description": "Os fluxos reflectem a forma como os administradores gerem quotas, proprietários e edifícios."
+    }
+  },
+  "cta": {
+    "title": "Reúna os seus condomínios num só lugar",
+    "subtitle": "Comece com uma visão clara de edifícios, proprietários e cobranças—e cresça com o seu portefólio.",
+    "button": "Criar conta",
+    "login": "Entrar",
+    "dashboard": "Continuar para o painel"
+  },
+  "footer": {
+    "tagline": "Software profissional de gestão de condomínios.",
+    "copyright": "© {year} CondoAI. Todos os direitos reservados."
+  }
 }

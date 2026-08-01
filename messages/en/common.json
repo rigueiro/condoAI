@@ -1,8 +1,8 @@
 {
   "brand": "CondoAI",
   "metadata": {
-    "title": "CondoAI",
-    "description": "Your favorite condo management app"
+    "title": "CondoAI — Condominium management",
+    "description": "Professional software to manage condominiums, owners, quotas, and maintenance in one place."
   },
   "nav": {
     "dashboard": "Dashboard",

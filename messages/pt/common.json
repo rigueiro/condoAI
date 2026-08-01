@@ -1,8 +1,8 @@
 {
   "brand": "CondoAI",
   "metadata": {
-    "title": "CondoAI",
-    "description": "A sua aplicação de gestão de condomínios"
+    "title": "CondoAI — Gestão de condomínios",
+    "description": "Software profissional para gerir condomínios, proprietários, quotas e manutenção num só lugar."
   },
   "nav": {
     "dashboard": "Painel",

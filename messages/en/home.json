@@ -1,8 +1,104 @@
 {
   "brand": "CondoAI",
-  "tagline": "Manage condomínios, owners, and quotas in one place.",
-  "login": "Log in",
-  "signup": "Sign up",
-  "goToDashboard": "Go to dashboard",
-  "footer": "© {year} CondoAI."
+  "nav": {
+    "features": "Features",
+    "howItWorks": "How it works",
+    "login": "Log in",
+    "signup": "Get started",
+    "goToDashboard": "Go to dashboard"
+  },
+  "hero": {
+    "headline": "Condominium management, clearly organized",
+    "subtitle": "Track properties, owners, quotas, and maintenance in one calm workspace built for administrators.",
+    "ctaPrimary": "Start free",
+    "ctaSecondary": "Log in",
+    "ctaDashboard": "Open dashboard"
+  },
+  "preview": {
+    "navDashboard": "Dashboard",
+    "navProperties": "Properties",
+    "navPayments": "Payments",
+    "collectionRate": "Collection rate",
+    "collectionValue": "94%",
+    "properties": "Properties",
+    "propertiesValue": "12",
+    "outstanding": "Outstanding",
+    "outstandingValue": "€2,840",
+    "upcomingTitle": "Upcoming quotas",
+    "row1Unit": "Apt 4B · Residencial Aurora",
+    "row1Amount": "€185",
+    "row1Due": "Due in 3 days",
+    "row2Unit": "Apt 12 · Torre Mar",
+    "row2Amount": "€210",
+    "row2Due": "Due in 5 days",
+    "row3Unit": "Loja 1 · Centro Plaza",
+    "row3Amount": "€420",
+    "row3Due": "Due in 8 days"
+  },
+  "features": {
+    "title": "Everything your administration needs",
+    "subtitle": "Replace scattered spreadsheets with one system for the day-to-day work of managing condominiums.",
+    "properties": {
+      "title": "Properties & units",
+      "description": "Keep buildings, fractions, and contact details structured and easy to find."
+    },
+    "owners": {
+      "title": "Owner records",
+      "description": "Maintain a reliable owner database with contacts linked to every unit."
+    },
+    "payments": {
+      "title": "Quota tracking",
+      "description": "Record payments, spot overdue balances, and stay on top of monthly collections."
+    },
+    "occurrences": {
+      "title": "Maintenance & incidents",
+      "description": "Log occurrences, follow progress, and keep a clear history per property."
+    },
+    "reports": {
+      "title": "Reports & clarity",
+      "description": "See collection health and portfolio trends without digging through files."
+    }
+  },
+  "howItWorks": {
+    "title": "Up and running in three steps",
+    "subtitle": "A simple path from setup to day-to-day control.",
+    "step1": {
+      "title": "Create your account",
+      "description": "Sign up and set up your administration workspace in minutes."
+    },
+    "step2": {
+      "title": "Add properties & owners",
+      "description": "Import or enter buildings, units, and the people responsible for each."
+    },
+    "step3": {
+      "title": "Track quotas & work",
+      "description": "Record payments, monitor overdue items, and manage occurrences as they arise."
+    }
+  },
+  "trust": {
+    "title": "Built for professional administration",
+    "secure": {
+      "title": "Secure by design",
+      "description": "Your operational data stays in a dedicated workspace with signed-in access."
+    },
+    "clarity": {
+      "title": "Clarity over clutter",
+      "description": "Dashboards and lists surface what needs attention—without noisy dashboards."
+    },
+    "local": {
+      "title": "Made for condominiums",
+      "description": "Workflows map to how administrators actually manage quotas, owners, and buildings."
+    }
+  },
+  "cta": {
+    "title": "Bring your condominiums into one place",
+    "subtitle": "Start with a clear overview of properties, owners, and collections—then grow with your portfolio.",
+    "button": "Create your account",
+    "login": "Log in",
+    "dashboard": "Continue to dashboard"
+  },
+  "footer": {
+    "tagline": "Professional condominium management software.",
+    "copyright": "© {year} CondoAI. All rights reserved."
+  }
 }

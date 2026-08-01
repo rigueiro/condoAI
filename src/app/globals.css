@@ -145,3 +145,51 @@ html[data-theme="dark"] {
     border-color: var(--color-border-medium);
   }
 }
+
+/* Landing page entrance motion */
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes landing-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.landing-page .anim-fade-up,
+.landing-page .anim-fade-up-delay,
+.landing-page .anim-fade-up-delay-2,
+.landing-page .anim-preview {
+  animation: landing-fade-up 0.7s ease-out both;
+}
+.landing-page .anim-fade-up-delay {
+  animation-delay: 0.12s;
+}
+.landing-page .anim-fade-up-delay-2 {
+  animation-delay: 0.24s;
+}
+.landing-page .anim-preview {
+  animation-duration: 0.9s;
+  animation-delay: 0.28s;
+}
+.landing-page .anim-nav {
+  animation: landing-fade-in 0.5s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-page .anim-fade-up,
+  .landing-page .anim-fade-up-delay,
+  .landing-page .anim-fade-up-delay-2,
+  .landing-page .anim-preview,
+  .landing-page .anim-nav {
+    animation: none;
+  }
+}
