@@ -12,6 +12,7 @@ const FEATURES = [
   { key: "owners", icon: "Users" },
   { key: "payments", icon: "Wallet" },
   { key: "occurrences", icon: "Wrench" },
+  { key: "compliance", icon: "ScrollText" },
   { key: "reports", icon: "BarChart3" },
 ] as const;
 

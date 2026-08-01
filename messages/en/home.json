@@ -9,7 +9,7 @@
   },
   "hero": {
     "headline": "Condominium management, clearly organized",
-    "subtitle": "Track properties, owners, quotas, and maintenance in one calm workspace built for administrators.",
+    "subtitle": "Not a generic property CRM—a workspace shaped around quotas, assemblies, summons, insurance, and certificates.",
     "ctaPrimary": "Start free",
     "ctaSecondary": "Log in",
     "ctaDashboard": "Open dashboard"
@@ -37,7 +37,7 @@
   },
   "features": {
     "title": "Everything your administration needs",
-    "subtitle": "Replace scattered spreadsheets with one system for the day-to-day work of managing condominiums.",
+    "subtitle": "Replace scattered spreadsheets with one system built for how condominium administration actually works.",
     "properties": {
       "title": "Properties & units",
       "description": "Keep buildings, fractions, and contact details structured and easy to find."
@@ -53,6 +53,10 @@
     "occurrences": {
       "title": "Maintenance & incidents",
       "description": "Log occurrences, follow progress, and keep a clear history per property."
+    },
+    "compliance": {
+      "title": "Assemblies & compliance",
+      "description": "Assemblies, summons, insurance renewals, and certificates—first-class concepts, not bolted-on notes."
     },
     "reports": {
       "title": "Reports & clarity",
@@ -86,13 +90,13 @@
       "description": "Dashboards and lists surface what needs attention—without noisy dashboards."
     },
     "local": {
-      "title": "Made for condominiums",
-      "description": "Workflows map to how administrators actually manage quotas, owners, and buildings."
+      "title": "Condo-native, not a property CRM",
+      "description": "Assemblies, summons, insurance renewals, and certificates live in the domain model—so the product speaks your work, not generic real estate."
     }
   },
   "cta": {
     "title": "Bring your condominiums into one place",
-    "subtitle": "Start with a clear overview of properties, owners, and collections—then grow with your portfolio.",
+    "subtitle": "Start with properties, owners, and collections—backed by the compliance concepts administrators actually need.",
     "button": "Create your account",
     "login": "Log in",
     "dashboard": "Continue to dashboard"

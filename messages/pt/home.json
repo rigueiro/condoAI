@@ -9,7 +9,7 @@
   },
   "hero": {
     "headline": "Gestão de condomínios, organizada com clareza",
-    "subtitle": "Acompanhe edifícios, proprietários, quotas e manutenção num espaço de trabalho calmo, feito para administradores.",
+    "subtitle": "Não é um CRM imobiliário genérico—um espaço moldado a quotas, assembleias, convocatórias, seguros e certificados.",
     "ctaPrimary": "Começar grátis",
     "ctaSecondary": "Entrar",
     "ctaDashboard": "Abrir painel"
@@ -37,7 +37,7 @@
   },
   "features": {
     "title": "Tudo o que a sua administração precisa",
-    "subtitle": "Substitua folhas de cálculo dispersas por um sistema para o dia a dia da gestão de condomínios.",
+    "subtitle": "Substitua folhas de cálculo dispersas por um sistema feito à medida da administração de condomínios.",
     "properties": {
       "title": "Condomínios e frações",
       "description": "Mantenha edifícios, frações e contactos estruturados e fáceis de encontrar."
@@ -53,6 +53,10 @@
     "occurrences": {
       "title": "Manutenção e incidentes",
       "description": "Registe ocorrências, acompanhe o progresso e guarde o histórico por condomínio."
+    },
+    "compliance": {
+      "title": "Assembleias e conformidade",
+      "description": "Assembleias, convocatórias, renovações de seguro e certificados—conceitos de primeira classe, não notas improvisadas."
     },
     "reports": {
       "title": "Relatórios e clareza",
@@ -86,13 +90,13 @@
       "description": "Painéis e listas mostram o que precisa de atenção—sem dashboards confusos."
     },
     "local": {
-      "title": "Pensado para condomínios",
-      "description": "Os fluxos reflectem a forma como os administradores gerem quotas, proprietários e edifícios."
+      "title": "Nativo de condomínios, não um CRM genérico",
+      "description": "Assembleias, convocatórias, renovações de seguro e certificados fazem parte do modelo—o produto fala a sua linguagem, não a do imobiliário genérico."
     }
   },
   "cta": {
     "title": "Reúna os seus condomínios num só lugar",
-    "subtitle": "Comece com uma visão clara de edifícios, proprietários e cobranças—e cresça com o seu portefólio.",
+    "subtitle": "Comece com edifícios, proprietários e cobranças—com os conceitos de conformidade que a administração realmente precisa.",
     "button": "Criar conta",
     "login": "Entrar",
     "dashboard": "Continuar para o painel"
