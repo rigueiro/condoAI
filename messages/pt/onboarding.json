@@ -1,0 +1,72 @@
+{
+  "title": "Configurar o CondoAI",
+  "subtitle": "Alguns passos para preparar o seu primeiro condomínio.",
+  "steps": {
+    "organization": "Organização",
+    "condominium": "Condomínio",
+    "import": "Importar"
+  },
+  "org": {
+    "title": "Criar a sua organização",
+    "subtitle": "Esta é a empresa de gestão que vai administrar os condomínios.",
+    "name": "Nome da organização",
+    "legalName": "Denominação legal",
+    "taxId": "NIF",
+    "email": "Email de faturação",
+    "phone": "Telefone",
+    "nameRequired": "O nome da organização é obrigatório",
+    "taxIdRequired": "O NIF é obrigatório",
+    "emailRequired": "O email é obrigatório",
+    "emailInvalid": "Introduza um email válido",
+    "continue": "Continuar"
+  },
+  "condo": {
+    "title": "Adicionar o primeiro condomínio",
+    "subtitle": "Comece com um edifício. Pode adicionar mais depois.",
+    "name": "Nome do condomínio",
+    "street": "Morada",
+    "postalCode": "Código postal",
+    "parish": "Freguesia",
+    "municipality": "Concelho",
+    "taxId": "NIF do condomínio",
+    "numberOfUnits": "Número de frações",
+    "nameRequired": "O nome é obrigatório",
+    "streetRequired": "A morada é obrigatória",
+    "municipalityRequired": "O concelho é obrigatório",
+    "taxIdRequired": "O NIF é obrigatório",
+    "unitsRequired": "Indique pelo menos 1 fração",
+    "back": "Voltar",
+    "continue": "Continuar"
+  },
+  "import": {
+    "title": "Importar proprietários e frações",
+    "subtitle": "Carregue um CSV ou ignore e adicione depois em Proprietários / Condomínios.",
+    "downloadTemplate": "Descarregar modelo CSV",
+    "dropHint": "Arraste um CSV para aqui, ou clique para escolher",
+    "csvOnly": "Carregue um ficheiro CSV",
+    "fileTooLarge": "O ficheiro deve ter menos de 5MB",
+    "processing": "A validar…",
+    "previewTitle": "Pré-visualização",
+    "validRows": "{count} linhas válidas",
+    "invalidRows": "{count} linhas inválidas",
+    "permillageWarning": "A soma das permilagens é {sum} (esperado ~1000). Pode continuar na mesma.",
+    "errorsTitle": "Erros de validação",
+    "errorRequired": "Obrigatório",
+    "errorInvalidEmail": "Email inválido",
+    "errorInvalidNumber": "Número inválido",
+    "errorMissingHeader": "Coluna em falta",
+    "errorEmptyFile": "O ficheiro está vazio ou sem dados",
+    "columns": {
+      "unitLabel": "Fração",
+      "ownerName": "Proprietário",
+      "email": "Email",
+      "permillage": "Permilagem",
+      "monthlyQuota": "Quota"
+    },
+    "back": "Voltar",
+    "skip": "Ignorar por agora",
+    "finish": "Concluir e abrir o painel",
+    "importing": "A guardar…"
+  },
+  "redirecting": "A redirecionar…"
+}

@@ -18,6 +18,12 @@ export interface AuthContextValue {
     password: string,
     options?: { rememberMe?: boolean },
   ) => Promise<void>;
+  signup: (
+    name: string,
+    email: string,
+    password: string,
+    options?: { rememberMe?: boolean },
+  ) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => Promise<User>;
   requestPasswordReset: (email: string) => Promise<PasswordResetRequestResult>;

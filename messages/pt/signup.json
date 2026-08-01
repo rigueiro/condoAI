@@ -1,0 +1,23 @@
+{
+  "brand": "CondoAI",
+  "creatingAccount": "Crie a sua conta",
+  "nameLabel": "Nome completo",
+  "namePlaceholder": "Introduza o seu nome completo",
+  "nameRequired": "O nome é obrigatório",
+  "emailLabel": "Endereço de email",
+  "emailPlaceholder": "Introduza o seu email",
+  "emailRequired": "Email obrigatório",
+  "emailInvalid": "Introduza um endereço de email válido",
+  "passwordLabel": "Senha",
+  "passwordPlaceholder": "Pelo menos {min} caracteres",
+  "passwordRequired": "A senha é obrigatória",
+  "passwordMinLength": "A senha deve ter pelo menos {min} caracteres",
+  "confirmPasswordLabel": "Confirmar senha",
+  "confirmRequired": "Confirme a sua senha",
+  "noMatch": "As senhas não coincidem",
+  "signUpButton": "Criar conta",
+  "signingUpButton": "A criar conta...",
+  "haveAccount": "Já tem uma conta?",
+  "signInLink": "Entrar",
+  "footer": "© {year} CondoAI. Todos os direitos reservados."
+}

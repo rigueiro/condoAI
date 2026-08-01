@@ -13,5 +13,7 @@
   "rememberMe": "Remember me",
   "signInButton": "Sign In",
   "signingInButton": "Signing in...",
+  "noAccount": "Don't have an account?",
+  "signUpLink": "Sign up",
   "footer": "© {year} CondoAI. All rights reserved."
 }

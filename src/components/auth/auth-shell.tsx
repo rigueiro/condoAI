@@ -9,12 +9,14 @@ const PATTERN_BG = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBo
 interface AuthShellProps {
   children: ReactNode;
   footer?: ReactNode;
+  /** Wider card for multi-step flows (e.g. onboarding). */
+  wide?: boolean;
 }
 
 /**
  * Shared chrome for unauthenticated auth screens (login, forgot, reset).
  */
-export function AuthShell({ children, footer }: AuthShellProps) {
+export function AuthShell({ children, footer, wide = false }: AuthShellProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center px-4 py-8">
       <div className="absolute top-4 right-4 z-10">
@@ -27,7 +29,7 @@ export function AuthShell({ children, footer }: AuthShellProps) {
         />
       </div>
 
-      <div className="relative w-full max-w-md">
+      <div className={`relative w-full ${wide ? "max-w-xl" : "max-w-md"}`}>
         <div className="bg-surface rounded-2xl shadow-modal border border-border-light p-8">
           {children}
         </div>

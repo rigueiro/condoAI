@@ -6,5 +6,6 @@ export {
   DEMO_EMAIL,
   DEFAULT_PASSWORD,
   MIN_PASSWORD_LENGTH,
+  isDemoEmail,
 } from "./credentials";
 export { isValidEmail, resolveAuthErrorMessage } from "./validation";

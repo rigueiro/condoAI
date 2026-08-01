@@ -1,0 +1,72 @@
+{
+  "title": "Set up CondoAI",
+  "subtitle": "A few steps to get your first condomínio ready.",
+  "steps": {
+    "organization": "Organization",
+    "condominium": "Condomínio",
+    "import": "Import"
+  },
+  "org": {
+    "title": "Create your organization",
+    "subtitle": "This is the management company that will run your condomínios.",
+    "name": "Organization name",
+    "legalName": "Legal name",
+    "taxId": "Tax ID (NIF)",
+    "email": "Billing email",
+    "phone": "Phone",
+    "nameRequired": "Organization name is required",
+    "taxIdRequired": "Tax ID is required",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Enter a valid email",
+    "continue": "Continue"
+  },
+  "condo": {
+    "title": "Add your first condomínio",
+    "subtitle": "Start with one building. You can add more later.",
+    "name": "Condomínio name",
+    "street": "Street address",
+    "postalCode": "Postal code",
+    "parish": "Parish",
+    "municipality": "Municipality",
+    "taxId": "Condomínio NIF",
+    "numberOfUnits": "Number of units (frações)",
+    "nameRequired": "Name is required",
+    "streetRequired": "Street is required",
+    "municipalityRequired": "Municipality is required",
+    "taxIdRequired": "NIF is required",
+    "unitsRequired": "Enter at least 1 unit",
+    "back": "Back",
+    "continue": "Continue"
+  },
+  "import": {
+    "title": "Import owners and frações",
+    "subtitle": "Upload a CSV or skip and add them later from Owners / Properties.",
+    "downloadTemplate": "Download CSV template",
+    "dropHint": "Drag and drop a CSV here, or click to browse",
+    "csvOnly": "Please upload a CSV file",
+    "fileTooLarge": "File must be under 5MB",
+    "processing": "Validating…",
+    "previewTitle": "Preview",
+    "validRows": "{count} valid rows",
+    "invalidRows": "{count} invalid rows",
+    "permillageWarning": "Permillage sum is {sum} (expected ~1000). You can still continue.",
+    "errorsTitle": "Validation errors",
+    "errorRequired": "Required",
+    "errorInvalidEmail": "Invalid email",
+    "errorInvalidNumber": "Invalid number",
+    "errorMissingHeader": "Missing column",
+    "errorEmptyFile": "File is empty or has no data rows",
+    "columns": {
+      "unitLabel": "Unit",
+      "ownerName": "Owner",
+      "email": "Email",
+      "permillage": "Permillage",
+      "monthlyQuota": "Quota"
+    },
+    "back": "Back",
+    "skip": "Skip for now",
+    "finish": "Finish and open dashboard",
+    "importing": "Saving…"
+  },
+  "redirecting": "Redirecting…"
+}

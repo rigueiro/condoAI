@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import PropertyTable from "./components/property-table";
 import PropertyModal from "./components/property-modal";
@@ -12,11 +12,16 @@ import Breadcrumb from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 import { Property, SortConfig } from "./types";
 import { downloadCsv } from "@/lib/export-csv";
-import { mockProperties } from "./__fixtures__/mock-properties";
+import { usePortfolio } from "@/lib/portfolio";
 
 function PropertiesManagement() {
   const t = useTranslations("propertiesManagement");
-  const [properties, setProperties] = useState<Property[]>([...mockProperties]);
+  const { properties: portfolioProperties } = usePortfolio();
+  const [properties, setProperties] = useState<Property[]>([]);
+
+  React.useEffect(() => {
+    setProperties([...portfolioProperties]);
+  }, [portfolioProperties]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");

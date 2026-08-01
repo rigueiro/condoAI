@@ -8,6 +8,7 @@ import Icon from "@/components/icon";
 import SectionCard from "@/components/ui/section-card";
 import Button from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
+import { usePortfolio } from "@/lib/portfolio";
 import { useRouter } from "@/i18n/navigation";
 
 import OrganizationForm from "./components/organization-form";
@@ -108,20 +109,51 @@ const DEFAULT_INTEGRATIONS: Integration[] = [
 function AccountPage() {
   const t = useTranslations("account");
   const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const {
+    organization: portfolioOrg,
+    isDemo,
+    properties,
+    updateOrganization,
+  } = usePortfolio();
   const router = useRouter();
 
-  const [organization, setOrganization] =
-    useState<Organization>(DEFAULT_ORGANIZATION);
-  const [subscription] = useState<Subscription>(DEFAULT_SUBSCRIPTION);
+  const [organizationOverride, setOrganizationOverride] =
+    useState<Organization | null>(null);
+  const [billingEmailOverride, setBillingEmailOverride] = useState<
+    string | null
+  >(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
     DEFAULT_PAYMENT_METHOD,
-  );
-  const [billingEmail, setBillingEmail] = useState<string>(
-    DEFAULT_ORGANIZATION.email,
   );
   const [invoices] = useState<Invoice[]>(DEFAULT_INVOICES);
   const [integrations] = useState<Integration[]>(DEFAULT_INTEGRATIONS);
   const [banner, setBanner] = useState<Banner>(null);
+
+  const organization =
+    organizationOverride ??
+    (!isDemo && portfolioOrg ? portfolioOrg : DEFAULT_ORGANIZATION);
+
+  const billingEmail =
+    billingEmailOverride ?? organization.email;
+
+  const subscription = useMemo<Subscription>(() => {
+    if (isDemo) return DEFAULT_SUBSCRIPTION;
+    return {
+      ...DEFAULT_SUBSCRIPTION,
+      usage: {
+        ...DEFAULT_SUBSCRIPTION.usage,
+        properties: {
+          ...DEFAULT_SUBSCRIPTION.usage.properties,
+          used: properties.length,
+        },
+        units: {
+          ...DEFAULT_SUBSCRIPTION.usage.units,
+          used: properties.reduce((s, p) => s + p.totalUnits, 0),
+        },
+        users: { ...DEFAULT_SUBSCRIPTION.usage.users, used: 1 },
+      },
+    };
+  }, [isDemo, properties]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -187,16 +219,19 @@ function AccountPage() {
   const handleSaveOrganization = useCallback(
     async (next: Organization) => {
       await new Promise((resolve) => setTimeout(resolve, 400));
-      setOrganization(next);
+      setOrganizationOverride(next);
+      if (!isDemo) {
+        updateOrganization(next);
+      }
       showSuccess(t("saved"));
     },
-    [t],
+    [t, isDemo, updateOrganization],
   );
 
   const handleUpdateBillingEmail = useCallback(
     async (email: string) => {
       await new Promise((resolve) => setTimeout(resolve, 300));
-      setBillingEmail(email);
+      setBillingEmailOverride(email);
       showSuccess(t("saved"));
     },
     [t],

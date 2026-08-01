@@ -8,6 +8,10 @@
     "outstandingPayments": "Outstanding Payments",
     "addedThisMonth": "+2 this month",
     "occupancy": "95% occupied",
+    "occupancyDynamic": "{rate}% occupied",
+    "portfolioReady": "Your portfolio",
+    "noPaymentsYet": "No payments yet",
+    "noOutstanding": "None overdue",
     "aboveTarget": "Above target",
     "overdueCount": "23 overdue"
   },
@@ -52,6 +56,18 @@
     "propertyUpdated": "Property Updated",
     "paymentOverdue": "Overdue Payment",
     "maintenanceRequest": "Maintenance Request"
+  },
+  "portfolioActivities": {
+    "orgCreated": "Organization created",
+    "condoAdded": "Condomínio added",
+    "ownersImported": "Owners imported",
+    "ownersImportedDesc": "{count} owners / frações"
+  },
+  "emptyImport": {
+    "title": "Import owners and frações next",
+    "body": "Your condomínio is ready. Add owners from the owners page or re-run onboarding import later.",
+    "properties": "View properties",
+    "owners": "Manage owners"
   },
   "upcomingPayments": {
     "title": "Upcoming Payments",

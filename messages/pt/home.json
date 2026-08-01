@@ -1,5 +1,8 @@
 {
   "brand": "CondoAI",
-  "underConstruction": "Em Construção",
-  "footer": "© 2025 CondoAI."
+  "tagline": "Gerir condomínios, proprietários e quotas num só lugar.",
+  "login": "Entrar",
+  "signup": "Criar conta",
+  "goToDashboard": "Ir para o painel",
+  "footer": "© {year} CondoAI."
 }

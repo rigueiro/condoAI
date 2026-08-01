@@ -8,6 +8,10 @@
     "outstandingPayments": "Pagamentos fora de prazo",
     "addedThisMonth": "+2 este mês",
     "occupancy": "95% ocupado",
+    "occupancyDynamic": "{rate}% ocupado",
+    "portfolioReady": "O seu portefólio",
+    "noPaymentsYet": "Sem pagamentos ainda",
+    "noOutstanding": "Sem atrasos",
     "aboveTarget": "Acima da meta",
     "overdueCount": "23 fora de prazo"
   },
@@ -52,6 +56,18 @@
     "propertyUpdated": "Propriedade Atualizada",
     "paymentOverdue": "Pagamento Fora de Prazo",
     "maintenanceRequest": "Pedido de Manutenção"
+  },
+  "portfolioActivities": {
+    "orgCreated": "Organização criada",
+    "condoAdded": "Condomínio adicionado",
+    "ownersImported": "Proprietários importados",
+    "ownersImportedDesc": "{count} proprietários / frações"
+  },
+  "emptyImport": {
+    "title": "Importe proprietários e frações a seguir",
+    "body": "O seu condomínio está pronto. Adicione proprietários na página de proprietários ou importe mais tarde.",
+    "properties": "Ver condomínios",
+    "owners": "Gerir proprietários"
   },
   "upcomingPayments": {
     "title": "Pagamentos futuros",

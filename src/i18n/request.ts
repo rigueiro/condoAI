@@ -5,9 +5,11 @@ import { routing } from "./routing";
 const messageNamespaces = [
   "common",
   "login",
+  "signup",
   "home",
   "auth",
   "dashboard",
+  "onboarding",
   "propertiesManagement",
   "ownersManagement",
   "paymentTracking",
@@ -21,9 +23,11 @@ const messageNamespaces = [
 const messageFiles: Record<(typeof messageNamespaces)[number], string> = {
   common: "common",
   login: "login",
+  signup: "signup",
   home: "home",
   auth: "auth",
   dashboard: "dashboard",
+  onboarding: "onboarding",
   propertiesManagement: "properties-management",
   ownersManagement: "owners-management",
   paymentTracking: "payment-tracking",

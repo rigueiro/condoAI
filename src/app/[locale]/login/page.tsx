@@ -14,11 +14,13 @@ import {
 } from "@/components/auth";
 import {
   MIN_PASSWORD_LENGTH,
+  isDemoEmail,
   isValidEmail,
   resolveAuthErrorMessage,
   useAuth,
   useAuthHrefs,
 } from "@/lib/auth";
+import { needsOnboarding, readPortfolio } from "@/lib/portfolio";
 
 type Errors = {
   email?: string;
@@ -90,7 +92,14 @@ function Login() {
       await login(formData.email, formData.password, {
         rememberMe: formData.rememberMe,
       });
-      router.push("/dashboard");
+      const email = formData.email.trim().toLowerCase();
+      if (isDemoEmail(email)) {
+        router.push("/dashboard");
+      } else if (needsOnboarding(readPortfolio(email))) {
+        router.push("/onboarding");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (error) {
       const messageKey = error instanceof Error ? error.message : "loginFailed";
       setErrors({
@@ -173,6 +182,11 @@ function Login() {
           icon="LogIn"
         />
       </form>
+
+      <p className="text-center text-sm text-text-secondary mt-6">
+        {t("noAccount")}{" "}
+        <AuthTextLink href={hrefs.signup}>{t("signUpLink")}</AuthTextLink>
+      </p>
     </AuthShell>
   );
 }

@@ -12,11 +12,7 @@ import OwnerFilters from "./components/owner-filters";
 import OwnerTable from "./components/owner-table";
 import BulkOperations from "./components/bulk-operations";
 import { Owner, PaymentStatus } from "./components/types";
-import { mockOwners } from "./__fixtures__/mock-owners";
-import { mockProperties } from "./__fixtures__/mock-properties";
-
-import useSWR from "swr";
-import { fetcher } from "@/app/mocks/mocks-utils";
+import { usePortfolio } from "@/lib/portfolio";
 
 interface Filters {
   search: string;
@@ -27,6 +23,8 @@ interface Filters {
 
 function OwnersManagement() {
   const t = useTranslations("ownersManagement");
+  const { owners: portfolioOwners, properties: portfolioProperties } =
+    usePortfolio();
   const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
   const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
   const [editingOwner, setEditingOwner] = useState<Owner | null>(null);
@@ -37,11 +35,9 @@ function OwnersManagement() {
     balanceRange: "",
   });
 
-  // const { data, error } = useSWR("/api/owners", fetcher);
-
   // Filter owners based on current filters
   const filteredOwners = useMemo(() => {
-    return mockOwners.filter((owner) => {
+    return portfolioOwners.filter((owner) => {
       const matchesSearch =
         !filters.search ||
         owner.name.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -80,7 +76,7 @@ function OwnersManagement() {
         matchesBalanceRange
       );
     });
-  }, [filters]);
+  }, [filters, portfolioOwners]);
 
   const handleAddOwner = () => {
     setEditingOwner(null);
@@ -147,7 +143,7 @@ function OwnersManagement() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Left Sidebar - Statistics */}
             <div className="lg:col-span-1">
-              <OwnerStatistics owners={mockOwners} />
+              <OwnerStatistics owners={portfolioOwners} />
             </div>
 
             {/* Main Content */}
@@ -156,7 +152,7 @@ function OwnersManagement() {
               <OwnerFilters
                 filters={filters}
                 onFiltersChange={setFilters}
-                properties={mockProperties}
+                properties={portfolioProperties}
               />
 
               {/* Bulk Operations */}
@@ -185,7 +181,7 @@ function OwnersManagement() {
       {isOwnerModalOpen && (
         <OwnerModal
           owner={editingOwner}
-          properties={mockProperties}
+          properties={portfolioProperties}
           onClose={() => setIsOwnerModalOpen(false)}
           onSave={(ownerData) => {
             console.log("Saving owner:", ownerData);

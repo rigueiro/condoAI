@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import { useUser } from "@/lib/auth";
+import { usePortfolio } from "@/lib/portfolio";
+import { Link, useRouter } from "@/i18n/navigation";
 
 import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
@@ -22,111 +24,202 @@ import {
 } from "recharts";
 import RecentActivity from "./components/recent-activity";
 import QuickActions from "./components/quick-actions";
-import UpcomingPayments, { PaymentStatus } from "./components/upcoming-payments";
-import { mockOwners, mockProperties } from "@/fixtures/views";
 
 function Dashboard() {
   const t = useTranslations("dashboard");
   const { formatCurrency } = useFormatCurrency();
   const user = useUser();
+  const router = useRouter();
+  const {
+    isDemo,
+    properties,
+    owners,
+    portfolio,
+    isReady,
+    needsOnboarding: mustOnboard,
+  } = usePortfolio();
 
-  // Stable reference time captured once so mock timestamps stay idempotent across renders.
   const [now] = useState(() => Date.now());
 
-  // Mock dashboard data
-  const dashboardStats = {
-    totalProperties: 24,
-    totalUnits: 486,
-    monthlyCollectionRate: 92.5,
-    outstandingPayments: 125000,
-    currency: "EUR",
-  };
+  useEffect(() => {
+    if (isReady && mustOnboard) {
+      router.replace("/onboarding");
+    }
+  }, [isReady, mustOnboard, router]);
 
-  const collectionTrends = [
-    { month: "Jan", collected: 450000, target: 500000 },
-    { month: "Feb", collected: 480000, target: 500000 },
-    { month: "Mar", collected: 465000, target: 500000 },
-    { month: "Apr", collected: 520000, target: 500000 },
-    { month: "May", collected: 495000, target: 500000 },
-    { month: "Jun", collected: 510000, target: 500000 },
-  ];
+  const dashboardStats = useMemo(() => {
+    if (isDemo) {
+      return {
+        totalProperties: 24,
+        totalUnits: 486,
+        monthlyCollectionRate: 92.5,
+        outstandingPayments: 125000,
+        occupancyLabel: t("stats.occupancy"),
+        addedLabel: t("stats.addedThisMonth"),
+        collectionHint: t("stats.aboveTarget"),
+        overdueHint: t("stats.overdueCount"),
+      };
+    }
 
-  const propertyDistribution = useMemo(
-    () => [
-      { name: t("distribution.large"), value: 12, color: "#2563EB" },
-      { name: t("distribution.medium"), value: 8, color: "#0891B2" },
-      { name: t("distribution.small"), value: 4, color: "#059669" },
-    ],
-    [t],
-  );
+    const totalProperties = properties.length;
+    const totalUnits = properties.reduce((sum, p) => sum + p.totalUnits, 0);
+    const occupied = owners.length;
+    const occupancy =
+      totalUnits > 0 ? Math.round((occupied / totalUnits) * 100) : 0;
 
-  const recentActivities = [
-    {
-      id: 1,
-      type: "payment",
-      title: t("mockActivities.paymentReceived"),
-      description: `Fração A-101 - ${mockOwners[0].property} - Quota mensal`,
-      amount: mockOwners[0].monthlyQuota,
-      timestamp: new Date(now - 300000),
-      icon: "CreditCard",
-      iconColor: "var(--color-success)",
-    },
-    {
-      id: 2,
-      type: "owner",
-      title: t("mockActivities.newOwner"),
-      description: `${mockOwners[1].name} - Fração ${mockOwners[1].unit} - ${mockOwners[1].property}`,
-      timestamp: new Date(now - 1800000),
-      icon: "UserPlus",
-      iconColor: "var(--color-primary)",
-    },
-    {
-      id: 3,
-      type: "property",
-      title: t("mockActivities.propertyUpdated"),
-      description: `${mockProperties[1].name} - Regulamento interno atualizado`,
-      timestamp: new Date(now - 3600000),
-      icon: "Building2",
-      iconColor: "var(--color-accent)",
-    },
-    {
-      id: 4,
-      type: "payment",
-      title: t("mockActivities.paymentOverdue"),
-      description: `Fração ${mockOwners[4].unit} - ${mockOwners[4].property} - Quota em atraso`,
-      timestamp: new Date(now - 7200000),
-      icon: "AlertTriangle",
-      iconColor: "var(--color-warning)",
-    },
-    {
-      id: 5,
-      type: "maintenance",
-      title: t("mockActivities.maintenanceRequest"),
-      description: "Manutenção do elevador agendada - Torre do Tejo",
-      timestamp: new Date(now - 10800000),
-      icon: "Wrench",
-      iconColor: "var(--color-secondary)",
-    },
-  ];
+    return {
+      totalProperties,
+      totalUnits,
+      monthlyCollectionRate: 0,
+      outstandingPayments: 0,
+      occupancyLabel: t("stats.occupancyDynamic", { rate: occupancy }),
+      addedLabel: t("stats.portfolioReady"),
+      collectionHint: t("stats.noPaymentsYet"),
+      overdueHint: t("stats.noOutstanding"),
+    };
+  }, [isDemo, properties, owners, t]);
 
-  const upcomingPayments = mockOwners.slice(0, 4).map((owner, index) => ({
-    id: index + 1,
-    ownerName: owner.name,
-    unit: owner.unit,
-    property: owner.property,
-    amount: owner.monthlyQuota ?? 0,
-    dueDate: new Date(now + 86400000 * (index === 2 ? -2 : (index + 1) * 3)),
-    status:
-      index === 2
-        ? PaymentStatus.Overdue
-        : index === 1
-          ? PaymentStatus.Paid
-          : PaymentStatus.Pending,
-  }));
+  const collectionTrends = useMemo(() => {
+    if (isDemo) {
+      return [
+        { month: "Jan", collected: 450000, target: 500000 },
+        { month: "Feb", collected: 480000, target: 500000 },
+        { month: "Mar", collected: 465000, target: 500000 },
+        { month: "Apr", collected: 520000, target: 500000 },
+        { month: "May", collected: 495000, target: 500000 },
+        { month: "Jun", collected: 510000, target: 500000 },
+      ];
+    }
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+    const target = owners.reduce((s, o) => s + (o.monthlyQuota ?? 0), 0);
+    return months.map((month) => ({
+      month,
+      collected: 0,
+      target,
+    }));
+  }, [isDemo, owners]);
 
-  const formatPercentage = (value: number) => {
-    return `${value.toFixed(1)}%`;
-  };
+  const propertyDistribution = useMemo(() => {
+    if (isDemo) {
+      return [
+        { name: t("distribution.large"), value: 12, color: "#2563EB" },
+        { name: t("distribution.medium"), value: 8, color: "#0891B2" },
+        { name: t("distribution.small"), value: 4, color: "#059669" },
+      ];
+    }
+    const buckets = { large: 0, medium: 0, small: 0 };
+    for (const p of properties) {
+      if (p.totalUnits > 60) buckets.large += 1;
+      else if (p.totalUnits > 30) buckets.medium += 1;
+      else buckets.small += 1;
+    }
+    return [
+      { name: t("distribution.large"), value: buckets.large, color: "#2563EB" },
+      {
+        name: t("distribution.medium"),
+        value: buckets.medium,
+        color: "#0891B2",
+      },
+      { name: t("distribution.small"), value: buckets.small, color: "#059669" },
+    ];
+  }, [isDemo, properties, t]);
+
+  const recentActivities = useMemo(() => {
+    if (isDemo) {
+      return [
+        {
+          id: 1,
+          type: "payment",
+          title: t("mockActivities.paymentReceived"),
+          description: `Fração A-101 - ${owners[0]?.property ?? ""} - Quota mensal`,
+          amount: owners[0]?.monthlyQuota,
+          timestamp: new Date(now - 300000),
+          icon: "CreditCard",
+          iconColor: "var(--color-success)",
+        },
+        {
+          id: 2,
+          type: "owner",
+          title: t("mockActivities.newOwner"),
+          description: `${owners[1]?.name ?? ""} - Fração ${owners[1]?.unit ?? ""} - ${owners[1]?.property ?? ""}`,
+          timestamp: new Date(now - 1800000),
+          icon: "UserPlus",
+          iconColor: "var(--color-primary)",
+        },
+        {
+          id: 3,
+          type: "property",
+          title: t("mockActivities.propertyUpdated"),
+          description: `${properties[1]?.name ?? ""} - Regulamento interno atualizado`,
+          timestamp: new Date(now - 3600000),
+          icon: "Building2",
+          iconColor: "var(--color-accent)",
+        },
+        {
+          id: 4,
+          type: "payment",
+          title: t("mockActivities.paymentOverdue"),
+          description: `Fração ${owners[4]?.unit ?? ""} - ${owners[4]?.property ?? ""} - Quota em atraso`,
+          timestamp: new Date(now - 7200000),
+          icon: "AlertTriangle",
+          iconColor: "var(--color-warning)",
+        },
+        {
+          id: 5,
+          type: "maintenance",
+          title: t("mockActivities.maintenanceRequest"),
+          description: "Manutenção do elevador agendada - Torre do Tejo",
+          timestamp: new Date(now - 10800000),
+          icon: "Wrench",
+          iconColor: "var(--color-secondary)",
+        },
+      ];
+    }
+
+    const activities = [];
+    const orgName = portfolio.organization?.name;
+    if (orgName) {
+      activities.push({
+        id: 1,
+        type: "org",
+        title: t("portfolioActivities.orgCreated"),
+        description: orgName,
+        timestamp: new Date(now - 600000),
+        icon: "Building",
+        iconColor: "var(--color-primary)",
+      });
+    }
+    const condo = portfolio.condominiums[0];
+    if (condo) {
+      activities.push({
+        id: 2,
+        type: "property",
+        title: t("portfolioActivities.condoAdded"),
+        description: condo.name,
+        timestamp: new Date(now - 300000),
+        icon: "Building2",
+        iconColor: "var(--color-accent)",
+      });
+    }
+    if (owners.length > 0) {
+      activities.push({
+        id: 3,
+        type: "owner",
+        title: t("portfolioActivities.ownersImported"),
+        description: t("portfolioActivities.ownersImportedDesc", {
+          count: owners.length,
+        }),
+        timestamp: new Date(now - 60000),
+        icon: "UserPlus",
+        iconColor: "var(--color-success)",
+      });
+    }
+    return activities;
+  }, [isDemo, portfolio, owners, properties, now, t]);
+
+  const showEmptyCta = !isDemo && owners.length === 0;
+
+  const formatPercentage = (value: number) => `${value.toFixed(1)}%`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -136,7 +229,6 @@ function Dashboard() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Breadcrumb />
 
-          {/* Page Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-text-primary mb-2">
               {t("title")}
@@ -146,9 +238,34 @@ function Dashboard() {
             </p>
           </div>
 
-          {/* Summary Cards */}
+          {showEmptyCta && (
+            <div className="mb-8 bg-primary-50 border border-primary-100 rounded-lg p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p className="font-semibold text-text-primary">
+                  {t("emptyImport.title")}
+                </p>
+                <p className="text-sm text-text-secondary mt-1">
+                  {t("emptyImport.body")}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Link
+                  href="/properties-management"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-medium text-sm font-medium hover:bg-surface transition-smooth"
+                >
+                  {t("emptyImport.properties")}
+                </Link>
+                <Link
+                  href="/owners-management"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-700 transition-smooth"
+                >
+                  {t("emptyImport.owners")}
+                </Link>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Total Properties */}
             <div className="bg-surface rounded-lg p-6 shadow-card border border-border-light">
               <div className="flex items-center justify-between">
                 <div>
@@ -174,12 +291,11 @@ function Dashboard() {
                   color="var(--color-success)"
                 />
                 <span className="text-success text-sm font-medium ml-1">
-                  {t("stats.addedThisMonth")}
+                  {dashboardStats.addedLabel}
                 </span>
               </div>
             </div>
 
-            {/* Total Units */}
             <div className="bg-surface rounded-lg p-6 shadow-card border border-border-light">
               <div className="flex items-center justify-between">
                 <div>
@@ -201,12 +317,11 @@ function Dashboard() {
                   color="var(--color-text-secondary)"
                 />
                 <span className="text-text-secondary text-sm ml-1">
-                  {t("stats.occupancy")}
+                  {dashboardStats.occupancyLabel}
                 </span>
               </div>
             </div>
 
-            {/* Collection Rate */}
             <div className="bg-surface rounded-lg p-6 shadow-card border border-border-light">
               <div className="flex items-center justify-between">
                 <div>
@@ -228,12 +343,11 @@ function Dashboard() {
               <div className="mt-4 flex items-center">
                 <Icon name="Target" size={16} color="var(--color-success)" />
                 <span className="text-success text-sm font-medium ml-1">
-                  {t("stats.aboveTarget")}
+                  {dashboardStats.collectionHint}
                 </span>
               </div>
             </div>
 
-            {/* Outstanding Payments */}
             <div className="bg-surface rounded-lg p-6 shadow-card border border-border-light">
               <div className="flex items-center justify-between">
                 <div>
@@ -255,17 +369,14 @@ function Dashboard() {
               <div className="mt-4 flex items-center">
                 <Icon name="Clock" size={16} color="var(--color-warning)" />
                 <span className="text-warning text-sm font-medium ml-1">
-                  {t("stats.overdueCount")}
+                  {dashboardStats.overdueHint}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Panel - Charts and Activity */}
             <div className="lg:col-span-8 space-y-8">
-              {/* Collection Trends Chart */}
               <div className="bg-surface rounded-lg p-6 shadow-card border border-border-light">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold text-text-primary">
@@ -328,7 +439,6 @@ function Dashboard() {
                 </div>
               </div>
 
-              {/* Property Distribution */}
               <div className="bg-surface rounded-lg p-6 shadow-card border border-border-light">
                 <h2 className="text-xl font-semibold text-text-primary mb-6">
                   {t("charts.propertyDistribution")}
@@ -341,7 +451,7 @@ function Dashboard() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={propertyDistribution}
+                          data={propertyDistribution.filter((d) => d.value > 0)}
                           cx="50%"
                           cy="50%"
                           innerRadius={60}
@@ -349,9 +459,14 @@ function Dashboard() {
                           paddingAngle={5}
                           dataKey="value"
                         >
-                          {propertyDistribution.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
+                          {propertyDistribution
+                            .filter((d) => d.value > 0)
+                            .map((entry, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={entry.color}
+                              />
+                            ))}
                         </Pie>
                         <Tooltip
                           formatter={(value) => [
@@ -391,21 +506,11 @@ function Dashboard() {
                 </div>
               </div>
 
-              {/* Recent Activity */}
               <RecentActivity activities={recentActivities} />
             </div>
 
-            {/* Right Panel - Quick Actions and Upcoming Payments */}
             <div className="lg:col-span-4 space-y-8">
-              {/* Quick Actions */}
               <QuickActions />
-
-              {/* Upcoming Payments 
-              <UpcomingPayments
-                payments={upcomingPayments}
-                formatCurrency={formatCurrency}
-                
-              />*/}
             </div>
           </div>
         </div>

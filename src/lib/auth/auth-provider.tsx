@@ -18,8 +18,11 @@ import {
   consumeResetToken,
   createResetToken,
   DEMO_EMAIL,
+  getRegisteredAccount,
+  isDemoEmail,
   isKnownAccount,
   peekResetToken,
+  registerAccount,
   verifyCredentials,
 } from "./credentials";
 
@@ -36,13 +39,57 @@ const DEMO_USER: User = {
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function resolveUser(email: string): User {
+  const key = email.trim().toLowerCase();
+  if (isDemoEmail(key)) {
+    return { ...DEMO_USER, email: key };
+  }
+  const account = getRegisteredAccount(key);
+  if (!account) {
+    throw new Error("invalidCredentials");
+  }
+  return {
+    id: account.id,
+    email: account.email,
+    name: account.name,
+    role: account.role,
+    avatar: null,
+  };
+}
+
 const simulateLogin = (email: string, password: string): Promise<User> =>
   new Promise((resolve, reject) => {
     setTimeout(() => {
       if (verifyCredentials(email, password)) {
-        resolve({ ...DEMO_USER, email: email.trim().toLowerCase() });
+        try {
+          resolve(resolveUser(email));
+        } catch (err) {
+          reject(err);
+        }
       } else {
         reject(new Error("invalidCredentials"));
+      }
+    }, 500);
+  });
+
+const simulateSignup = (
+  name: string,
+  email: string,
+  password: string,
+): Promise<User> =>
+  new Promise((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        const account = registerAccount(name, email, password);
+        resolve({
+          id: account.id,
+          email: account.email,
+          name: account.name,
+          role: account.role,
+          avatar: null,
+        });
+      } catch (err) {
+        reject(err);
       }
     }, 500);
   });
@@ -137,6 +184,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [],
   );
 
+  const signup = useCallback(
+    async (
+      name: string,
+      email: string,
+      password: string,
+      options?: { rememberMe?: boolean },
+    ): Promise<void> => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const userData = await simulateSignup(name, email, password);
+        setUser(userData);
+        writeStoredUser(userData, options?.rememberMe ?? true);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "signupFailed";
+        setError(message);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
   const logout = useCallback(async (): Promise<void> => {
     try {
       await simulateLogout();
@@ -212,8 +283,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     async (currentPassword: string, newPassword: string): Promise<void> => {
       setError(null);
       try {
+        const current = readStoredUser();
+        if (!current) {
+          throw new Error("notAuthenticated");
+        }
         await delay(500);
-        changeStoredPassword(currentPassword, newPassword);
+        changeStoredPassword(current.email, currentPassword, newPassword);
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : "passwordChangeFailed";
@@ -231,6 +306,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isLoading,
       error,
       login,
+      signup,
       logout,
       updateUser,
       requestPasswordReset,
@@ -243,6 +319,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isLoading,
       error,
       login,
+      signup,
       logout,
       updateUser,
       requestPasswordReset,

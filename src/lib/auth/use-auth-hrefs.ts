@@ -11,6 +11,8 @@ export function useAuthHrefs() {
   return useMemo(
     () => ({
       login: localeHref(locale, "/login"),
+      signup: localeHref(locale, "/signup"),
+      onboarding: localeHref(locale, "/onboarding"),
       forgotPassword: localeHref(locale, "/forgot-password"),
       resetPassword: (token: string) =>
         localeHref(locale, "/reset-password", { token }),
