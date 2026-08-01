@@ -24,6 +24,10 @@ import {
 } from "recharts";
 import RecentActivity from "./components/recent-activity";
 import QuickActions from "./components/quick-actions";
+import OverdueCollections, {
+  buildOverdueItems,
+} from "./components/overdue-collections";
+import { mockPayments } from "@/fixtures/views";
 
 function Dashboard() {
   const t = useTranslations("dashboard");
@@ -47,17 +51,31 @@ function Dashboard() {
     }
   }, [isReady, mustOnboard, router]);
 
+  const overdueItems = useMemo(
+    () => buildOverdueItems(isDemo, mockPayments, owners),
+    [isDemo, owners],
+  );
+
+  const overdueTotal = useMemo(
+    () => overdueItems.reduce((sum, item) => sum + item.amount, 0),
+    [overdueItems],
+  );
+  const overdueHint =
+    overdueItems.length > 0
+      ? t("stats.overdueCount", { count: overdueItems.length })
+      : t("stats.noOutstanding");
+
   const dashboardStats = useMemo(() => {
     if (isDemo) {
       return {
         totalProperties: 24,
         totalUnits: 486,
         monthlyCollectionRate: 92.5,
-        outstandingPayments: 125000,
+        outstandingPayments: overdueTotal,
         occupancyLabel: t("stats.occupancy"),
         addedLabel: t("stats.addedThisMonth"),
         collectionHint: t("stats.aboveTarget"),
-        overdueHint: t("stats.overdueCount"),
+        overdueHint,
       };
     }
 
@@ -71,13 +89,13 @@ function Dashboard() {
       totalProperties,
       totalUnits,
       monthlyCollectionRate: 0,
-      outstandingPayments: 0,
+      outstandingPayments: overdueTotal,
       occupancyLabel: t("stats.occupancyDynamic", { rate: occupancy }),
       addedLabel: t("stats.portfolioReady"),
       collectionHint: t("stats.noPaymentsYet"),
-      overdueHint: t("stats.noOutstanding"),
+      overdueHint,
     };
-  }, [isDemo, properties, owners, t]);
+  }, [isDemo, properties, owners, overdueTotal, overdueHint, t]);
 
   const collectionTrends = useMemo(() => {
     if (isDemo) {
@@ -510,6 +528,10 @@ function Dashboard() {
             </div>
 
             <div className="lg:col-span-4 space-y-8">
+              <OverdueCollections
+                items={overdueItems}
+                formatCurrency={formatCurrency}
+              />
               <QuickActions />
             </div>
           </div>

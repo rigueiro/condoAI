@@ -9,16 +9,26 @@ import { mockOwners } from "@/fixtures/views";
 
 type ErrorsType = { [key: string]: string };
 
+export type RecordPaymentInitialValues = {
+  ownerName?: string;
+  property?: string;
+  unit?: string;
+  amount?: number | string;
+  notes?: string;
+};
+
 interface RecordPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: any) => void;
+  initialValues?: RecordPaymentInitialValues | null;
 }
 
 function RecordPaymentModal({
   isOpen,
   onClose,
   onSubmit,
+  initialValues,
 }: RecordPaymentModalProps) {
   const [formData, setFormData] = useState({
     ownerName: "",
@@ -67,17 +77,20 @@ function RecordPaymentModal({
   useEffect(() => {
     if (isOpen) {
       setFormData({
-        ownerName: "",
-        property: "",
-        unit: "",
-        amount: "",
+        ownerName: initialValues?.ownerName ?? "",
+        property: initialValues?.property ?? "",
+        unit: initialValues?.unit ?? "",
+        amount:
+          initialValues?.amount != null && initialValues.amount !== ""
+            ? String(initialValues.amount)
+            : "",
         paymentMethod: "Bank Transfer",
-        notes: "",
+        notes: initialValues?.notes ?? "",
         paymentDate: new Date().toISOString().split("T")[0],
       });
       setErrors({});
     }
-  }, [isOpen]);
+  }, [isOpen, initialValues]);
 
   const handleInputChange = (
     field: keyof typeof formData,

@@ -13,7 +13,7 @@
     "noPaymentsYet": "No payments yet",
     "noOutstanding": "None overdue",
     "aboveTarget": "Above target",
-    "overdueCount": "23 overdue"
+    "overdueCount": "{count} overdue"
   },
   "charts": {
     "collectionTrends": "Monthly Collection Trends",
@@ -70,22 +70,32 @@
     "owners": "Manage owners"
   },
   "upcomingPayments": {
-    "title": "Upcoming Payments",
+    "title": "Overdue quotas",
+    "subtitle": "Your daily collections job — remind owners, then record payments.",
     "viewAll": "View all",
     "unitProperty": "Unit {unit} • {property}",
+    "summaryCount": "{count} overdue",
     "status": {
-      "overdue": "Overdue",
-      "dueSoon": "Due Soon",
-      "upcoming": "Upcoming"
+      "overdue": "Overdue"
     },
     "dueDate": {
       "overdue": "{days} days overdue",
-      "today": "Due today",
-      "tomorrow": "Due tomorrow",
-      "inDays": "Due in {days} days"
+      "today": "Due today"
     },
-    "record": "Record",
-    "managePayments": "Manage Payments",
-    "sendReminders": "Send Reminders"
+    "record": "Record payment",
+    "sendReminder": "Send reminder",
+    "sending": "Sending…",
+    "reminded": "Reminded",
+    "remindedToday": "Reminder sent today",
+    "allReminded": "All reminded today",
+    "managePayments": "Manage payments",
+    "sendReminders": "Send reminders",
+    "reminderSentOne": "Payment reminder sent.",
+    "reminderSentMany": "Payment reminders sent to {count} owners.",
+    "paymentRecorded": "Payment recorded for {name}.",
+    "paymentRecordedGeneric": "Payment recorded.",
+    "recordNotes": "Quota {month}",
+    "emptyTitle": "No overdue quotas",
+    "emptyBody": "You're clear for today. Check back when new quotas fall due."
   }
 }

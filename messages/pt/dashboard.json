@@ -13,7 +13,7 @@
     "noPaymentsYet": "Sem pagamentos ainda",
     "noOutstanding": "Sem atrasos",
     "aboveTarget": "Acima da meta",
-    "overdueCount": "23 fora de prazo"
+    "overdueCount": "{count} fora de prazo"
   },
   "charts": {
     "collectionTrends": "Tendências Mensais de Cobrança",
@@ -70,22 +70,32 @@
     "owners": "Gerir proprietários"
   },
   "upcomingPayments": {
-    "title": "Pagamentos futuros",
+    "title": "Quotas em atraso",
+    "subtitle": "A cobrança do dia — avise os proprietários e depois registe os pagamentos.",
     "viewAll": "Ver todos",
     "unitProperty": "Fração {unit} • {property}",
+    "summaryCount": "{count} em atraso",
     "status": {
-      "overdue": "Em atraso",
-      "dueSoon": "Vence em breve",
-      "upcoming": "Próximo"
+      "overdue": "Em atraso"
     },
     "dueDate": {
       "overdue": "{days} dias em atraso",
-      "today": "Vence hoje",
-      "tomorrow": "Vence amanhã",
-      "inDays": "Vence em {days} dias"
+      "today": "Vence hoje"
     },
-    "record": "Registar",
-    "managePayments": "Gerir Pagamentos",
-    "sendReminders": "Enviar Avisos"
+    "record": "Registar pagamento",
+    "sendReminder": "Enviar aviso",
+    "sending": "A enviar…",
+    "reminded": "Avisado",
+    "remindedToday": "Aviso enviado hoje",
+    "allReminded": "Todos avisados hoje",
+    "managePayments": "Gerir pagamentos",
+    "sendReminders": "Enviar avisos",
+    "reminderSentOne": "Aviso de pagamento enviado.",
+    "reminderSentMany": "Avisos de pagamento enviados a {count} proprietários.",
+    "paymentRecorded": "Pagamento registado para {name}.",
+    "paymentRecordedGeneric": "Pagamento registado.",
+    "recordNotes": "Quota {month}",
+    "emptyTitle": "Sem quotas em atraso",
+    "emptyBody": "Está em dia. Volte quando novas quotas vencerem."
   }
 }
