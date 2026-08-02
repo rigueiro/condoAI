@@ -5,7 +5,7 @@ import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import Select from "@/components/ui/select";
-import { mockOwners } from "@/fixtures/views";
+import { useCollections } from "@/lib/collections";
 
 type ErrorsType = { [key: string]: string };
 
@@ -44,6 +44,7 @@ function RecordPaymentModal({
   const tVal = useTranslations("paymentTracking.recordPaymentModal.validation");
   const tMethods = useTranslations("paymentTracking.paymentMethods");
   const { formatCurrency, currencySymbol } = useFormatCurrency();
+  const { ownersWithBalances } = useCollections();
   const [errors, setErrors] = useState<ErrorsType>({});
 
   const paymentMethodKeys = [
@@ -62,13 +63,11 @@ function RecordPaymentModal({
   };
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mock data for dropdowns
-  const properties = mockOwners.map((o) => o.property).filter(
-    (name, index, arr) => arr.indexOf(name) === index,
-  );
+  const properties = ownersWithBalances
+    .map((o) => o.property)
+    .filter((name, index, arr) => name && arr.indexOf(name) === index);
 
-  // Mock owners data from domain fixtures
-  const owners = mockOwners.map((o) => ({
+  const owners = ownersWithBalances.map((o) => ({
     name: o.name,
     property: o.property,
     unit: o.unit,
@@ -154,9 +153,6 @@ function RecordPaymentModal({
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       onSubmit(formData);
     } catch (error) {
       console.error("Error recording payment:", error);

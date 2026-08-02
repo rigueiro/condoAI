@@ -7,53 +7,18 @@ import Icon from "@/components/icon";
 import RecordPaymentModal, {
   type RecordPaymentInitialValues,
 } from "@/app/[locale]/payment-tracking/components/record-payment-modal";
-import type { PaymentView } from "@/fixtures/views";
-import type { Owner } from "@/app/[locale]/owners-management/components/types";
+import {
+  useCollections,
+  useReminderCopy,
+  type OverdueItem,
+  type RecordPaymentInput,
+} from "@/lib/collections";
+import { useFormatCurrency } from "@/hooks/use-format-currency";
 
-export type OverdueItem = {
-  id: string;
-  ownerName: string;
-  unit: string;
-  property: string;
-  amount: number;
-  /** ISO date string for when the quota was due */
-  dueDate: string;
-  monthYear?: string;
-};
+export type { OverdueItem };
 
 type FormatCurrency = (amount: number) => string;
-
-const REMINDERS_STORAGE_KEY = "condoai.collections.reminded";
-
-type ReminderStore = {
-  date: string;
-  ids: string[];
-};
-
-function todayKey(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function readRemindedIds(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = window.sessionStorage.getItem(REMINDERS_STORAGE_KEY);
-    if (!raw) return new Set();
-    const parsed = JSON.parse(raw) as ReminderStore;
-    if (parsed.date !== todayKey()) return new Set();
-    return new Set(parsed.ids);
-  } catch {
-    return new Set();
-  }
-}
-
-function writeRemindedIds(ids: Set<string>): void {
-  if (typeof window === "undefined") return;
-  window.sessionStorage.setItem(
-    REMINDERS_STORAGE_KEY,
-    JSON.stringify({ date: todayKey(), ids: [...ids] } satisfies ReminderStore),
-  );
-}
+type FlashTone = "success" | "warning";
 
 function daysOverdue(dueDate: string): number {
   const due = new Date(`${dueDate}T00:00:00`);
@@ -65,57 +30,31 @@ function daysOverdue(dueDate: string): number {
   );
 }
 
-/** Build overdue rows from demo payments or live owner balances. */
-export function buildOverdueItems(
-  isDemo: boolean,
-  payments: PaymentView[],
-  owners: Owner[],
-): OverdueItem[] {
-  if (isDemo) {
-    return payments
-      .filter((p) => p.quotaStatus === "overdue")
-      .map((p) => ({
-        id: String(p.id),
-        ownerName: p.ownerName,
-        unit: p.unit,
-        property: p.property,
-        amount: p.amount,
-        dueDate: p.monthYear ? `${p.monthYear}-08` : p.date,
-        monthYear: p.monthYear,
-      }));
-  }
-
-  return owners
-    .filter((o) => o.paymentStatus === "overdue" && o.currentBalance > 0)
-    .map((o) => ({
-      id: o.id,
-      ownerName: o.name,
-      unit: o.unit,
-      property: o.property,
-      amount: o.currentBalance,
-      dueDate: o.lastPayment || todayKey(),
-    }));
-}
-
 function OverdueCollections({
-  items,
-  formatCurrency,
+  formatCurrency: formatCurrencyProp,
 }: {
-  items: OverdueItem[];
-  formatCurrency: FormatCurrency;
+  formatCurrency?: FormatCurrency;
 }) {
   const t = useTranslations("dashboard.upcomingPayments");
-  const [remindedIds, setRemindedIds] = useState<Set<string>>(() => new Set());
+  const { formatCurrency: formatCurrencyHook } = useFormatCurrency();
+  const formatCurrency = formatCurrencyProp ?? formatCurrencyHook;
+  const reminderCopy = useReminderCopy();
+
+  const {
+    overdueItems: items,
+    remindedIds,
+    recordPayment,
+    sendReminders,
+  } = useCollections();
+
   const [sendingIds, setSendingIds] = useState<Set<string>>(() => new Set());
-  const [flash, setFlash] = useState<string | null>(null);
+  const [flash, setFlash] = useState<{ message: string; tone: FlashTone } | null>(
+    null,
+  );
   const [isRecordOpen, setIsRecordOpen] = useState(false);
   const [recordInitial, setRecordInitial] =
     useState<RecordPaymentInitialValues | null>(null);
-  const [resolvedIds, setResolvedIds] = useState<Set<string>>(() => new Set());
-
-  useEffect(() => {
-    setRemindedIds(readRemindedIds());
-  }, []);
+  const [recordQuotaId, setRecordQuotaId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!flash) return;
@@ -123,32 +62,33 @@ function OverdueCollections({
     return () => window.clearTimeout(timer);
   }, [flash]);
 
-  const openItems = items.filter((item) => !resolvedIds.has(item.id));
-  const pendingReminderIds = openItems
+  const pendingReminderIds = items
     .filter((item) => !remindedIds.has(item.id))
     .map((item) => item.id);
-  const totalOutstanding = openItems.reduce((sum, item) => sum + item.amount, 0);
+  const totalOutstanding = items.reduce((sum, item) => sum + item.amount, 0);
   const isSending = sendingIds.size > 0;
 
-  const sendReminders = async (ids: string[]) => {
+  const handleSendReminders = async (ids: string[]) => {
     if (ids.length === 0 || isSending) return;
     setSendingIds(new Set(ids));
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    setRemindedIds((prev) => {
-      const next = new Set(prev);
-      for (const id of ids) next.add(id);
-      writeRemindedIds(next);
-      return next;
-    });
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const result = sendReminders(ids, reminderCopy);
     setSendingIds(new Set());
-    setFlash(
-      ids.length === 1
-        ? t("reminderSentOne")
-        : t("reminderSentMany", { count: ids.length }),
-    );
+    if (!result.sent) {
+      setFlash({ message: t("reminderNoEmail"), tone: "warning" });
+      return;
+    }
+    setFlash({
+      message:
+        result.count === 1
+          ? t("reminderSentOne")
+          : t("reminderSentMany", { count: result.count }),
+      tone: "success",
+    });
   };
 
   const openRecord = (item: OverdueItem) => {
+    setRecordQuotaId(item.id);
     setRecordInitial({
       ownerName: item.ownerName,
       property: item.property,
@@ -164,25 +104,20 @@ function OverdueCollections({
   const closeRecord = () => {
     setIsRecordOpen(false);
     setRecordInitial(null);
+    setRecordQuotaId(null);
   };
 
-  const handleRecordSubmit = (data: {
-    ownerName?: string;
-    property?: string;
-    unit?: string;
-  }) => {
-    const match = openItems.find(
-      (item) =>
-        item.ownerName === data.ownerName &&
-        item.property === data.property &&
-        item.unit === data.unit,
-    );
-    if (match) {
-      setResolvedIds((prev) => new Set(prev).add(match.id));
-      setFlash(t("paymentRecorded", { name: match.ownerName }));
-    } else {
-      setFlash(t("paymentRecordedGeneric"));
-    }
+  const handleRecordSubmit = (data: RecordPaymentInput) => {
+    const result = recordPayment({
+      ...data,
+      quotaId: recordQuotaId ?? undefined,
+    });
+    setFlash({
+      message: result
+        ? t("paymentRecorded", { name: data.ownerName })
+        : t("paymentRecordedGeneric"),
+      tone: "success",
+    });
     closeRecord();
   };
 
@@ -204,7 +139,7 @@ function OverdueCollections({
           </Link>
         </div>
 
-        {openItems.length > 0 && (
+        {items.length > 0 && (
           <div className="mb-5 flex items-center gap-4 text-sm">
             <span className="inline-flex items-center gap-1.5 text-warning font-medium">
               <Icon
@@ -212,7 +147,7 @@ function OverdueCollections({
                 size={14}
                 color="var(--color-warning)"
               />
-              {t("summaryCount", { count: openItems.length })}
+              {t("summaryCount", { count: items.length })}
             </span>
             <span className="text-text-secondary">
               {formatCurrency(totalOutstanding)}
@@ -221,18 +156,36 @@ function OverdueCollections({
         )}
 
         {flash && (
-          <div className="mb-4 p-3 rounded-lg bg-success-50 border border-success-100 flex items-start gap-2">
+          <div
+            className={`mb-4 p-3 rounded-lg border flex items-start gap-2 ${
+              flash.tone === "warning"
+                ? "bg-warning-50 border-warning-100"
+                : "bg-success-50 border-success-100"
+            }`}
+          >
             <Icon
-              name="CheckCircle2"
+              name={
+                flash.tone === "warning" ? "AlertTriangle" : "CheckCircle2"
+              }
               size={16}
-              color="var(--color-success)"
+              color={
+                flash.tone === "warning"
+                  ? "var(--color-warning)"
+                  : "var(--color-success)"
+              }
               className="mt-0.5 shrink-0"
             />
-            <p className="text-sm text-success">{flash}</p>
+            <p
+              className={`text-sm ${
+                flash.tone === "warning" ? "text-warning" : "text-success"
+              }`}
+            >
+              {flash.message}
+            </p>
           </div>
         )}
 
-        {openItems.length === 0 ? (
+        {items.length === 0 ? (
           <div className="py-8 text-center">
             <div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-success-50 flex items-center justify-center">
               <Icon
@@ -248,7 +201,7 @@ function OverdueCollections({
           </div>
         ) : (
           <div className="space-y-3">
-            {openItems.map((item) => {
+            {items.map((item) => {
               const overdueDays = daysOverdue(item.dueDate);
               const reminded = remindedIds.has(item.id);
               const sending = sendingIds.has(item.id);
@@ -302,7 +255,7 @@ function OverdueCollections({
                       <button
                         type="button"
                         disabled={sending || reminded || isSending}
-                        onClick={() => void sendReminders([item.id])}
+                        onClick={() => void handleSendReminders([item.id])}
                         className="flex items-center justify-center space-x-1 px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary-700 transition-smooth text-xs font-medium disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         {sending ? (
@@ -339,16 +292,17 @@ function OverdueCollections({
             <button
               type="button"
               disabled={isSending || pendingReminderIds.length === 0}
-              onClick={() => void sendReminders(pendingReminderIds)}
+              onClick={() => void handleSendReminders(pendingReminderIds)}
               className="flex items-center justify-center space-x-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-700 transition-smooth text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSending && pendingReminderIds.every((id) => sendingIds.has(id)) ? (
+              {isSending &&
+              pendingReminderIds.every((id) => sendingIds.has(id)) ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <Icon name="Bell" size={16} />
               )}
               <span>
-                {pendingReminderIds.length === 0 && openItems.length > 0
+                {pendingReminderIds.length === 0 && items.length > 0
                   ? t("allReminded")
                   : t("sendReminders")}
               </span>

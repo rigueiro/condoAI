@@ -1,7 +1,6 @@
 "use client";
 
-// src/pages/payment-tracking/index.jsx
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import CollectionSummary from "./components/collection-summary";
 import PaymentHistoryTable from "./components/payment-history-table";
@@ -12,14 +11,14 @@ import CollectionAnalytics from "./components/collection-analytics";
 import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Button from "@/components/ui/button";
-
-import { mockPayments } from "./__fixtures__/mock-payments";
 import {
-  buildCollectionFromProperties,
-  mockProperties,
-} from "@/fixtures/views";
-
-type Payment = (typeof mockPayments)[number];
+  useCollections,
+  useReminderCopy,
+  type PaymentRow,
+  type RecordPaymentInput,
+} from "@/lib/collections";
+import { usePortfolio } from "@/lib/portfolio";
+import { buildCollectionFromProperties } from "@/fixtures/views";
 
 interface Filters {
   dateRange: { start: string; end: string };
@@ -31,11 +30,20 @@ interface Filters {
 
 function PaymentTracking() {
   const t = useTranslations("paymentTracking");
+  const tDash = useTranslations("dashboard.upcomingPayments");
+  const { properties } = usePortfolio();
+  const reminderCopy = useReminderCopy();
+  const {
+    payments: paymentHistory,
+    recordPayment,
+    sendReminders,
+  } = useCollections();
 
   const [isRecordPaymentModalOpen, setIsRecordPaymentModalOpen] =
     useState(false);
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
   const [selectedPayments, setSelectedPayments] = useState<number[]>([]);
+  const [flash, setFlash] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
     dateRange: { start: "", end: "" },
     property: "",
@@ -44,26 +52,18 @@ function PaymentTracking() {
     searchTerm: "",
   });
 
-  const collectionData = buildCollectionFromProperties(mockProperties);
+  const collectionData = useMemo(
+    () => buildCollectionFromProperties(properties),
+    [properties],
+  );
 
-  const [paymentHistory, setPaymentHistory] = useState<Payment[]>([...mockPayments]);
-
-  const handleRecordPayment = (paymentData: Payment) => {
-    const newPayment: Payment = {
-      id: paymentHistory.length + 1,
-      date: new Date().toISOString().split("T")[0],
-      ownerName: paymentData.ownerName,
-      property: paymentData.property,
-      ...(paymentData.propertyId != null && { propertyId: paymentData.propertyId }),
-      unit: paymentData.unit,
-      amount: paymentData.amount,
-      paymentMethod: paymentData.paymentMethod,
-      status: "completed",
-      receiptNumber: `RCP-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
-      timestamp: new Date().toISOString(),
-    };
-
-    setPaymentHistory([newPayment, ...paymentHistory]);
+  const handleRecordPayment = (paymentData: RecordPaymentInput) => {
+    const result = recordPayment(paymentData);
+    setFlash(
+      result
+        ? tDash("paymentRecorded", { name: paymentData.ownerName })
+        : tDash("paymentRecordedGeneric"),
+    );
     setIsRecordPaymentModalOpen(false);
   };
 
@@ -73,42 +73,26 @@ function PaymentTracking() {
   };
 
   const handlePaymentSelect = (paymentId: number, isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedPayments([...selectedPayments, paymentId]);
-    } else {
-      setSelectedPayments(selectedPayments.filter((id) => id !== paymentId));
-    }
+    setSelectedPayments((prev) =>
+      isSelected ? [...prev, paymentId] : prev.filter((id) => id !== paymentId),
+    );
   };
 
   const handleSelectAll = (isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedPayments(paymentHistory.map((payment) => payment.id));
-    } else {
-      setSelectedPayments([]);
-    }
-  };
-
-  const handleFiltersChange = (newFilters: Filters) => {
-    setFilters(newFilters);
-  };
-
-  const handleExportReport = () => {
-    console.log("Exporting payment report...");
-  };
-
-  const handleViewReceipt = (payment: Payment) => {
-    console.log("Viewing receipt for payment:", payment.receiptNumber);
-  };
-
-  const handleSendReminder = (payment: Payment) => {
-    console.log("Sending reminder for payment:", payment.id);
-  };
-
-  const handleMarkDisputed = (payment: Payment) => {
-    const updatedHistory = paymentHistory.map((p) =>
-      p.id === payment.id ? { ...p, status: "disputed" as const } : p,
+    setSelectedPayments(
+      isSelected ? paymentHistory.map((payment) => payment.id) : [],
     );
-    setPaymentHistory(updatedHistory);
+  };
+
+  const handleSendReminder = (payment: PaymentRow) => {
+    if (payment.quotaStatus !== "overdue" && payment.quotaStatus !== "pending") {
+      setFlash(tDash("reminderNoEmail"));
+      return;
+    }
+    const result = sendReminders([payment.quotaId], reminderCopy);
+    setFlash(
+      result.sent ? tDash("reminderSentOne") : tDash("reminderNoEmail"),
+    );
   };
 
   const filteredPayments = paymentHistory.filter((payment) => {
@@ -116,20 +100,15 @@ function PaymentTracking() {
       !filters.property ||
       payment.property.toLowerCase().includes(filters.property.toLowerCase());
     const matchesStatus = !filters.status || payment.status === filters.status;
+    const term = filters.searchTerm.toLowerCase();
     const matchesSearch =
-      !filters.searchTerm ||
-      payment.ownerName
-        .toLowerCase()
-        .includes(filters.searchTerm.toLowerCase()) ||
-      payment.property
-        .toLowerCase()
-        .includes(filters.searchTerm.toLowerCase()) ||
-      payment.unit.toLowerCase().includes(filters.searchTerm.toLowerCase());
-
+      !term ||
+      payment.ownerName.toLowerCase().includes(term) ||
+      payment.property.toLowerCase().includes(term) ||
+      payment.unit.toLowerCase().includes(term);
     const matchesDateRange =
       (!filters.dateRange.start || payment.date >= filters.dateRange.start) &&
       (!filters.dateRange.end || payment.date <= filters.dateRange.end);
-
     const matchesAmountRange =
       (!filters.amountRange.min ||
         payment.amount >= parseFloat(filters.amountRange.min)) &&
@@ -153,7 +132,6 @@ function PaymentTracking() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Breadcrumb />
 
-          {/* Page Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold text-text-primary mb-2">
@@ -173,7 +151,7 @@ function PaymentTracking() {
               <Button
                 variant="outline"
                 iconName="Download"
-                onClick={handleExportReport}
+                onClick={() => console.log("Exporting payment report...")}
                 className="w-full sm:w-auto"
               >
                 {t("exportReport")}
@@ -188,33 +166,37 @@ function PaymentTracking() {
             </div>
           </div>
 
-          {/* Collection Summary */}
+          {flash && (
+            <div className="mb-6 p-3 rounded-lg bg-success-50 border border-success-100 text-sm text-success">
+              {flash}
+            </div>
+          )}
+
           <CollectionSummary collectionData={collectionData} />
 
-          {/* Main Content Grid */}
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mt-8">
-            {/* Left Panel - Payment History */}
             <div className="xl:col-span-8 space-y-6">
-              {/* Filters */}
               <PaymentFilters
                 filters={filters}
-                onFiltersChange={handleFiltersChange}
+                onFiltersChange={setFilters}
                 paymentHistory={paymentHistory}
               />
 
-              {/* Payment History Table */}
               <PaymentHistoryTable
                 payments={filteredPayments}
                 selectedPayments={selectedPayments}
                 onPaymentSelect={handlePaymentSelect}
                 onSelectAll={handleSelectAll}
-                onViewReceipt={handleViewReceipt}
+                onViewReceipt={(payment) =>
+                  console.log("Viewing receipt for payment:", payment.receiptNumber)
+                }
                 onSendReminder={handleSendReminder}
-                onMarkDisputed={handleMarkDisputed}
+                onMarkDisputed={(payment) =>
+                  console.log("Mark disputed:", payment.quotaId)
+                }
               />
             </div>
 
-            {/* Right Panel - Analytics */}
             <div className="xl:col-span-4">
               <CollectionAnalytics
                 collectionData={collectionData}
@@ -223,7 +205,7 @@ function PaymentTracking() {
             </div>
           </div>
         </div>
-        {/* Modals */}
+
         <RecordPaymentModal
           isOpen={isRecordPaymentModalOpen}
           onClose={() => setIsRecordPaymentModalOpen(false)}

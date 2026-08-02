@@ -7,6 +7,7 @@ import { hasLocale } from "next-intl";
 import "../globals.css";
 import { AuthProvider } from "@/lib/auth";
 import { PortfolioProvider } from "@/lib/portfolio";
+import { CollectionsProvider } from "@/lib/collections";
 import { ThemeProvider, ThemeScript } from "@/lib/theme";
 import { routing } from "@/i18n/routing";
 
@@ -63,7 +64,9 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
             <AuthProvider>
-              <PortfolioProvider>{children}</PortfolioProvider>
+              <PortfolioProvider>
+                <CollectionsProvider>{children}</CollectionsProvider>
+              </PortfolioProvider>
             </AuthProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

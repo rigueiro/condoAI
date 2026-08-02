@@ -24,10 +24,8 @@ import {
 } from "recharts";
 import RecentActivity from "./components/recent-activity";
 import QuickActions from "./components/quick-actions";
-import OverdueCollections, {
-  buildOverdueItems,
-} from "./components/overdue-collections";
-import { mockPayments } from "@/fixtures/views";
+import OverdueCollections from "./components/overdue-collections";
+import { useCollections } from "@/lib/collections";
 
 function Dashboard() {
   const t = useTranslations("dashboard");
@@ -42,6 +40,7 @@ function Dashboard() {
     isReady,
     needsOnboarding: mustOnboard,
   } = usePortfolio();
+  const { overdueItems, ownersWithBalances } = useCollections();
 
   const [now] = useState(() => Date.now());
 
@@ -51,15 +50,11 @@ function Dashboard() {
     }
   }, [isReady, mustOnboard, router]);
 
-  const overdueItems = useMemo(
-    () => buildOverdueItems(isDemo, mockPayments, owners),
-    [isDemo, owners],
-  );
-
   const overdueTotal = useMemo(
     () => overdueItems.reduce((sum, item) => sum + item.amount, 0),
     [overdueItems],
   );
+  const displayOwners = ownersWithBalances.length > 0 ? ownersWithBalances : owners;
   const overdueHint =
     overdueItems.length > 0
       ? t("stats.overdueCount", { count: overdueItems.length })
@@ -81,7 +76,7 @@ function Dashboard() {
 
     const totalProperties = properties.length;
     const totalUnits = properties.reduce((sum, p) => sum + p.totalUnits, 0);
-    const occupied = owners.length;
+    const occupied = displayOwners.length;
     const occupancy =
       totalUnits > 0 ? Math.round((occupied / totalUnits) * 100) : 0;
 
@@ -95,8 +90,7 @@ function Dashboard() {
       collectionHint: t("stats.noPaymentsYet"),
       overdueHint,
     };
-  }, [isDemo, properties, owners, overdueTotal, overdueHint, t]);
-
+  }, [isDemo, properties, displayOwners, overdueTotal, overdueHint, t]);
   const collectionTrends = useMemo(() => {
     if (isDemo) {
       return [
@@ -109,13 +103,13 @@ function Dashboard() {
       ];
     }
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-    const target = owners.reduce((s, o) => s + (o.monthlyQuota ?? 0), 0);
+    const target = displayOwners.reduce((s, o) => s + (o.monthlyQuota ?? 0), 0);
     return months.map((month) => ({
       month,
       collected: 0,
       target,
     }));
-  }, [isDemo, owners]);
+  }, [isDemo, displayOwners]);
 
   const propertyDistribution = useMemo(() => {
     if (isDemo) {
@@ -149,8 +143,8 @@ function Dashboard() {
           id: 1,
           type: "payment",
           title: t("mockActivities.paymentReceived"),
-          description: `Fração A-101 - ${owners[0]?.property ?? ""} - Quota mensal`,
-          amount: owners[0]?.monthlyQuota,
+          description: `Fração A-101 - ${displayOwners[0]?.property ?? ""} - Quota mensal`,
+          amount: displayOwners[0]?.monthlyQuota,
           timestamp: new Date(now - 300000),
           icon: "CreditCard",
           iconColor: "var(--color-success)",
@@ -159,7 +153,7 @@ function Dashboard() {
           id: 2,
           type: "owner",
           title: t("mockActivities.newOwner"),
-          description: `${owners[1]?.name ?? ""} - Fração ${owners[1]?.unit ?? ""} - ${owners[1]?.property ?? ""}`,
+          description: `${displayOwners[1]?.name ?? ""} - Fração ${displayOwners[1]?.unit ?? ""} - ${displayOwners[1]?.property ?? ""}`,
           timestamp: new Date(now - 1800000),
           icon: "UserPlus",
           iconColor: "var(--color-primary)",
@@ -177,7 +171,7 @@ function Dashboard() {
           id: 4,
           type: "payment",
           title: t("mockActivities.paymentOverdue"),
-          description: `Fração ${owners[4]?.unit ?? ""} - ${owners[4]?.property ?? ""} - Quota em atraso`,
+          description: `Fração ${displayOwners[4]?.unit ?? ""} - ${displayOwners[4]?.property ?? ""} - Quota em atraso`,
           timestamp: new Date(now - 7200000),
           icon: "AlertTriangle",
           iconColor: "var(--color-warning)",
@@ -219,13 +213,13 @@ function Dashboard() {
         iconColor: "var(--color-accent)",
       });
     }
-    if (owners.length > 0) {
+    if (displayOwners.length > 0) {
       activities.push({
         id: 3,
         type: "owner",
         title: t("portfolioActivities.ownersImported"),
         description: t("portfolioActivities.ownersImportedDesc", {
-          count: owners.length,
+          count: displayOwners.length,
         }),
         timestamp: new Date(now - 60000),
         icon: "UserPlus",
@@ -233,9 +227,9 @@ function Dashboard() {
       });
     }
     return activities;
-  }, [isDemo, portfolio, owners, properties, now, t]);
+  }, [isDemo, portfolio, displayOwners, properties, now, t]);
 
-  const showEmptyCta = !isDemo && owners.length === 0;
+  const showEmptyCta = !isDemo && displayOwners.length === 0;
 
   const formatPercentage = (value: number) => `${value.toFixed(1)}%`;
 
@@ -528,10 +522,7 @@ function Dashboard() {
             </div>
 
             <div className="lg:col-span-4 space-y-8">
-              <OverdueCollections
-                items={overdueItems}
-                formatCurrency={formatCurrency}
-              />
+              <OverdueCollections formatCurrency={formatCurrency} />
               <QuickActions />
             </div>
           </div>

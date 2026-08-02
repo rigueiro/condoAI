@@ -90,12 +90,19 @@
     "allReminded": "Todos avisados hoje",
     "managePayments": "Gerir pagamentos",
     "sendReminders": "Enviar avisos",
-    "reminderSentOne": "Aviso de pagamento enviado.",
-    "reminderSentMany": "Avisos de pagamento enviados a {count} proprietários.",
+    "reminderSentOne": "Aviso de pagamento aberto no seu cliente de email.",
+    "reminderSentMany": "Avisos de pagamento abertos para {count} proprietários.",
+    "reminderNoEmail": "Sem email do proprietário — adicione um contacto antes de enviar.",
     "paymentRecorded": "Pagamento registado para {name}.",
     "paymentRecordedGeneric": "Pagamento registado.",
     "recordNotes": "Quota {month}",
     "emptyTitle": "Sem quotas em atraso",
-    "emptyBody": "Está em dia. Volte quando novas quotas vencerem."
+    "emptyBody": "Está em dia. Volte quando novas quotas vencerem.",
+    "email": {
+      "subjectOne": "Aviso de pagamento — quota de condomínio",
+      "subjectMany": "Aviso de pagamento — quotas de condomínio em atraso",
+      "bodyOne": "Exmo(a). Sr(a). {name},\n\nVimos por este meio recordar que a quota de condomínio da fração {unit} em {property} ({month}), no valor de {amount}, se encontra em atraso.\n\nAgradecemos que proceda ao pagamento com a maior brevidade possível.\n\nCom os melhores cumprimentos.",
+      "bodyMany": "Exmos(as). Senhores(as),\n\nVimos recordar que as seguintes quotas de condomínio ({count}) se encontram em atraso:\n\n{list}\n\nAgradecemos que procedam ao pagamento com a maior brevidade possível.\n\nCom os melhores cumprimentos."
+    }
   }
 }

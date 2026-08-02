@@ -336,7 +336,8 @@ function PaymentHistoryTable({
                     >
                       <Icon name="FileText" size={16} />
                     </button>
-                    {payment.status === "pending" && (
+                    {(payment.status === "pending" ||
+                      payment.status === "failed") && (
                       <button
                         onClick={() => onSendReminder(payment)}
                         className="p-1 text-text-secondary hover:text-warning transition-smooth"
@@ -418,7 +419,8 @@ function PaymentHistoryTable({
                     >
                       <Icon name="FileText" size={14} />
                     </button>
-                    {payment.status === "pending" && (
+                    {(payment.status === "pending" ||
+                      payment.status === "failed") && (
                       <button
                         onClick={() => onSendReminder(payment)}
                         className="p-1 text-text-secondary hover:text-warning transition-smooth"

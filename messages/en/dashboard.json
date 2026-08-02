@@ -90,12 +90,19 @@
     "allReminded": "All reminded today",
     "managePayments": "Manage payments",
     "sendReminders": "Send reminders",
-    "reminderSentOne": "Payment reminder sent.",
-    "reminderSentMany": "Payment reminders sent to {count} owners.",
+    "reminderSentOne": "Payment reminder opened in your email client.",
+    "reminderSentMany": "Payment reminders opened for {count} owners.",
+    "reminderNoEmail": "No owner email on file — add a contact before sending.",
     "paymentRecorded": "Payment recorded for {name}.",
     "paymentRecordedGeneric": "Payment recorded.",
     "recordNotes": "Quota {month}",
     "emptyTitle": "No overdue quotas",
-    "emptyBody": "You're clear for today. Check back when new quotas fall due."
+    "emptyBody": "You're clear for today. Check back when new quotas fall due.",
+    "email": {
+      "subjectOne": "Payment reminder — condominium quota",
+      "subjectMany": "Payment reminder — overdue condominium quotas",
+      "bodyOne": "Dear {name},\n\nThis is a reminder that the condominium quota for unit {unit} at {property} ({month}) of {amount} is overdue.\n\nPlease arrange payment at your earliest convenience.\n\nThank you.",
+      "bodyMany": "Dear owners,\n\nThis is a reminder that the following condominium quotas ({count}) are overdue:\n\n{list}\n\nPlease arrange payment at your earliest convenience.\n\nThank you."
+    }
   }
 }
