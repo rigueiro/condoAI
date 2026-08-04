@@ -112,7 +112,7 @@ function AccountPage() {
   const {
     organization: portfolioOrg,
     isDemo,
-    properties,
+    portfolio,
     updateOrganization,
   } = usePortfolio();
   const router = useRouter();
@@ -144,16 +144,19 @@ function AccountPage() {
         ...DEFAULT_SUBSCRIPTION.usage,
         properties: {
           ...DEFAULT_SUBSCRIPTION.usage.properties,
-          used: properties.length,
+          used: portfolio.condominiums.length,
         },
         units: {
           ...DEFAULT_SUBSCRIPTION.usage.units,
-          used: properties.reduce((s, p) => s + p.totalUnits, 0),
+          used: portfolio.condominiums.reduce(
+            (s, c) => s + c.numberOfUnits,
+            0,
+          ),
         },
         users: { ...DEFAULT_SUBSCRIPTION.usage.users, used: 1 },
       },
     };
-  }, [isDemo, properties]);
+  }, [isDemo, portfolio]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {

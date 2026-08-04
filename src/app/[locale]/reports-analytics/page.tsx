@@ -10,7 +10,8 @@ import ChartsSection from "./components/charts-section";
 import DataTables from "./components/data-tables";
 import GenerateReportSection from "./components/generate-report-section";
 import type { Filters } from "./components/control-panel";
-import { mockProperties } from "@/fixtures/views";
+import { mockCondominiums } from "@/fixtures/domain";
+import { mockCondoStats } from "@/fixtures/views";
 
 function ReportsAnalytics() {
   const t = useTranslations("reportsAnalytics");
@@ -40,15 +41,16 @@ function ReportsAnalytics() {
       { month: "Dec 2023", collected: 461000, target: 480000, rate: 96.0 },
       { month: "Jan 2024", collected: 472000, target: 500000, rate: 94.4 },
     ],
-    propertyPerformance: mockProperties.map((p) => {
-      const target = p.averageFee * p.totalUnits;
-      const collected = Math.round(target * (p.collectionRate / 100));
+    propertyPerformance: mockCondominiums.map((condo) => {
+      const stats = mockCondoStats(condo);
+      const target = stats.averageFee * condo.numberOfUnits;
+      const collected = Math.round(target * (stats.collectionRate / 100));
       return {
-        property: p.name,
-        units: p.totalUnits,
+        property: condo.name,
+        units: condo.numberOfUnits,
         collected,
         outstanding: Math.round(target - collected),
-        rate: p.collectionRate,
+        rate: stats.collectionRate,
       };
     }),
     paymentDistribution: [

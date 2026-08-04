@@ -1,1 +1,1 @@
-export { mockProperties } from "@/fixtures/views";
+export { mockCondominiums as mockProperties } from "@/fixtures/domain";

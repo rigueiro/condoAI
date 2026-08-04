@@ -14,6 +14,15 @@ function storageKey(email: string): string {
   return `${STORAGE_PREFIX}${email.trim().toLowerCase()}`;
 }
 
+function normalizeCondominium(condo: Condominium): Condominium {
+  return {
+    ...condo,
+    buildingType: condo.buildingType ?? "mid-rise",
+    status: condo.status ?? "active",
+    commonAreas: condo.commonAreas ?? [],
+  };
+}
+
 export function readPortfolio(email: string): Portfolio {
   if (!isBrowser()) return { ...EMPTY_PORTFOLIO };
   try {
@@ -22,7 +31,7 @@ export function readPortfolio(email: string): Portfolio {
     const parsed = JSON.parse(raw) as Portfolio;
     return {
       organization: parsed.organization ?? null,
-      condominiums: parsed.condominiums ?? [],
+      condominiums: (parsed.condominiums ?? []).map(normalizeCondominium),
       units: parsed.units ?? [],
       owners: parsed.owners ?? [],
       onboardingStep: parsed.onboardingStep ?? 1,
@@ -115,4 +124,72 @@ export function setOnboardingStep(
   const next: Portfolio = { ...current, onboardingStep: step };
   writePortfolio(email, next);
   return next;
+}
+
+export function upsertCondominium(
+  email: string,
+  condominium: Condominium,
+): Portfolio {
+  const current = readPortfolio(email);
+  const exists = current.condominiums.some((c) => c.id === condominium.id);
+  const condominiums = exists
+    ? current.condominiums.map((c) =>
+        c.id === condominium.id ? condominium : c,
+      )
+    : [...current.condominiums, condominium];
+  const next: Portfolio = { ...current, condominiums };
+  writePortfolio(email, next);
+  return next;
+}
+
+export function removeCondominium(
+  email: string,
+  condominiumId: string,
+): Portfolio {
+  const current = readPortfolio(email);
+  const unitIds = new Set(
+    current.units
+      .filter((u) => u.condominiumId === condominiumId)
+      .map((u) => u.id),
+  );
+  const next: Portfolio = {
+    ...current,
+    condominiums: current.condominiums.filter((c) => c.id !== condominiumId),
+    units: current.units.filter((u) => u.condominiumId !== condominiumId),
+    owners: current.owners.filter((o) => !unitIds.has(o.unitId)),
+  };
+  writePortfolio(email, next);
+  return next;
+}
+
+/** Pure in-memory upsert (demo / unsaved portfolios). */
+export function upsertCondominiumInMemory(
+  portfolio: Portfolio,
+  condominium: Condominium,
+): Portfolio {
+  const exists = portfolio.condominiums.some((c) => c.id === condominium.id);
+  const condominiums = exists
+    ? portfolio.condominiums.map((c) =>
+        c.id === condominium.id ? condominium : c,
+      )
+    : [...portfolio.condominiums, condominium];
+  return { ...portfolio, condominiums };
+}
+
+/** Pure in-memory remove with unit/owner cascade. */
+export function removeCondominiumInMemory(
+  portfolio: Portfolio,
+  condominiumId: string,
+): Portfolio {
+  const unitIds = new Set(
+    portfolio.units
+      .filter((u) => u.condominiumId === condominiumId)
+      .map((u) => u.id),
+  );
+  return {
+    ...portfolio,
+    condominiums: portfolio.condominiums.filter((c) => c.id !== condominiumId),
+    units: portfolio.units.filter((u) => u.condominiumId !== condominiumId),
+    owners: portfolio.owners.filter((o) => !unitIds.has(o.unitId)),
+  };
 }

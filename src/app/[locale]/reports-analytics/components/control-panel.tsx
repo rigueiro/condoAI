@@ -4,7 +4,7 @@ import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
 import Select from "@/components/ui/select";
 import { format } from "date-fns";
-import { mockProperties } from "@/fixtures/views";
+import { mockCondominiums } from "@/fixtures/domain";
 
 type DataRange = {
   start: Date;
@@ -45,7 +45,7 @@ function ControlPanel({
 
   const propertyOptions = [
     { id: "all", name: t("allProperties") },
-    ...mockProperties.map((p) => ({ id: p.id, name: p.name })),
+    ...mockCondominiums.map((c) => ({ id: c.id, name: c.name })),
   ];
 
   const presetRanges = [

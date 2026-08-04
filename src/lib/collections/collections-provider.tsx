@@ -11,6 +11,7 @@ import {
 import { useUser } from "@/lib/auth";
 import { usePortfolio } from "@/lib/portfolio";
 import type { Owner as OwnerView } from "@/app/[locale]/owners-management/components/types";
+import type { QuotaPayment } from "@/types";
 import { monthYearFromDate } from "./dates";
 import {
   openPaymentReminders,
@@ -53,6 +54,7 @@ export type RecordPaymentInput = {
 
 interface CollectionsContextValue {
   isReady: boolean;
+  quotas: QuotaPayment[];
   payments: PaymentRow[];
   overdueItems: OverdueItem[];
   ownersWithBalances: OwnerView[];
@@ -239,6 +241,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CollectionsContextValue>(
     () => ({
       isReady: Boolean(email),
+      quotas: state.quotas,
       payments,
       overdueItems,
       ownersWithBalances,
@@ -249,6 +252,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
     }),
     [
       email,
+      state.quotas,
       payments,
       overdueItems,
       ownersWithBalances,

@@ -6,12 +6,12 @@ export {
   mockAnnualBudgets,
 } from "./domain";
 export {
-  mockProperties,
   mockOwners,
   mockPayments,
-  toPropertyView,
+  mockPortfolio,
   toOwnerView,
   toPaymentView,
-  buildCollectionFromProperties,
+  mockCondoStats,
+  buildMockCollectionSummary,
 } from "./views";
-export type { PaymentView } from "./views";
+export type { PaymentView, CondoStats, CollectionSummaryData } from "./views";

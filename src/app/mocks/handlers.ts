@@ -1,6 +1,6 @@
 import { rest } from "msw";
 import { mockOwners } from "@/app/[locale]/owners-management/__fixtures__/mock-owners";
-import { mockProperties } from "@/app/[locale]/owners-management/__fixtures__/mock-properties";
+import { mockCondominiums } from "@/fixtures/domain";
 import { mockOccurrences } from "@/app/[locale]/occurrences/__fixtures__/mock-occurrences";
 
 export const handlers = [
@@ -24,7 +24,10 @@ export const handlers = [
     return res(ctx.status(200), ctx.json([...mockOwners]));
   }),
   rest.get("/api/properties", (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json([...mockProperties]));
+    return res(
+      ctx.status(200),
+      ctx.json(mockCondominiums.map((c) => ({ id: c.id, name: c.name }))),
+    );
   }),
   rest.get("/api/occurrences", (req, res, ctx) => {
     return res(ctx.status(200), ctx.json([...mockOccurrences]));

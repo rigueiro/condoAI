@@ -1,13 +1,13 @@
 import { formatPortugueseAddress } from "@/lib/address";
-import type { Property } from "@/app/[locale]/properties-management/types";
+import { roundCurrency } from "@/lib/quota";
 import type {
   Owner as OwnerView,
   PaymentStatus,
 } from "@/app/[locale]/owners-management/components/types";
-import type { Condominium, Owner, Unit } from "@/types";
+import type { Condominium, Owner, QuotaPayment, Unit } from "@/types";
 import type { Portfolio } from "./types";
 
-const COMMON_AREA_LABELS: Record<string, string> = {
+export const COMMON_AREA_LABELS: Record<string, string> = {
   elevators: "Elevators",
   garden: "Garden",
   parking: "Parking",
@@ -18,57 +18,235 @@ const COMMON_AREA_LABELS: Record<string, string> = {
   rooftop: "Rooftop Terrace",
   playground: "Playground",
   "lake-access": "Lake Access",
+  "tennis-court": "Tennis Court",
+  "business-center": "Business Center",
+  storage: "Storage",
+  laundry: "Laundry",
+};
+
+export const BUILDING_TYPES: Condominium["buildingType"][] = [
+  "low-rise",
+  "mid-rise",
+  "high-rise",
+  "townhouse",
+];
+
+export const CONDOMINIUM_STATUSES: Condominium["status"][] = [
+  "active",
+  "inactive",
+  "under-construction",
+];
+
+const BUILDING_TYPE_I18N: Record<Condominium["buildingType"], string> = {
+  "low-rise": "lowRise",
+  "mid-rise": "midRise",
+  "high-rise": "highRise",
+  townhouse: "townhouse",
+};
+
+const STATUS_I18N: Record<Condominium["status"], string> = {
+  active: "active",
+  inactive: "inactive",
+  "under-construction": "underConstruction",
+};
+
+export function buildingTypeI18nKey(
+  type: Condominium["buildingType"],
+): string {
+  return BUILDING_TYPE_I18N[type];
+}
+
+export function condominiumStatusI18nKey(
+  status: Condominium["status"],
+): string {
+  return STATUS_I18N[status];
+}
+
+export type CondoStats = {
+  occupiedUnits: number;
+  averageFee: number;
+  monthlyFeeRange: string;
+  collectionRate: number;
+};
+
+export type CollectionBreakdown = {
+  id: string;
+  name: string;
+  unitsCount: number;
+  collected: number;
+  target: number;
+  collectionRate: number;
+  outstanding: number;
+};
+
+export type CollectionSummaryData = {
+  currentMonth: {
+    totalTarget: number;
+    totalCollected: number;
+    collectionRate: number;
+    outstandingBalance: number;
+    totalProperties: number;
+  };
+  propertyBreakdown: CollectionBreakdown[];
 };
 
 function feeRange(min: number, max: number): string {
   return `€${Math.round(min)} - €${Math.round(max)}`;
 }
 
-export function portfolioToPropertyViews(portfolio: Portfolio): Property[] {
-  const ownersByCondo = new Map<string, Owner[]>();
-  const unitById = new Map(portfolio.units.map((u) => [u.id, u]));
+export function labelCommonAreas(areas: string[]): string[] {
+  return areas.map((area) => COMMON_AREA_LABELS[area] ?? area);
+}
 
+export function ownersByCondoId(portfolio: Portfolio): Map<string, Owner[]> {
+  const unitById = new Map(portfolio.units.map((u) => [u.id, u]));
+  const map = new Map<string, Owner[]>();
   for (const owner of portfolio.owners) {
     const condoId = unitById.get(owner.unitId)?.condominiumId;
     if (!condoId) continue;
-    const list = ownersByCondo.get(condoId) ?? [];
+    const list = map.get(condoId) ?? [];
     list.push(owner);
-    ownersByCondo.set(condoId, list);
+    map.set(condoId, list);
+  }
+  return map;
+}
+
+export function ownersForCondo(
+  portfolio: Portfolio,
+  condominiumId: string,
+): Owner[] {
+  const unitIds = new Set(
+    portfolio.units
+      .filter((u) => u.condominiumId === condominiumId)
+      .map((u) => u.id),
+  );
+  return portfolio.owners.filter((o) => unitIds.has(o.unitId));
+}
+
+/** Derived fee/occupancy/collection stats for a condominium. */
+export function condoStatsFromOwners(
+  condo: Condominium,
+  owners: Owner[],
+  quotas: QuotaPayment[] = [],
+): CondoStats {
+  const monthlyQuotas = owners.map((o) => o.monthlyQuota);
+  const occupiedUnits = owners.length;
+
+  if (monthlyQuotas.length === 0) {
+    return {
+      occupiedUnits,
+      averageFee: 0,
+      monthlyFeeRange: feeRange(0, 0),
+      collectionRate: 0,
+    };
   }
 
-  return portfolio.condominiums.map((condo) =>
-    toPropertyView(condo, ownersByCondo.get(condo.id) ?? []),
+  const averageFee = roundCurrency(
+    monthlyQuotas.reduce((sum, q) => sum + q, 0) / monthlyQuotas.length,
+  );
+  const ownerIds = new Set(owners.map((o) => o.id));
+  let paid = 0;
+  let total = 0;
+  for (const q of quotas) {
+    if (!ownerIds.has(q.ownerId)) continue;
+    total += 1;
+    if (q.status === "paid") paid += 1;
+  }
+  const collectionRate =
+    total > 0 ? roundCurrency((paid / total) * 100) : 100;
+
+  return {
+    occupiedUnits,
+    averageFee,
+    monthlyFeeRange: feeRange(
+      Math.min(...monthlyQuotas),
+      Math.max(...monthlyQuotas),
+    ),
+    collectionRate,
+  };
+}
+
+export function condoStats(
+  condo: Condominium,
+  portfolio: Portfolio,
+  quotas: QuotaPayment[] = [],
+): CondoStats {
+  return condoStatsFromOwners(
+    condo,
+    ownersForCondo(portfolio, condo.id),
+    quotas,
   );
 }
 
-function toPropertyView(condo: Condominium, owners: Owner[]): Property {
-  const quotas = owners.map((o) => o.monthlyQuota);
-  const averageFee =
-    quotas.length > 0
-      ? quotas.reduce((sum, q) => sum + q, 0) / quotas.length
-      : 0;
-  const min = quotas.length > 0 ? Math.min(...quotas) : 0;
-  const max = quotas.length > 0 ? Math.max(...quotas) : 0;
-
+export function breakdownFromStats(
+  condo: Condominium,
+  stats: CondoStats,
+): CollectionBreakdown {
+  const target = stats.averageFee * condo.numberOfUnits;
+  const collected = target * (stats.collectionRate / 100);
   return {
     id: condo.id,
     name: condo.name,
-    address: formatPortugueseAddress(condo.address),
-    totalUnits: Math.max(condo.numberOfUnits, owners.length),
-    occupiedUnits: owners.length,
-    monthlyFeeRange: feeRange(min, max),
-    averageFee: Math.round(averageFee * 100) / 100,
-    collectionRate: owners.length > 0 ? 0 : 0,
-    amenities: condo.commonAreas.map(
-      (area) => COMMON_AREA_LABELS[area] ?? area,
-    ),
-    buildingType: "Condominium",
-    yearBuilt: new Date(condo.deedDate).getFullYear() || new Date().getFullYear(),
-    status: "Active",
-    lastUpdated: String(condo.internalRegulations.date).slice(0, 10),
-    taxId: condo.taxId,
-    totalPermillage: condo.totalPermillage,
+    unitsCount: condo.numberOfUnits,
+    collected: Math.round(collected),
+    target: Math.round(target),
+    collectionRate: stats.collectionRate,
+    outstanding: Math.round(target - collected),
   };
+}
+
+export function summarizeCollection(
+  propertyBreakdown: CollectionBreakdown[],
+): CollectionSummaryData {
+  const totalTarget = propertyBreakdown.reduce((s, p) => s + p.target, 0);
+  const totalCollected = propertyBreakdown.reduce((s, p) => s + p.collected, 0);
+
+  return {
+    currentMonth: {
+      totalTarget,
+      totalCollected,
+      collectionRate:
+        propertyBreakdown.length > 0
+          ? propertyBreakdown.reduce((s, p) => s + p.collectionRate, 0) /
+            propertyBreakdown.length
+          : 0,
+      outstandingBalance: totalTarget - totalCollected,
+      totalProperties: propertyBreakdown.length,
+    },
+    propertyBreakdown,
+  };
+}
+
+export function collectionSummaryForCondo(
+  condo: Condominium,
+  stats: CondoStats,
+): CollectionSummaryData {
+  const row = breakdownFromStats(condo, stats);
+  return {
+    currentMonth: {
+      totalTarget: row.target,
+      totalCollected: row.collected,
+      collectionRate: row.collectionRate,
+      outstandingBalance: row.outstanding,
+      totalProperties: 1,
+    },
+    propertyBreakdown: [row],
+  };
+}
+
+export function buildCollectionFromPortfolio(
+  portfolio: Portfolio,
+  quotas: QuotaPayment[] = [],
+): CollectionSummaryData {
+  const byCondo = ownersByCondoId(portfolio);
+  return summarizeCollection(
+    portfolio.condominiums.map((condo) =>
+      breakdownFromStats(
+        condo,
+        condoStatsFromOwners(condo, byCondo.get(condo.id) ?? [], quotas),
+      ),
+    ),
+  );
 }
 
 export function portfolioToOwnerViews(portfolio: Portfolio): OwnerView[] {
@@ -109,6 +287,11 @@ export function buildEmptyCondominium(input: {
   municipality: string;
   taxId: string;
   numberOfUnits: number;
+  deedDate?: string;
+  propertyRegistryNumber?: string;
+  commonAreas?: string[];
+  buildingType?: Condominium["buildingType"];
+  status?: Condominium["status"];
 }): Condominium {
   const today = new Date().toISOString().slice(0, 10);
   return {
@@ -121,11 +304,13 @@ export function buildEmptyCondominium(input: {
       municipality: input.municipality.trim(),
     },
     taxId: input.taxId.trim(),
-    deedDate: today,
-    propertyRegistryNumber: "",
+    deedDate: input.deedDate?.trim() || today,
+    propertyRegistryNumber: input.propertyRegistryNumber?.trim() ?? "",
     numberOfUnits: input.numberOfUnits,
     totalPermillage: 1000,
-    commonAreas: [],
+    commonAreas: input.commonAreas ?? [],
+    buildingType: input.buildingType ?? "mid-rise",
+    status: input.status ?? "active",
     constitutiveTitle: null,
     internalRegulations: {
       version: "1.0",
@@ -134,6 +319,8 @@ export function buildEmptyCondominium(input: {
     },
   };
 }
+
+export { formatPortugueseAddress };
 
 export const UNIT_TYPES: Unit["type"][] = [
   "apartment",

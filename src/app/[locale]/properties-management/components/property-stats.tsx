@@ -2,7 +2,9 @@ import Icon from "@/components/icon";
 import React from "react";
 import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
-import { Property } from "../types";
+import type { BuildingType } from "@/types";
+import { buildingTypeI18nKey } from "@/lib/portfolio";
+import type { CondoRow } from "../types";
 
 type StatCardProps = {
   icon: string;
@@ -13,7 +15,7 @@ type StatCardProps = {
 };
 
 interface PropertyStatsProps {
-  properties: Property[];
+  rows: CondoRow[];
 }
 
 function StatCard({
@@ -43,46 +45,55 @@ function StatCard({
   );
 }
 
-function PropertyStats({ properties }: PropertyStatsProps) {
+function PropertyStats({ rows }: PropertyStatsProps) {
   const t = useTranslations("propertiesManagement.stats");
+  const tModal = useTranslations("propertiesManagement.modal");
   const { formatCurrency } = useFormatCurrency();
   const stats = React.useMemo(() => {
-    const totalProperties = properties.length;
-    const totalUnits = properties.reduce(
-      (sum, prop) => sum + prop.totalUnits,
+    const totalProperties = rows.length;
+    const totalUnits = rows.reduce(
+      (sum, row) => sum + row.condo.numberOfUnits,
       0,
     );
-    const totalOccupied = properties.reduce(
-      (sum, prop) => sum + prop.occupiedUnits,
+    const totalOccupied = rows.reduce(
+      (sum, row) => sum + row.stats.occupiedUnits,
       0,
     );
     const averageOccupancy =
       totalUnits > 0 ? (totalOccupied / totalUnits) * 100 : 0;
     const averageCollectionRate =
-      properties.length > 0
-        ? properties.reduce((sum, prop) => sum + prop.collectionRate, 0) /
-          properties.length
+      rows.length > 0
+        ? rows.reduce((sum, row) => sum + row.stats.collectionRate, 0) /
+          rows.length
         : 0;
-    const totalRevenue = properties.reduce(
-      (sum, prop) => sum + prop.averageFee * prop.occupiedUnits,
+    const totalRevenue = rows.reduce(
+      (sum, row) => sum + row.stats.averageFee * row.stats.occupiedUnits,
       0,
     );
 
-    // Collection rate categories
-    const excellentCollection = properties.filter(
-      (p) => p.collectionRate >= 95,
+    const excellentCollection = rows.filter(
+      (r) => r.stats.collectionRate >= 95,
     ).length;
-    const goodCollection = properties.filter(
-      (p) => p.collectionRate >= 90 && p.collectionRate < 95,
+    const goodCollection = rows.filter(
+      (r) => r.stats.collectionRate >= 90 && r.stats.collectionRate < 95,
     ).length;
-    const needsAttention = properties.filter(
-      (p) => p.collectionRate < 90,
+    const needsAttention = rows.filter(
+      (r) => r.stats.collectionRate < 90,
     ).length;
 
-    // Building types
-    const buildingTypes = properties.reduce<Record<string, number>>(
-      (acc, prop) => {
-        acc[prop.buildingType] = (acc[prop.buildingType] || 0) + 1;
+    const municipalityCounts = rows.reduce<Record<string, number>>(
+      (acc, row) => {
+        const key = row.condo.address.municipality || "—";
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
+
+    const buildingTypes = rows.reduce<Partial<Record<BuildingType, number>>>(
+      (acc, row) => {
+        const key = row.condo.buildingType;
+        acc[key] = (acc[key] || 0) + 1;
         return acc;
       },
       {},
@@ -98,16 +109,16 @@ function PropertyStats({ properties }: PropertyStatsProps) {
       excellentCollection,
       goodCollection,
       needsAttention,
+      municipalityCounts,
       buildingTypes,
     };
-  }, [properties]);
+  }, [rows]);
 
   return (
     <div className="space-y-6">
-      {/* Overview Stats */}
       <div className="bg-surface rounded-lg border border-border-light p-6">
         <h3 className="text-lg font-semibold text-text-primary mb-4">
-          {t('overview')}
+          {t("overview")}
         </h3>
         <div className="space-y-4">
           <StatCard
@@ -142,16 +153,15 @@ function PropertyStats({ properties }: PropertyStatsProps) {
         </div>
       </div>
 
-      {/* Collection Performance */}
       <div className="bg-surface rounded-lg border border-border-light p-6">
         <h3 className="text-lg font-semibold text-text-primary mb-4">
-          {t('collections')}
+          {t("collections")}
         </h3>
 
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-text-secondary">
-              {t('averageRate')}
+              {t("averageRate")}
             </span>
             <span className="text-lg font-semibold text-text-primary">
               {stats.averageCollectionRate.toFixed(1)}%
@@ -170,7 +180,7 @@ function PropertyStats({ properties }: PropertyStatsProps) {
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-success rounded-full" />
               <span className="text-sm text-text-secondary">
-                {t('excellent')}
+                {t("excellent")}
               </span>
             </div>
             <span className="text-sm font-medium text-text-primary">
@@ -181,7 +191,7 @@ function PropertyStats({ properties }: PropertyStatsProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-warning rounded-full" />
-              <span className="text-sm text-text-secondary">{t('good')}</span>
+              <span className="text-sm text-text-secondary">{t("good")}</span>
             </div>
             <span className="text-sm font-medium text-text-primary">
               {stats.goodCollection}
@@ -192,7 +202,7 @@ function PropertyStats({ properties }: PropertyStatsProps) {
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-error rounded-full" />
               <span className="text-sm text-text-secondary">
-                {t('needsAttention')}
+                {t("needsAttention")}
               </span>
             </div>
             <span className="text-sm font-medium text-text-primary">
@@ -202,15 +212,18 @@ function PropertyStats({ properties }: PropertyStatsProps) {
         </div>
       </div>
 
-      {/* Building Types */}
       <div className="bg-surface rounded-lg border border-border-light p-6">
         <h3 className="text-lg font-semibold text-text-primary mb-4">
-          {t('buildingTypes')}
+          {t("buildingTypes")}
         </h3>
         <div className="space-y-3">
           {Object.entries(stats.buildingTypes).map(([type, count]) => (
             <div key={type} className="flex items-center justify-between">
-              <span className="text-sm text-text-secondary">{type}</span>
+              <span className="text-sm text-text-secondary">
+                {tModal(
+                  `buildingTypes.${buildingTypeI18nKey(type as BuildingType)}`,
+                )}
+              </span>
               <span className="text-sm font-medium text-text-primary">
                 {count}
               </span>
@@ -219,25 +232,40 @@ function PropertyStats({ properties }: PropertyStatsProps) {
         </div>
       </div>
 
-      {/* Quick Actions */}
       <div className="bg-surface rounded-lg border border-border-light p-6">
         <h3 className="text-lg font-semibold text-text-primary mb-4">
-          {t('quickActions')}
+          {t("municipalities")}
+        </h3>
+        <div className="space-y-3">
+          {Object.entries(stats.municipalityCounts).map(([name, count]) => (
+            <div key={name} className="flex items-center justify-between">
+              <span className="text-sm text-text-secondary">{name}</span>
+              <span className="text-sm font-medium text-text-primary">
+                {count}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-surface rounded-lg border border-border-light p-6">
+        <h3 className="text-lg font-semibold text-text-primary mb-4">
+          {t("quickActions")}
         </h3>
         <div className="space-y-3">
           <button className="w-full flex items-center space-x-3 p-3 text-left text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth">
             <Icon name="FileText" size={16} />
-            <span className="text-sm">{t('generateReport')}</span>
+            <span className="text-sm">{t("generateReport")}</span>
           </button>
 
           <button className="w-full flex items-center space-x-3 p-3 text-left text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth">
             <Icon name="Download" size={16} />
-            <span className="text-sm">{t('exportData')}</span>
+            <span className="text-sm">{t("exportData")}</span>
           </button>
 
           <button className="w-full flex items-center space-x-3 p-3 text-left text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth">
             <Icon name="Settings" size={16} />
-            <span className="text-sm">{t('bulkSettings')}</span>
+            <span className="text-sm">{t("bulkSettings")}</span>
           </button>
         </div>
       </div>

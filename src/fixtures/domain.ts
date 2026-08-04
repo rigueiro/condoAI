@@ -23,6 +23,8 @@ export const mockCondominiums: Condominium[] = [
     numberOfUnits: 48,
     totalPermillage: 1000,
     commonAreas: ["elevators", "garden", "parking", "gym", "pool"],
+    buildingType: "mid-rise",
+    status: "active",
     constitutiveTitle: null,
     internalRegulations: {
       version: "2.1",
@@ -45,6 +47,8 @@ export const mockCondominiums: Condominium[] = [
     numberOfUnits: 72,
     totalPermillage: 1000,
     commonAreas: ["elevators", "parking", "gym", "concierge", "security"],
+    buildingType: "high-rise",
+    status: "active",
     constitutiveTitle: null,
     internalRegulations: {
       version: "1.4",
@@ -67,6 +71,8 @@ export const mockCondominiums: Condominium[] = [
     numberOfUnits: 24,
     totalPermillage: 1000,
     commonAreas: ["parking", "garden", "playground"],
+    buildingType: "low-rise",
+    status: "active",
     constitutiveTitle: null,
     internalRegulations: {
       version: "1.0",
@@ -96,6 +102,8 @@ export const mockCondominiums: Condominium[] = [
       "rooftop",
       "security",
     ],
+    buildingType: "high-rise",
+    status: "active",
     constitutiveTitle: null,
     internalRegulations: {
       version: "1.2",
@@ -118,6 +126,8 @@ export const mockCondominiums: Condominium[] = [
     numberOfUnits: 36,
     totalPermillage: 1000,
     commonAreas: ["parking", "garden", "security", "lake-access"],
+    buildingType: "townhouse",
+    status: "active",
     constitutiveTitle: null,
     internalRegulations: {
       version: "1.1",

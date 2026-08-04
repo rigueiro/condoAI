@@ -14,13 +14,23 @@ import RecordPaymentModal from "@/app/[locale]/payment-tracking/components/recor
 import PropertyModal from "../components/property-modal";
 import PropertyDetailStats from "../components/property-detail-stats";
 import PropertyOwnersList from "../components/property-owners-list";
-import { mockProperties } from "../__fixtures__/mock-properties";
-import { mockOwners } from "@/app/[locale]/owners-management/__fixtures__/mock-owners";
-import { mockPayments } from "@/app/[locale]/payment-tracking/__fixtures__/mock-payments";
 import { mockOccurrences } from "@/app/[locale]/occurrences/__fixtures__/mock-occurrences";
+import type { Condominium } from "@/types";
+import { useCollections } from "@/lib/collections";
+import {
+  buildingTypeI18nKey,
+  collectionSummaryForCondo,
+  condominiumStatusI18nKey,
+  condoStats,
+  formatPortugueseAddress,
+  labelCommonAreas,
+  usePortfolio,
+} from "@/lib/portfolio";
+import { mockCondoStats } from "@/fixtures/views";
 
 function PropertyDetailPage() {
   const t = useTranslations("propertiesManagement.detail");
+  const tModal = useTranslations("propertiesManagement.modal");
   const tOccCategory = useTranslations("occurrences.categories");
   const tOccState = useTranslations("occurrences.states");
   const tOccPriority = useTranslations("occurrences.priorities");
@@ -28,27 +38,36 @@ function PropertyDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
 
+  const { portfolio, isDemo, owners, upsertCondominium } = usePortfolio();
+  const { quotas, payments, recordPayment } = useCollections();
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
 
-  const property = useMemo(
-    () => (id ? mockProperties.find((p) => p.id === id) : undefined),
-    [id],
+  const condo = useMemo(
+    () =>
+      id
+        ? portfolio.condominiums.find((c) => c.id === id)
+        : undefined,
+    [id, portfolio.condominiums],
   );
+
+  const stats = useMemo(() => {
+    if (!condo) return null;
+    return isDemo
+      ? mockCondoStats(condo)
+      : condoStats(condo, portfolio, quotas);
+  }, [condo, isDemo, portfolio, quotas]);
 
   const propertyOwners = useMemo(() => {
     if (!id) return [];
-    return mockOwners.filter((o) => o.propertyId === id);
-  }, [id]);
+    return owners.filter((o) => o.propertyId === id);
+  }, [id, owners]);
 
   const propertyPayments = useMemo(() => {
     if (!id) return [];
-    return mockPayments.filter(
-      (p) =>
-        p.propertyId === id ||
-        (p.propertyId == null && p.property === property?.name),
-    );
-  }, [id, property?.name]);
+    return payments.filter((p) => p.propertyId === id);
+  }, [id, payments]);
 
   const propertyOccurrences = useMemo(() => {
     if (!id) return [];
@@ -56,33 +75,11 @@ function PropertyDetailPage() {
   }, [id]);
 
   const collectionDataForProperty = useMemo(() => {
-    if (!property) return null;
-    const target = property.totalUnits * property.averageFee;
-    const collected = (target * property.collectionRate) / 100;
-    const outstanding = target - collected;
-    return {
-      currentMonth: {
-        totalTarget: target,
-        totalCollected: collected,
-        collectionRate: property.collectionRate,
-        outstandingBalance: outstanding,
-        totalProperties: 1,
-      },
-      propertyBreakdown: [
-        {
-          id: property.id,
-          name: property.name,
-          unitsCount: property.totalUnits,
-          collected: Math.round(collected),
-          target,
-          collectionRate: property.collectionRate,
-          outstanding: Math.round(outstanding),
-        },
-      ],
-    };
-  }, [property]);
+    if (!condo || !stats) return null;
+    return collectionSummaryForCondo(condo, stats);
+  }, [condo, stats]);
 
-  if (!id || !property) {
+  if (!id || !condo || !stats) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -113,6 +110,11 @@ function PropertyDetailPage() {
     );
   }
 
+  const address = formatPortugueseAddress(condo.address);
+  const yearBuilt = new Date(condo.deedDate).getFullYear();
+  const amenities = labelCommonAreas(condo.commonAreas);
+  const lastUpdated = String(condo.internalRegulations.date).slice(0, 10);
+
   const getCollectionRateColor = (rate: number) => {
     if (rate >= 95) return "text-success";
     if (rate >= 90) return "text-warning";
@@ -133,33 +135,44 @@ function PropertyDetailPage() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Breadcrumb />
 
-          {/* Property header */}
           <div className="mb-8">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
               <PropertyDetailHeader
-              property={property}
-              t={t}
-              getCollectionRateBg={getCollectionRateBg}
-              getCollectionRateColor={getCollectionRateColor}
-              formatPriceString={formatPriceString}
-            />
+                condo={condo}
+                address={address}
+                yearBuilt={yearBuilt}
+                collectionRate={stats.collectionRate}
+                buildingTypeLabel={tModal(
+                  `buildingTypes.${buildingTypeI18nKey(condo.buildingType)}`,
+                )}
+                statusLabel={tModal(
+                  `statuses.${condominiumStatusI18nKey(condo.status)}`,
+                )}
+                t={t}
+                getCollectionRateBg={getCollectionRateBg}
+                getCollectionRateColor={getCollectionRateColor}
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            {/* Main content */}
             <div className="xl:col-span-2 space-y-8">
-              <PropertyDetailStats property={property} owners={propertyOwners} />
+              <PropertyDetailStats
+                condo={condo}
+                stats={stats}
+                owners={propertyOwners}
+              />
 
               <PropertyOwnersList owners={propertyOwners} />
 
-              {/* Finance */}
               <section>
                 <h2 className="text-xl font-semibold text-text-primary mb-4">
                   {t("finance")}
                 </h2>
                 {collectionDataForProperty && (
-                  <CollectionSummary collectionData={collectionDataForProperty} />
+                  <CollectionSummary
+                    collectionData={collectionDataForProperty}
+                  />
                 )}
                 <div className="mt-6">
                   <h3 className="text-lg font-medium text-text-primary mb-3">
@@ -177,7 +190,6 @@ function PropertyDetailPage() {
                 </div>
               </section>
 
-              {/* Occurrences */}
               <section>
                 <h2 className="text-xl font-semibold text-text-primary mb-4">
                   {t("occurrences")}
@@ -200,26 +212,26 @@ function PropertyDetailPage() {
                             href={`/occurrences/${occ.id}`}
                             className="block px-6 py-4 hover:bg-secondary-50 transition-smooth"
                           >
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div>
-                              <p className="font-medium text-text-primary">
-                                {occ.title}
-                              </p>
-                              <p className="text-sm text-text-secondary">
-                                {tOccCategory(occ.category)} •{" "}
-                                {t("unit", { unit: occ.unit ?? "—" })} •{" "}
-                                {occ.reportedAt}
-                              </p>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <div>
+                                <p className="font-medium text-text-primary">
+                                  {occ.title}
+                                </p>
+                                <p className="text-sm text-text-secondary">
+                                  {tOccCategory(occ.category)} •{" "}
+                                  {t("unit", { unit: occ.unit ?? "—" })} •{" "}
+                                  {occ.reportedAt}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-text-secondary">
+                                  {tOccPriority(occ.priority)}
+                                </span>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-text-primary">
+                                  {tOccState(occ.state)}
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-text-secondary">
-                                {tOccPriority(occ.priority)}
-                              </span>
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-text-primary">
-                                {tOccState(occ.state)}
-                              </span>
-                            </div>
-                          </div>
                           </Link>
                         </li>
                       ))}
@@ -229,9 +241,7 @@ function PropertyDetailPage() {
               </section>
             </div>
 
-            {/* Sidebar */}
             <div className="xl:col-span-1 space-y-6">
-              {/* Property info */}
               <div className="bg-surface rounded-lg border border-border-light p-6">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">
                   {t("propertyInfo")}
@@ -239,72 +249,79 @@ function PropertyDetailPage() {
                 <dl className="space-y-3 text-sm">
                   <div>
                     <dt className="text-text-secondary">{t("address")}</dt>
+                    <dd className="font-medium text-text-primary">{address}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-text-secondary">{t("taxId")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {property.address}
+                      {condo.taxId}
                     </dd>
                   </div>
-                  {property.taxId && (
-                    <div>
-                      <dt className="text-text-secondary">{t("taxId")}</dt>
-                      <dd className="font-medium text-text-primary">
-                        {property.taxId}
-                      </dd>
-                    </div>
-                  )}
-                  {property.totalPermillage != null && (
-                    <div>
-                      <dt className="text-text-secondary">{t("permillage")}</dt>
-                      <dd className="font-medium text-text-primary">
-                        {property.totalPermillage}‰
-                      </dd>
-                    </div>
-                  )}
+                  <div>
+                    <dt className="text-text-secondary">{t("permillage")}</dt>
+                    <dd className="font-medium text-text-primary">
+                      {condo.totalPermillage}‰
+                    </dd>
+                  </div>
                   <div>
                     <dt className="text-text-secondary">{t("buildingType")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {property.buildingType}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-text-secondary">{t("yearBuilt")}</dt>
-                    <dd className="font-medium text-text-primary">
-                      {property.yearBuilt}
+                      {tModal(
+                        `buildingTypes.${buildingTypeI18nKey(condo.buildingType)}`,
+                      )}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-text-secondary">{t("status")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {property.status}
+                      {tModal(
+                        `statuses.${condominiumStatusI18nKey(condo.status)}`,
+                      )}
                     </dd>
                   </div>
                   <div>
+                    <dt className="text-text-secondary">{t("deedDate")}</dt>
+                    <dd className="font-medium text-text-primary">
+                      {String(condo.deedDate).slice(0, 10)} ({yearBuilt})
+                    </dd>
+                  </div>
+                  {condo.propertyRegistryNumber && (
+                    <div>
+                      <dt className="text-text-secondary">
+                        {t("propertyRegistryNumber")}
+                      </dt>
+                      <dd className="font-medium text-text-primary">
+                        {condo.propertyRegistryNumber}
+                      </dd>
+                    </div>
+                  )}
+                  <div>
                     <dt className="text-text-secondary">{t("units")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {property.occupiedUnits}/{property.totalUnits}
+                      {stats.occupiedUnits}/{condo.numberOfUnits}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-text-secondary">{t("feeRange")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {formatPriceString(property.monthlyFeeRange)}
+                      {formatPriceString(stats.monthlyFeeRange)}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-text-secondary">{t("lastUpdated")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {property.lastUpdated}
+                      {lastUpdated}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-text-secondary">{t("amenities")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {property.amenities.join(", ")}
+                      {amenities.length > 0 ? amenities.join(", ") : "—"}
                     </dd>
                   </div>
                 </dl>
               </div>
 
-              {/* Quick actions */}
               <div className="bg-surface rounded-lg border border-border-light p-6 sticky top-24">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">
                   {t("quickActions")}
@@ -335,15 +352,6 @@ function PropertyDetailPage() {
                     />
                     {t("recordPayment")}
                   </button>
-                  <button
-                    onClick={() =>
-                      console.log("Send reminders for property:", property.id)
-                    }
-                    className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
-                  >
-                    <Icon name="Mail" size={16} className="mr-2 shrink-0" />
-                    {t("sendReminders")}
-                  </button>
                   <Link
                     href="/payment-tracking"
                     className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
@@ -351,15 +359,6 @@ function PropertyDetailPage() {
                     <Icon name="Receipt" size={16} className="mr-2 shrink-0" />
                     {t("viewPayments")}
                   </Link>
-                  <button
-                    onClick={() =>
-                      console.log("Generate report for property:", property.id)
-                    }
-                    className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
-                  >
-                    <Icon name="FileText" size={16} className="mr-2 shrink-0" />
-                    {t("generateReport")}
-                  </button>
                 </div>
                 <Link
                   href="/properties-management"
@@ -376,10 +375,10 @@ function PropertyDetailPage() {
 
       <PropertyModal
         isOpen={isEditModalOpen}
-        property={property}
+        property={condo}
         onClose={() => setIsEditModalOpen(false)}
-        onSave={(propertyData) => {
-          console.log("Saving property:", propertyData);
+        onSave={(next) => {
+          upsertCondominium(next);
           setIsEditModalOpen(false);
         }}
       />
@@ -388,7 +387,7 @@ function PropertyDetailPage() {
         isOpen={isRecordPaymentOpen}
         onClose={() => setIsRecordPaymentOpen(false)}
         onSubmit={(paymentData) => {
-          console.log("Recording payment:", paymentData);
+          recordPayment(paymentData);
           setIsRecordPaymentOpen(false);
         }}
       />
@@ -397,54 +396,47 @@ function PropertyDetailPage() {
 }
 
 function PropertyDetailHeader({
-  property,
+  condo,
+  address,
+  yearBuilt,
+  collectionRate,
+  buildingTypeLabel,
+  statusLabel,
   t,
   getCollectionRateBg,
   getCollectionRateColor,
-  formatPriceString,
 }: {
-  property: (typeof mockProperties)[number];
+  condo: Condominium;
+  address: string;
+  yearBuilt: number;
+  collectionRate: number;
+  buildingTypeLabel: string;
+  statusLabel: string;
   t: ReturnType<typeof useTranslations<"propertiesManagement.detail">>;
   getCollectionRateBg: (rate: number) => string;
   getCollectionRateColor: (rate: number) => string;
-  formatPriceString: (text: string) => string;
 }) {
   return (
     <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
       <div>
         <h1 className="text-3xl font-bold text-text-primary mb-2">
-          {property.name}
+          {condo.name}
         </h1>
-        <p className="text-text-secondary mb-3">{property.address}</p>
+        <p className="text-text-secondary mb-3">{address}</p>
         <div className="flex flex-wrap gap-3 text-sm">
           <span className="text-text-secondary">
-            {property.buildingType} •{" "}
-            {t("built", { year: property.yearBuilt })}
+            {buildingTypeLabel} • {t("built", { year: yearBuilt })}
           </span>
           <span
-            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getCollectionRateBg(property.collectionRate)} ${getCollectionRateColor(property.collectionRate)}`}
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getCollectionRateBg(collectionRate)} ${getCollectionRateColor(collectionRate)}`}
           >
-            {t("collectionRate", { rate: property.collectionRate })}
+            {t("collectionRate", { rate: collectionRate })}
           </span>
           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-text-primary">
-            {property.status}
+            {statusLabel}
           </span>
         </div>
       </div>
-      {/*<div className="flex flex-wrap gap-4 text-sm">
-        <div>
-          <span className="text-text-secondary">{t("units")} </span>
-          <span className="font-medium text-text-primary">
-            {property.occupiedUnits}/{property.totalUnits}
-          </span>
-        </div>
-        <div>
-          <span className="text-text-secondary">{t("feeRange")} </span>
-          <span className="font-medium text-text-primary">
-            {formatPriceString(property.monthlyFeeRange)}
-          </span>
-        </div>
-      </div>*/}
     </div>
   );
 }

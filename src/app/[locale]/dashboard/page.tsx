@@ -34,12 +34,12 @@ function Dashboard() {
   const router = useRouter();
   const {
     isDemo,
-    properties,
     owners,
     portfolio,
     isReady,
     needsOnboarding: mustOnboard,
   } = usePortfolio();
+  const condominiums = portfolio.condominiums;
   const { overdueItems, ownersWithBalances } = useCollections();
 
   const [now] = useState(() => Date.now());
@@ -74,8 +74,11 @@ function Dashboard() {
       };
     }
 
-    const totalProperties = properties.length;
-    const totalUnits = properties.reduce((sum, p) => sum + p.totalUnits, 0);
+    const totalProperties = condominiums.length;
+    const totalUnits = condominiums.reduce(
+      (sum, c) => sum + c.numberOfUnits,
+      0,
+    );
     const occupied = displayOwners.length;
     const occupancy =
       totalUnits > 0 ? Math.round((occupied / totalUnits) * 100) : 0;
@@ -90,7 +93,7 @@ function Dashboard() {
       collectionHint: t("stats.noPaymentsYet"),
       overdueHint,
     };
-  }, [isDemo, properties, displayOwners, overdueTotal, overdueHint, t]);
+  }, [isDemo, condominiums, displayOwners, overdueTotal, overdueHint, t]);
   const collectionTrends = useMemo(() => {
     if (isDemo) {
       return [
@@ -120,9 +123,9 @@ function Dashboard() {
       ];
     }
     const buckets = { large: 0, medium: 0, small: 0 };
-    for (const p of properties) {
-      if (p.totalUnits > 60) buckets.large += 1;
-      else if (p.totalUnits > 30) buckets.medium += 1;
+    for (const c of condominiums) {
+      if (c.numberOfUnits > 60) buckets.large += 1;
+      else if (c.numberOfUnits > 30) buckets.medium += 1;
       else buckets.small += 1;
     }
     return [
@@ -134,7 +137,7 @@ function Dashboard() {
       },
       { name: t("distribution.small"), value: buckets.small, color: "#059669" },
     ];
-  }, [isDemo, properties, t]);
+  }, [isDemo, condominiums, t]);
 
   const recentActivities = useMemo(() => {
     if (isDemo) {
@@ -162,7 +165,7 @@ function Dashboard() {
           id: 3,
           type: "property",
           title: t("mockActivities.propertyUpdated"),
-          description: `${properties[1]?.name ?? ""} - Regulamento interno atualizado`,
+          description: `${condominiums[1]?.name ?? ""} - Regulamento interno atualizado`,
           timestamp: new Date(now - 3600000),
           icon: "Building2",
           iconColor: "var(--color-accent)",
@@ -227,7 +230,7 @@ function Dashboard() {
       });
     }
     return activities;
-  }, [isDemo, portfolio, displayOwners, properties, now, t]);
+  }, [isDemo, portfolio, displayOwners, condominiums, now, t]);
 
   const showEmptyCta = !isDemo && displayOwners.length === 0;
 

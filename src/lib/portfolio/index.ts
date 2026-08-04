@@ -10,8 +10,25 @@ export {
 export { PortfolioProvider, usePortfolio } from "./portfolio-provider";
 export {
   buildEmptyCondominium,
+  buildCollectionFromPortfolio,
+  breakdownFromStats,
+  collectionSummaryForCondo,
+  condoStats,
+  condoStatsFromOwners,
+  ownersByCondoId,
+  ownersForCondo,
+  summarizeCollection,
+  labelCommonAreas,
+  formatPortugueseAddress,
   portfolioToOwnerViews,
-  portfolioToPropertyViews,
+  COMMON_AREA_LABELS,
+  BUILDING_TYPES,
+  CONDOMINIUM_STATUSES,
+  buildingTypeI18nKey,
+  condominiumStatusI18nKey,
+  type CondoStats,
+  type CollectionSummaryData,
+  type CollectionBreakdown,
 } from "./mappers";
 export {
   buildImportTemplateCsv,

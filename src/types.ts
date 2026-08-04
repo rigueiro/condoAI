@@ -1,3 +1,14 @@
+export type BuildingType =
+    | "low-rise"
+    | "mid-rise"
+    | "high-rise"
+    | "townhouse";
+
+export type CondominiumStatus =
+    | "active"
+    | "inactive"
+    | "under-construction";
+
 export interface Condominium {
     id: string;
     name: string;
@@ -13,6 +24,8 @@ export interface Condominium {
     numberOfUnits: number;
     totalPermillage: number; // Always 1000
     commonAreas: string[]; // Ex.: ['elevators', 'garden']
+    buildingType: BuildingType;
+    status: CondominiumStatus;
     constitutiveTitle: string | null; // URL or path for PDF upload
     internalRegulations: {
         version: string;

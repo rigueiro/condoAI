@@ -1,11 +1,17 @@
 import type { Condominium, Owner, QuotaPayment } from "@/types";
-import { formatPortugueseAddress } from "@/lib/address";
 import { roundCurrency, sumBudgetCategories } from "@/lib/quota";
-import type { Property } from "@/app/[locale]/properties-management/types";
 import type {
   Owner as OwnerView,
   PaymentStatus,
 } from "@/app/[locale]/owners-management/components/types";
+import type { Portfolio } from "@/lib/portfolio/types";
+import {
+  breakdownFromStats,
+  condoStatsFromOwners,
+  summarizeCollection,
+  type CondoStats,
+  type CollectionSummaryData,
+} from "@/lib/portfolio/mappers";
 import {
   mockAnnualBudgets,
   mockCondominiums,
@@ -40,19 +46,6 @@ const AVATARS: Record<string, string> = {
   "6": "https://randomuser.me/api/portraits/men/41.jpg",
 };
 
-const COMMON_AREA_LABELS: Record<string, string> = {
-  elevators: "Elevators",
-  garden: "Garden",
-  parking: "Parking",
-  gym: "Gym",
-  pool: "Swimming Pool",
-  concierge: "Concierge",
-  security: "Security",
-  rooftop: "Rooftop Terrace",
-  playground: "Playground",
-  "lake-access": "Lake Access",
-};
-
 const unitById = new Map(mockUnits.map((u) => [u.id, u]));
 const condoById = new Map(mockCondominiums.map((c) => [c.id, c]));
 const ownerById = new Map(mockDomainOwners.map((o) => [o.id, o]));
@@ -75,6 +68,15 @@ const ownersByCondoId = mockDomainOwners.reduce((map, owner) => {
   map.set(condoId, list);
   return map;
 }, new Map<string, Owner[]>());
+
+/** Demo portfolio assembled from domain fixtures. */
+export const mockPortfolio: Portfolio = {
+  organization: null,
+  condominiums: mockCondominiums,
+  units: mockUnits,
+  owners: mockDomainOwners,
+  onboardingStep: "complete",
+};
 
 function derivePaymentStatus(ownerId: string): PaymentStatus {
   const quotas = quotasByOwnerId.get(ownerId) ?? [];
@@ -104,20 +106,20 @@ function feeRange(min: number, max: number): string {
   return `€${Math.round(min)} - €${Math.round(max)}`;
 }
 
-function quotaStatsForCondo(condominiumId: string) {
-  const condo = condoById.get(condominiumId);
-  const estimatedOccupied = Math.round((condo?.numberOfUnits ?? 0) * 0.92);
-  const owners = ownersByCondoId.get(condominiumId) ?? [];
+/** Demo-enriched condo stats (uses budgets when no owners yet). */
+export function mockCondoStats(condo: Condominium): CondoStats {
+  const estimatedOccupied = Math.round((condo.numberOfUnits ?? 0) * 0.92);
+  const owners = ownersByCondoId.get(condo.id) ?? [];
   const quotas = owners.map((o) => o.monthlyQuota);
 
   if (quotas.length === 0) {
-    const budget = budgetByCondoId.get(condominiumId);
+    const budget = budgetByCondoId.get(condo.id);
     const average =
       budget != null
         ? roundCurrency(
             sumBudgetCategories(budget.valuesByCategory) /
               12 /
-              (condo?.numberOfUnits || 1),
+              (condo.numberOfUnits || 1),
           )
         : 0;
     return {
@@ -128,43 +130,10 @@ function quotaStatsForCondo(condominiumId: string) {
     };
   }
 
-  const allQuotas = owners.flatMap((o) => quotasByOwnerId.get(o.id) ?? []);
-  const paid = allQuotas.filter((q) => q.status === "paid").length;
-
+  const base = condoStatsFromOwners(condo, owners, mockQuotaPayments);
   return {
-    averageFee: roundCurrency(
-      quotas.reduce((sum, q) => sum + q, 0) / quotas.length,
-    ),
-    monthlyFeeRange: feeRange(Math.min(...quotas), Math.max(...quotas)),
-    collectionRate:
-      allQuotas.length > 0
-        ? roundCurrency((paid / allQuotas.length) * 100)
-        : 100,
-    occupiedUnits: Math.max(owners.length, estimatedOccupied),
-  };
-}
-
-/** UI Property view derived from Condominium + units/owners/quotas. */
-export function toPropertyView(condo: Condominium): Property {
-  const stats = quotaStatsForCondo(condo.id);
-  return {
-    id: condo.id,
-    name: condo.name,
-    address: formatPortugueseAddress(condo.address),
-    totalUnits: condo.numberOfUnits,
-    occupiedUnits: stats.occupiedUnits,
-    monthlyFeeRange: stats.monthlyFeeRange,
-    averageFee: stats.averageFee,
-    collectionRate: stats.collectionRate,
-    amenities: condo.commonAreas.map(
-      (area) => COMMON_AREA_LABELS[area] ?? area,
-    ),
-    buildingType: "Condominium",
-    yearBuilt: new Date(condo.deedDate).getFullYear(),
-    status: "Active",
-    lastUpdated: String(condo.internalRegulations.date).slice(0, 10),
-    taxId: condo.taxId,
-    totalPermillage: condo.totalPermillage,
+    ...base,
+    occupiedUnits: Math.max(base.occupiedUnits, estimatedOccupied),
   };
 }
 
@@ -234,45 +203,18 @@ export function toPaymentView(
   };
 }
 
-export const mockProperties: Property[] =
-  mockCondominiums.map(toPropertyView);
-
 export const mockOwners: OwnerView[] = mockDomainOwners.map(toOwnerView);
 
 export const mockPayments: PaymentView[] =
   mockQuotaPayments.map(toPaymentView);
 
-/** Portfolio collection aggregates for payment/report screens. */
-export function buildCollectionFromProperties(properties: Property[]) {
-  const propertyBreakdown = properties.map((p, index) => {
-    const target = p.averageFee * p.totalUnits;
-    const collected = target * (p.collectionRate / 100);
-    return {
-      id: index + 1,
-      name: p.name,
-      unitsCount: p.totalUnits,
-      collected: Math.round(collected),
-      target: Math.round(target),
-      collectionRate: p.collectionRate,
-      outstanding: Math.round(target - collected),
-    };
-  });
-
-  const totalTarget = propertyBreakdown.reduce((s, p) => s + p.target, 0);
-  const totalCollected = propertyBreakdown.reduce((s, p) => s + p.collected, 0);
-
-  return {
-    currentMonth: {
-      totalTarget,
-      totalCollected,
-      collectionRate:
-        properties.length > 0
-          ? properties.reduce((s, p) => s + p.collectionRate, 0) /
-            properties.length
-          : 0,
-      outstandingBalance: totalTarget - totalCollected,
-      totalProperties: properties.length,
-    },
-    propertyBreakdown,
-  };
+/** Demo collection aggregates from the mock portfolio. */
+export function buildMockCollectionSummary(): CollectionSummaryData {
+  return summarizeCollection(
+    mockCondominiums.map((condo) =>
+      breakdownFromStats(condo, mockCondoStats(condo)),
+    ),
+  );
 }
+
+export type { CondoStats, CollectionSummaryData };

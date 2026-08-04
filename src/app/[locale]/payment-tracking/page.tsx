@@ -17,8 +17,11 @@ import {
   type PaymentRow,
   type RecordPaymentInput,
 } from "@/lib/collections";
-import { usePortfolio } from "@/lib/portfolio";
-import { buildCollectionFromProperties } from "@/fixtures/views";
+import {
+  buildCollectionFromPortfolio,
+  usePortfolio,
+} from "@/lib/portfolio";
+import { buildMockCollectionSummary } from "@/fixtures/views";
 
 interface Filters {
   dateRange: { start: string; end: string };
@@ -31,10 +34,11 @@ interface Filters {
 function PaymentTracking() {
   const t = useTranslations("paymentTracking");
   const tDash = useTranslations("dashboard.upcomingPayments");
-  const { properties } = usePortfolio();
+  const { portfolio, isDemo } = usePortfolio();
   const reminderCopy = useReminderCopy();
   const {
     payments: paymentHistory,
+    quotas,
     recordPayment,
     sendReminders,
   } = useCollections();
@@ -53,8 +57,11 @@ function PaymentTracking() {
   });
 
   const collectionData = useMemo(
-    () => buildCollectionFromProperties(properties),
-    [properties],
+    () =>
+      isDemo
+        ? buildMockCollectionSummary()
+        : buildCollectionFromPortfolio(portfolio, quotas),
+    [isDemo, portfolio, quotas],
   );
 
   const handleRecordPayment = (paymentData: RecordPaymentInput) => {

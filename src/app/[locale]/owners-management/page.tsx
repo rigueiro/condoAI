@@ -23,8 +23,11 @@ interface Filters {
 
 function OwnersManagement() {
   const t = useTranslations("ownersManagement");
-  const { owners: portfolioOwners, properties: portfolioProperties } =
-    usePortfolio();
+  const { owners: portfolioOwners, portfolio } = usePortfolio();
+  const portfolioProperties = portfolio.condominiums.map((c) => ({
+    id: c.id,
+    name: c.name,
+  }));
   const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
   const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
   const [editingOwner, setEditingOwner] = useState<Owner | null>(null);

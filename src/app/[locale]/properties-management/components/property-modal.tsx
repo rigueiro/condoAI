@@ -1,35 +1,64 @@
+"use client";
+
 import React, { useState, ChangeEvent } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
-import { Property } from "../types";
+import type { Condominium } from "@/types";
+import {
+  BUILDING_TYPES,
+  CONDOMINIUM_STATUSES,
+  COMMON_AREA_LABELS,
+  buildEmptyCondominium,
+  buildingTypeI18nKey,
+  condominiumStatusI18nKey,
+} from "@/lib/portfolio";
 
-type Errors = {
-  [key: string]: string;
+type Errors = Record<string, string>;
+
+type CondoFormData = {
+  name: string;
+  street: string;
+  postalCode: string;
+  parish: string;
+  municipality: string;
+  taxId: string;
+  numberOfUnits: number;
+  deedDate: string;
+  propertyRegistryNumber: string;
+  buildingType: Condominium["buildingType"] | "";
+  status: Condominium["status"];
+  commonAreas: string[];
 };
 
 interface PropertyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (propertyData: Property) => void;
-  property?: Property; // If editing, the existing property data
+  onSave: (condominium: Condominium) => void;
+  property?: Condominium;
 }
 
-const buildFormData = (property?: Property): Property => ({
-  id: "",
-  lastUpdated: "",
-  name: property?.name ?? "",
-  address: property?.address ?? "",
-  totalUnits: property?.totalUnits ?? 0,
-  occupiedUnits: property?.occupiedUnits ?? 0,
-  monthlyFeeRange: property?.monthlyFeeRange ?? "",
-  averageFee: property?.averageFee ?? 0,
-  collectionRate: property?.collectionRate ?? 0,
-  amenities: property?.amenities || [],
-  buildingType: property?.buildingType ?? "",
-  yearBuilt: property?.yearBuilt ?? 0,
-  status: property?.status || "Active",
-});
+const COMMON_AREA_OPTIONS = Object.keys(COMMON_AREA_LABELS);
+
+function toFormData(condo?: Condominium): CondoFormData {
+  return {
+    name: condo?.name ?? "",
+    street: condo?.address.street ?? "",
+    postalCode: condo?.address.postalCode ?? "",
+    parish: condo?.address.parish ?? "",
+    municipality: condo?.address.municipality ?? "",
+    taxId: condo?.taxId ?? "",
+    numberOfUnits: condo?.numberOfUnits ?? 0,
+    deedDate:
+      condo?.deedDate != null
+        ? String(condo.deedDate).slice(0, 10)
+        : new Date().toISOString().slice(0, 10),
+    propertyRegistryNumber: condo?.propertyRegistryNumber ?? "",
+    buildingType: condo?.buildingType ?? "",
+    status: condo?.status ?? "active",
+    commonAreas: condo?.commonAreas ? [...condo.commonAreas] : [],
+  };
+}
 
 function PropertyModal({
   isOpen,
@@ -38,136 +67,108 @@ function PropertyModal({
   property,
 }: PropertyModalProps) {
   const t = useTranslations("propertiesManagement.modal");
-  const [formData, setFormData] = useState<Property>(() =>
-    buildFormData(property),
+  const [formData, setFormData] = useState<CondoFormData>(() =>
+    toFormData(property),
   );
-
   const [errors, setErrors] = useState<Errors>({});
 
-  // Reset the form whenever the modal opens or targets a different property,
-  // adjusting state during render instead of in an effect.
   const [syncKey, setSyncKey] = useState({ property, isOpen });
   if (syncKey.property !== property || syncKey.isOpen !== isOpen) {
     setSyncKey({ property, isOpen });
-    setFormData(buildFormData(property));
+    setFormData(toFormData(property));
     setErrors({});
   }
-
-  const amenityOptions: { key: string; value: string }[] = [
-    { key: "swimmingPool", value: "Swimming Pool" },
-    { key: "gym", value: "Gym" },
-    { key: "parking", value: "Parking" },
-    { key: "security", value: "Security" },
-    { key: "garden", value: "Garden" },
-    { key: "concierge", value: "Concierge" },
-    { key: "rooftopTerrace", value: "Rooftop Terrace" },
-    { key: "playground", value: "Playground" },
-    { key: "lakeAccess", value: "Lake Access" },
-    { key: "tennisCourt", value: "Tennis Court" },
-    { key: "businessCenter", value: "Business Center" },
-    { key: "storage", value: "Storage" },
-    { key: "laundry", value: "Laundry" },
-  ];
-
-  const buildingTypes = [
-    { key: "lowRise", value: "Low-rise" },
-    { key: "midRise", value: "Mid-rise" },
-    { key: "highRise", value: "High-rise" },
-    { key: "townhouse", value: "Townhouse" },
-  ];
-
-  const statusOptions = [
-    { key: "active", value: "Active" },
-    { key: "inactive", value: "Inactive" },
-    { key: "underConstruction", value: "Under Construction" },
-  ];
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]:
+        type === "number"
+          ? Number(value)
+          : value,
     }));
-
-    // Clear error when user starts typing
     if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  const handleAmenityToggle = (amenityValue: string) => {
+  const handleAreaToggle = (area: string) => {
     setFormData((prev) => ({
       ...prev,
-      amenities: prev.amenities.includes(amenityValue)
-        ? prev.amenities.filter((a) => a !== amenityValue)
-        : [...prev.amenities, amenityValue],
+      commonAreas: prev.commonAreas.includes(area)
+        ? prev.commonAreas.filter((a) => a !== area)
+        : [...prev.commonAreas, area],
     }));
   };
 
   const validateForm = () => {
-    const newErrors: Errors = {};
-
-    if (!formData.name.trim()) newErrors.name = t("validation.nameRequired");
-    if (!formData.address.trim())
-      newErrors.address = t("validation.addressRequired");
-    if (!formData.totalUnits || formData.totalUnits <= 0)
-      newErrors.totalUnits = t("validation.totalUnitsRequired");
-    if (!formData.occupiedUnits || formData.occupiedUnits < 0)
-      newErrors.occupiedUnits = t("validation.occupiedUnitsNegative");
-    if (formData.occupiedUnits > formData.totalUnits) {
-      newErrors.occupiedUnits = t("validation.occupiedExceedsTotal");
-    }
-    if (!formData.monthlyFeeRange.trim())
-      newErrors.monthlyFeeRange = t("validation.feeRangeRequired");
-    if (!formData.averageFee || formData.averageFee <= 0)
-      newErrors.averageFee = t("validation.averageFeeRequired");
-    if (
-      !formData.collectionRate ||
-      formData.collectionRate < 0 ||
-      formData.collectionRate > 100
-    ) {
-      newErrors.collectionRate = t("validation.collectionRateRange");
-    }
+    const next: Errors = {};
+    if (!formData.name.trim()) next.name = t("validation.nameRequired");
+    if (!formData.street.trim()) next.street = t("validation.streetRequired");
+    if (!formData.municipality.trim())
+      next.municipality = t("validation.municipalityRequired");
+    if (!formData.taxId.trim()) next.taxId = t("validation.taxIdRequired");
+    if (!formData.numberOfUnits || formData.numberOfUnits <= 0)
+      next.numberOfUnits = t("validation.totalUnitsRequired");
     if (!formData.buildingType)
-      newErrors.buildingType = t("validation.buildingTypeRequired");
-    if (
-      !formData.yearBuilt ||
-      formData.yearBuilt < 1900 ||
-      formData.yearBuilt > new Date().getFullYear()
-    ) {
-      newErrors.yearBuilt = t("validation.yearBuiltInvalid");
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+      next.buildingType = t("validation.buildingTypeRequired");
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = (e: React.MouseEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!validateForm()) return;
+    const buildingType = formData.buildingType as Condominium["buildingType"];
 
-    if (validateForm()) {
-      const propertyData = {
-        ...formData,
-        totalUnits: formData.totalUnits,
-        occupiedUnits: formData.occupiedUnits,
-        averageFee: formData.averageFee,
-        collectionRate: formData.collectionRate,
-        yearBuilt: formData.yearBuilt,
-      };
-
-      onSave(propertyData);
+    if (property) {
+      onSave({
+        ...property,
+        name: formData.name.trim(),
+        address: {
+          street: formData.street.trim(),
+          postalCode: formData.postalCode.trim(),
+          parish: formData.parish.trim(),
+          municipality: formData.municipality.trim(),
+        },
+        taxId: formData.taxId.trim(),
+        numberOfUnits: formData.numberOfUnits,
+        deedDate: formData.deedDate,
+        propertyRegistryNumber: formData.propertyRegistryNumber.trim(),
+        commonAreas: formData.commonAreas,
+        buildingType,
+        status: formData.status,
+        internalRegulations: {
+          ...property.internalRegulations,
+          date: new Date().toISOString().slice(0, 10),
+        },
+      });
+      return;
     }
+
+    onSave(
+      buildEmptyCondominium({
+        name: formData.name,
+        street: formData.street,
+        postalCode: formData.postalCode,
+        parish: formData.parish,
+        municipality: formData.municipality,
+        taxId: formData.taxId,
+        numberOfUnits: formData.numberOfUnits,
+        deedDate: formData.deedDate,
+        propertyRegistryNumber: formData.propertyRegistryNumber,
+        commonAreas: formData.commonAreas,
+        buildingType,
+        status: formData.status,
+      }),
+    );
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    if (e.target === e.currentTarget) onClose();
   };
 
   if (!isOpen) return null;
@@ -178,7 +179,6 @@ function PropertyModal({
       onClick={handleBackdropClick}
     >
       <div className="bg-surface bg-white rounded-lg shadow-modal w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border-light">
           <h2 className="text-xl font-semibold text-text-primary">
             {property ? t("editTitle") : t("addTitle")}
@@ -191,13 +191,11 @@ function PropertyModal({
           </button>
         </div>
 
-        {/* Form */}
         <form
           onSubmit={handleSubmit}
           className="overflow-y-auto max-h-[calc(90vh-140px)]"
         >
           <div className="p-6 space-y-6">
-            {/* Basic Information */}
             <div>
               <h3 className="text-lg font-medium text-text-primary mb-4">
                 {t("basicInfo")}
@@ -233,9 +231,9 @@ function PropertyModal({
                     invalid={Boolean(errors.buildingType)}
                   >
                     <option value="">{t("buildingTypePlaceholder")}</option>
-                    {buildingTypes.map((type) => (
-                      <option key={type.key} value={type.value}>
-                        {t(`buildingTypes.${type.key}`)}
+                    {BUILDING_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {t(`buildingTypes.${buildingTypeI18nKey(type)}`)}
                       </option>
                     ))}
                   </Select>
@@ -248,44 +246,104 @@ function PropertyModal({
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-text-primary mb-2">
-                    {t("address")} *
+                    {t("street")} *
                   </label>
                   <input
                     type="text"
-                    name="address"
-                    value={formData.address}
+                    name="street"
+                    value={formData.street}
                     onChange={handleInputChange}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth ${
-                      errors.address ? "border-error" : "border-border-medium"
+                      errors.street ? "border-error" : "border-border-medium"
                     }`}
-                    placeholder={t("addressPlaceholder")}
+                    placeholder={t("streetPlaceholder")}
                   />
-                  {errors.address && (
-                    <p className="mt-1 text-sm text-error">{errors.address}</p>
+                  {errors.street && (
+                    <p className="mt-1 text-sm text-error">{errors.street}</p>
                   )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-text-primary mb-2">
-                    {t("yearBuilt")} *
+                    {t("postalCode")}
                   </label>
                   <input
-                    type="number"
-                    name="yearBuilt"
-                    value={formData.yearBuilt}
+                    type="text"
+                    name="postalCode"
+                    value={formData.postalCode}
                     onChange={handleInputChange}
-                    min="1900"
-                    max={new Date().getFullYear()}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth ${
-                      errors.yearBuilt ? "border-error" : "border-border-medium"
-                    }`}
-                    placeholder={t("yearBuiltPlaceholder")}
+                    className="w-full px-3 py-2 border border-border-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth"
+                    placeholder={t("postalCodePlaceholder")}
                   />
-                  {errors.yearBuilt && (
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">
+                    {t("parish")}
+                  </label>
+                  <input
+                    type="text"
+                    name="parish"
+                    value={formData.parish}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-border-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth"
+                    placeholder={t("parishPlaceholder")}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">
+                    {t("municipality")} *
+                  </label>
+                  <input
+                    type="text"
+                    name="municipality"
+                    value={formData.municipality}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth ${
+                      errors.municipality
+                        ? "border-error"
+                        : "border-border-medium"
+                    }`}
+                    placeholder={t("municipalityPlaceholder")}
+                  />
+                  {errors.municipality && (
                     <p className="mt-1 text-sm text-error">
-                      {errors.yearBuilt}
+                      {errors.municipality}
                     </p>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">
+                    {t("taxId")} *
+                  </label>
+                  <input
+                    type="text"
+                    name="taxId"
+                    value={formData.taxId}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth ${
+                      errors.taxId ? "border-error" : "border-border-medium"
+                    }`}
+                    placeholder={t("taxIdPlaceholder")}
+                  />
+                  {errors.taxId && (
+                    <p className="mt-1 text-sm text-error">{errors.taxId}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">
+                    {t("deedDate")}
+                  </label>
+                  <input
+                    type="date"
+                    name="deedDate"
+                    value={formData.deedDate}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-border-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth"
+                  />
                 </div>
 
                 <div>
@@ -297,17 +355,30 @@ function PropertyModal({
                     value={formData.status}
                     onChange={handleInputChange}
                   >
-                    {statusOptions.map((status) => (
-                      <option key={status.key} value={status.value}>
-                        {t(`statuses.${status.key}`)}
+                    {CONDOMINIUM_STATUSES.map((status) => (
+                      <option key={status} value={status}>
+                        {t(`statuses.${condominiumStatusI18nKey(status)}`)}
                       </option>
                     ))}
                   </Select>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">
+                    {t("propertyRegistryNumber")}
+                  </label>
+                  <input
+                    type="text"
+                    name="propertyRegistryNumber"
+                    value={formData.propertyRegistryNumber}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-border-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth"
+                    placeholder={t("propertyRegistryPlaceholder")}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Unit Information */}
             <div>
               <h3 className="text-lg font-medium text-text-primary mb-4">
                 {t("unitInfo")}
@@ -319,151 +390,44 @@ function PropertyModal({
                   </label>
                   <input
                     type="number"
-                    name="totalUnits"
-                    value={formData.totalUnits}
+                    name="numberOfUnits"
+                    value={formData.numberOfUnits || ""}
                     onChange={handleInputChange}
                     min="1"
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth ${
-                      errors.totalUnits
+                      errors.numberOfUnits
                         ? "border-error"
                         : "border-border-medium"
                     }`}
                     placeholder="e.g., 48"
                   />
-                  {errors.totalUnits && (
+                  {errors.numberOfUnits && (
                     <p className="mt-1 text-sm text-error">
-                      {errors.totalUnits}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-2">
-                    {t("occupiedUnits")} *
-                  </label>
-                  <input
-                    type="number"
-                    name="occupiedUnits"
-                    value={formData.occupiedUnits}
-                    onChange={handleInputChange}
-                    min="0"
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth ${
-                      errors.occupiedUnits
-                        ? "border-error"
-                        : "border-border-medium"
-                    }`}
-                    placeholder="e.g., 45"
-                  />
-                  {errors.occupiedUnits && (
-                    <p className="mt-1 text-sm text-error">
-                      {errors.occupiedUnits}
+                      {errors.numberOfUnits}
                     </p>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Financial Information */}
-            <div>
-              <h3 className="text-lg font-medium text-text-primary mb-4">
-                {t("financialInfo")}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-2">
-                    {t("monthlyFeeRange")} *
-                  </label>
-                  <input
-                    type="text"
-                    name="monthlyFeeRange"
-                    value={formData.monthlyFeeRange}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth ${
-                      errors.monthlyFeeRange
-                        ? "border-error"
-                        : "border-border-medium"
-                    }`}
-                    placeholder={t("monthlyFeeRangePlaceholder")}
-                  />
-                  {errors.monthlyFeeRange && (
-                    <p className="mt-1 text-sm text-error">
-                      {errors.monthlyFeeRange}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-2">
-                    {t("averageFee")} *
-                  </label>
-                  <input
-                    type="number"
-                    name="averageFee"
-                    value={formData.averageFee}
-                    onChange={handleInputChange}
-                    min="0"
-                    step="0.01"
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth ${
-                      errors.averageFee
-                        ? "border-error"
-                        : "border-border-medium"
-                    }`}
-                    placeholder="e.g., 600"
-                  />
-                  {errors.averageFee && (
-                    <p className="mt-1 text-sm text-error">
-                      {errors.averageFee}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-2">
-                    {t("collectionRate")} *
-                  </label>
-                  <input
-                    type="number"
-                    name="collectionRate"
-                    value={formData.collectionRate}
-                    onChange={handleInputChange}
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth ${
-                      errors.collectionRate
-                        ? "border-error"
-                        : "border-border-medium"
-                    }`}
-                    placeholder="e.g., 94.2"
-                  />
-                  {errors.collectionRate && (
-                    <p className="mt-1 text-sm text-error">
-                      {errors.collectionRate}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Amenities */}
             <div>
               <h3 className="text-lg font-medium text-text-primary mb-4">
                 {t("amenities")}
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {amenityOptions.map((amenity) => (
+                {COMMON_AREA_OPTIONS.map((area) => (
                   <label
-                    key={amenity.key}
+                    key={area}
                     className="flex items-center space-x-2 cursor-pointer"
                   >
                     <input
                       type="checkbox"
-                      checked={formData.amenities.includes(amenity.value)}
-                      onChange={() => handleAmenityToggle(amenity.value)}
+                      checked={formData.commonAreas.includes(area)}
+                      onChange={() => handleAreaToggle(area)}
                       className="w-4 h-4 text-primary border-secondary-300 rounded focus:ring-primary focus:ring-2"
                     />
                     <span className="text-sm text-text-primary">
-                      {t(`amenitiesList.${amenity.key}`)}
+                      {t(`commonAreasList.${area}`)}
                     </span>
                   </label>
                 ))}
@@ -471,7 +435,6 @@ function PropertyModal({
             </div>
           </div>
 
-          {/* Footer */}
           <div className="flex items-center justify-end space-x-4 p-6 border-t border-border-light bg-secondary-50">
             <button
               type="button"
