@@ -1,0 +1,93 @@
+{
+  "title": "Finanças",
+  "subtitle": "Orçamentos anuais de rascunho a aprovado, registo de despesas e saldos bancários do condomínio.",
+  "add": "Adicionar registo",
+  "tabs": {
+    "attention": "Requer atenção",
+    "budget": "Orçamentos",
+    "expense": "Despesas",
+    "bank": "Contas bancárias"
+  },
+  "stats": {
+    "drafts": "Orçamentos em rascunho",
+    "budgets": "Orçamentos anuais",
+    "expenses": "Despesas",
+    "balance": "Saldo bancário total"
+  },
+  "attention": {
+    "title": "Orçamentos à espera de aprovação",
+    "empty": "Sem orçamentos em rascunho — todos os orçamentos anuais estão aprovados.",
+    "draft": "Rascunho",
+    "yearLabel": "Orçamento {year}",
+    "categories": "{count, plural, one {# categoria} other {# categorias}}",
+    "approve": "Aprovar orçamento"
+  },
+  "filters": {
+    "allProperties": "Todos os condomínios",
+    "search": "Pesquisar…"
+  },
+  "table": {
+    "condominium": "Condomínio",
+    "year": "Ano",
+    "status": "Estado",
+    "total": "Total",
+    "categories": "Categorias",
+    "date": "Data",
+    "amount": "Montante",
+    "category": "Categoria",
+    "supplier": "Fornecedor",
+    "bank": "Banco",
+    "iban": "IBAN",
+    "balance": "Saldo",
+    "actions": "Ações",
+    "empty": "Ainda sem registos.",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "status": {
+    "draft": "Rascunho",
+    "approved": "Aprovado"
+  },
+  "kinds": {
+    "budget": "Orçamento",
+    "expense": "Despesa",
+    "bank": "Conta bancária"
+  },
+  "modal": {
+    "addTitle": "Adicionar {kind}",
+    "editTitle": "Editar {kind}",
+    "kind": "Tipo de registo",
+    "condominium": "Condomínio",
+    "year": "Ano",
+    "status": "Estado",
+    "categories": "Categorias (uma por linha: cleaning: 18000)",
+    "categoriesHint": "Use categoria: montante em cada linha.",
+    "date": "Data",
+    "amount": "Montante",
+    "category": "Categoria",
+    "supplier": "Fornecedor",
+    "bank": "Banco",
+    "iban": "IBAN",
+    "balance": "Saldo atual",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "validation": {
+      "condominiumRequired": "Selecione um condomínio.",
+      "yearRequired": "Indique o ano.",
+      "categoriesRequired": "Adicione pelo menos uma categoria.",
+      "dateRequired": "Indique a data.",
+      "amountRequired": "Indique o montante.",
+      "categoryRequired": "Indique a categoria.",
+      "supplierRequired": "Indique o fornecedor.",
+      "bankRequired": "Indique o banco.",
+      "ibanRequired": "Indique o IBAN.",
+      "balanceRequired": "Indique o saldo atual."
+    }
+  },
+  "flash": {
+    "saved": "Registo guardado.",
+    "deleted": "Registo eliminado.",
+    "approved": "Orçamento aprovado."
+  },
+  "confirmDelete": "Eliminar este registo? Esta ação não pode ser anulada."
+}

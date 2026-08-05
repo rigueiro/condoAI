@@ -13,7 +13,7 @@ import {
   type CollectionSummaryData,
 } from "@/lib/portfolio/mappers";
 import {
-  mockAnnualBudgets,
+  approvedBudgetsForYear,
   mockCondominiums,
   mockDomainOwners,
   mockQuotaPayments,
@@ -50,7 +50,7 @@ const unitById = new Map(mockUnits.map((u) => [u.id, u]));
 const condoById = new Map(mockCondominiums.map((c) => [c.id, c]));
 const ownerById = new Map(mockDomainOwners.map((o) => [o.id, o]));
 const budgetByCondoId = new Map(
-  mockAnnualBudgets.map((b) => [b.condominiumId, b]),
+  approvedBudgetsForYear().map((b) => [b.condominiumId, b]),
 );
 
 const quotasByOwnerId = mockQuotaPayments.reduce((map, quota) => {

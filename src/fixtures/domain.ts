@@ -1,8 +1,10 @@
 import type {
   AnnualBudget,
   AssemblyMinutes,
+  BankAccount,
   Certificate,
   Condominium,
+  Expense,
   InsurancePolicy,
   Owner,
   QuotaPayment,
@@ -281,10 +283,44 @@ export const mockAnnualBudgets: AnnualBudget[] = [
     },
     status: "approved",
   },
+  {
+    id: "b6",
+    condominiumId: "1",
+    year: 2027,
+    valuesByCategory: {
+      cleaning: 19_200,
+      electricity: 15_600,
+      insurance: 10_200,
+      maintenance: 26_400,
+      reserve: 13_200,
+    },
+    status: "draft",
+  },
+  {
+    id: "b7",
+    condominiumId: "2",
+    year: 2027,
+    valuesByCategory: {
+      cleaning: 30_000,
+      electricity: 22_800,
+      insurance: 15_000,
+      maintenance: 38_400,
+      concierge: 25_200,
+      reserve: 20_400,
+    },
+    status: "draft",
+  },
 ];
 
+/** Approved budgets for a calendar year (quota calc / condo stats). */
+export function approvedBudgetsForYear(year = 2026): AnnualBudget[] {
+  return mockAnnualBudgets.filter(
+    (b) => b.status === "approved" && b.year === year,
+  );
+}
+
 const annualTotalByCondoId = new Map(
-  mockAnnualBudgets.map((b) => [
+  approvedBudgetsForYear().map((b) => [
     b.condominiumId,
     sumBudgetCategories(b.valuesByCategory),
   ]),
@@ -644,5 +680,119 @@ export const mockSummons: Summons[] = [
     content: "Convocatória para deliberação sobre obras de conservação.",
     method: "mail",
     proof: null,
+  },
+];
+
+/** Demo condo finance — expenses + bank; budgets above feed quotas and /finance. */
+export const mockBankAccounts: BankAccount[] = [
+  {
+    id: "ba1",
+    condominiumId: "1",
+    bank: "Millennium BCP",
+    iban: "PT50 0033 0000 4550 1234 5678 9",
+    currentBalance: 48_320,
+  },
+  {
+    id: "ba2",
+    condominiumId: "2",
+    bank: "CGD",
+    iban: "PT50 0035 0651 0000 9876 5432 1",
+    currentBalance: 72_150,
+  },
+  {
+    id: "ba3",
+    condominiumId: "3",
+    bank: "Novo Banco",
+    iban: "PT50 0007 0000 1234 5678 9012 3",
+    currentBalance: 18_940,
+  },
+  {
+    id: "ba4",
+    condominiumId: "4",
+    bank: "Santander",
+    iban: "PT50 0018 0003 4567 8901 2345 6",
+    currentBalance: 95_600,
+  },
+  {
+    id: "ba5",
+    condominiumId: "5",
+    bank: "ActivoBank",
+    iban: "PT50 0023 0000 1111 2222 3333 4",
+    currentBalance: 12_480,
+  },
+];
+
+export const mockExpenses: Expense[] = [
+  {
+    id: "ex1",
+    condominiumId: "1",
+    date: "2026-07-08",
+    amount: 1_450,
+    category: "cleaning",
+    supplier: "Limpeza Amoreira Lda.",
+    invoice: null,
+  },
+  {
+    id: "ex2",
+    condominiumId: "1",
+    date: "2026-07-15",
+    amount: 890,
+    category: "electricity",
+    supplier: "EDP Comercial",
+    invoice: null,
+  },
+  {
+    id: "ex3",
+    condominiumId: "1",
+    date: "2026-06-22",
+    amount: 2_400,
+    category: "maintenance",
+    supplier: "Elevadores Lisboa",
+    invoice: null,
+  },
+  {
+    id: "ex4",
+    condominiumId: "2",
+    date: "2026-07-02",
+    amount: 2_100,
+    category: "cleaning",
+    supplier: "CleanPro Belém",
+    invoice: null,
+  },
+  {
+    id: "ex5",
+    condominiumId: "2",
+    date: "2026-07-18",
+    amount: 1_800,
+    category: "concierge",
+    supplier: "Segurança Torre",
+    invoice: null,
+  },
+  {
+    id: "ex6",
+    condominiumId: "3",
+    date: "2026-05-30",
+    amount: 620,
+    category: "garden",
+    supplier: "Jardins Cascais",
+    invoice: null,
+  },
+  {
+    id: "ex7",
+    condominiumId: "4",
+    date: "2026-07-10",
+    amount: 3_200,
+    category: "maintenance",
+    supplier: "Fachadas Norte",
+    invoice: null,
+  },
+  {
+    id: "ex8",
+    condominiumId: "5",
+    date: "2026-06-14",
+    amount: 480,
+    category: "insurance",
+    supplier: "Zurich",
+    invoice: null,
   },
 ];

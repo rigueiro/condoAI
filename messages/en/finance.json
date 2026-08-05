@@ -1,0 +1,93 @@
+{
+  "title": "Finance",
+  "subtitle": "Annual budgets from draft to approved, expense ledger, and condominium bank balances.",
+  "add": "Add record",
+  "tabs": {
+    "attention": "Needs attention",
+    "budget": "Budgets",
+    "expense": "Expenses",
+    "bank": "Bank accounts"
+  },
+  "stats": {
+    "drafts": "Draft budgets",
+    "budgets": "Annual budgets",
+    "expenses": "Expenses",
+    "balance": "Total bank balance"
+  },
+  "attention": {
+    "title": "Budgets awaiting approval",
+    "empty": "No draft budgets — all annual budgets are approved.",
+    "draft": "Draft",
+    "yearLabel": "Budget {year}",
+    "categories": "{count, plural, one {# category} other {# categories}}",
+    "approve": "Approve budget"
+  },
+  "filters": {
+    "allProperties": "All condominiums",
+    "search": "Search…"
+  },
+  "table": {
+    "condominium": "Condominium",
+    "year": "Year",
+    "status": "Status",
+    "total": "Total",
+    "categories": "Categories",
+    "date": "Date",
+    "amount": "Amount",
+    "category": "Category",
+    "supplier": "Supplier",
+    "bank": "Bank",
+    "iban": "IBAN",
+    "balance": "Balance",
+    "actions": "Actions",
+    "empty": "No records yet.",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "status": {
+    "draft": "Draft",
+    "approved": "Approved"
+  },
+  "kinds": {
+    "budget": "Budget",
+    "expense": "Expense",
+    "bank": "Bank account"
+  },
+  "modal": {
+    "addTitle": "Add {kind}",
+    "editTitle": "Edit {kind}",
+    "kind": "Record type",
+    "condominium": "Condominium",
+    "year": "Year",
+    "status": "Status",
+    "categories": "Categories (one per line: cleaning: 18000)",
+    "categoriesHint": "Use category: amount on each line.",
+    "date": "Date",
+    "amount": "Amount",
+    "category": "Category",
+    "supplier": "Supplier",
+    "bank": "Bank",
+    "iban": "IBAN",
+    "balance": "Current balance",
+    "cancel": "Cancel",
+    "save": "Save",
+    "validation": {
+      "condominiumRequired": "Select a condominium.",
+      "yearRequired": "Enter a year.",
+      "categoriesRequired": "Add at least one budget category.",
+      "dateRequired": "Enter a date.",
+      "amountRequired": "Enter an amount.",
+      "categoryRequired": "Enter a category.",
+      "supplierRequired": "Enter a supplier.",
+      "bankRequired": "Enter a bank name.",
+      "ibanRequired": "Enter an IBAN.",
+      "balanceRequired": "Enter the current balance."
+    }
+  },
+  "flash": {
+    "saved": "Record saved.",
+    "deleted": "Record deleted.",
+    "approved": "Budget approved."
+  },
+  "confirmDelete": "Delete this record? This cannot be undone."
+}
