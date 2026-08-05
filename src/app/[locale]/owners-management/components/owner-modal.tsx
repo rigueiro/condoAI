@@ -101,7 +101,7 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
 
   return (
     <div
-      className="fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-1030 p-4"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-1030 p-4"
       onClick={handleBackdropClick}
     >
       <div className="bg-surface bg-white rounded-lg shadow-modal w-full max-w-2xl max-h-[90vh] overflow-y-auto">

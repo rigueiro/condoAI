@@ -58,7 +58,7 @@ function MobileNavigationDrawer({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-1020 md:hidden animate-fade-in"
+        className="fixed inset-0 bg-black/50 z-1020 md:hidden animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
