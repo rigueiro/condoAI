@@ -1,8 +1,12 @@
 import type {
   AnnualBudget,
+  AssemblyMinutes,
+  Certificate,
   Condominium,
+  InsurancePolicy,
   Owner,
   QuotaPayment,
+  Summons,
   Unit,
 } from "@/types";
 import { calculateMonthlyQuota, sumBudgetCategories } from "@/lib/quota";
@@ -476,5 +480,169 @@ export const mockQuotaPayments: QuotaPayment[] = [
     amount: mockDomainOwners[3].monthlyQuota,
     status: "paid",
     paymentDate: "2026-01-12",
+  },
+];
+
+/** Demo compliance spine — renewals + document history for the PT trust story. */
+export const mockInsurancePolicies: InsurancePolicy[] = [
+  {
+    id: "ins1",
+    condominiumId: "1",
+    insurer: "Fidelidade",
+    number: "AP-2024-88102",
+    coverages: ["fire", "water-damage", "civil-liability"],
+    insuredCapital: 4_200_000,
+    annualPremium: 9_600,
+    renewalDate: "2026-08-28",
+  },
+  {
+    id: "ins2",
+    condominiumId: "2",
+    insurer: "Allianz",
+    number: "MC-778421",
+    coverages: ["fire", "water-damage", "earthquake"],
+    insuredCapital: 8_500_000,
+    annualPremium: 14_400,
+    renewalDate: "2026-09-15",
+  },
+  {
+    id: "ins3",
+    condominiumId: "3",
+    insurer: "Tranquilidade",
+    number: "CS-45012",
+    coverages: ["fire", "water-damage"],
+    insuredCapital: 1_800_000,
+    annualPremium: 3_600,
+    renewalDate: "2026-11-01",
+  },
+  {
+    id: "ins4",
+    condominiumId: "4",
+    insurer: "Fidelidade",
+    number: "AP-2025-12044",
+    coverages: ["fire", "water-damage", "civil-liability", "glass"],
+    insuredCapital: 12_000_000,
+    annualPremium: 19_200,
+    renewalDate: "2026-07-20",
+  },
+  {
+    id: "ins5",
+    condominiumId: "5",
+    insurer: "Zurich",
+    number: "ZH-99210",
+    coverages: ["fire", "water-damage"],
+    insuredCapital: 2_400_000,
+    annualPremium: 6_000,
+    renewalDate: "2027-02-10",
+  },
+];
+
+export const mockCertificates: Certificate[] = [
+  {
+    id: "cert1",
+    condominiumId: "1",
+    type: "energy",
+    validity: "2026-09-01",
+    file: null,
+  },
+  {
+    id: "cert2",
+    condominiumId: "1",
+    type: "technical-inspection",
+    validity: "2027-03-15",
+    file: null,
+  },
+  {
+    id: "cert3",
+    condominiumId: "2",
+    type: "usage-license",
+    validity: "2026-06-30",
+    file: null,
+  },
+  {
+    id: "cert4",
+    condominiumId: "3",
+    type: "energy",
+    validity: "2025-12-01",
+    file: null,
+  },
+  {
+    id: "cert5",
+    condominiumId: "4",
+    type: "technical-inspection",
+    validity: "2026-08-18",
+    file: null,
+  },
+  {
+    id: "cert6",
+    condominiumId: "5",
+    type: "usage-license",
+    validity: "2028-01-20",
+    file: null,
+  },
+];
+
+export const mockAssemblyMinutes: AssemblyMinutes[] = [
+  {
+    id: "asm1",
+    condominiumId: "1",
+    date: "2026-03-12",
+    type: "ordinary",
+    file: null,
+    participants: ["1", "2"],
+  },
+  {
+    id: "asm2",
+    condominiumId: "2",
+    date: "2026-02-20",
+    type: "ordinary",
+    file: null,
+    participants: ["3"],
+  },
+  {
+    id: "asm3",
+    condominiumId: "4",
+    date: "2025-11-08",
+    type: "extraordinary",
+    file: null,
+    participants: ["5"],
+  },
+  {
+    id: "asm4",
+    condominiumId: "3",
+    date: "2025-09-30",
+    type: "ordinary",
+    file: null,
+    participants: ["4"],
+  },
+];
+
+export const mockSummons: Summons[] = [
+  {
+    id: "sum1",
+    condominiumId: "1",
+    sentDate: "2026-02-20",
+    title: "Assembleia ordinária 2026",
+    content: "Convocatória para assembleia ordinária de 12 de março de 2026.",
+    method: "email",
+    proof: null,
+  },
+  {
+    id: "sum2",
+    condominiumId: "2",
+    sentDate: "2026-01-28",
+    title: "Assembleia ordinária Torre do Tejo",
+    content: "Convocatória e ordem de trabalhos enviadas aos condóminos.",
+    method: "email",
+    proof: null,
+  },
+  {
+    id: "sum3",
+    condominiumId: "4",
+    sentDate: "2025-10-22",
+    title: "Assembleia extraordinária — obras de fachada",
+    content: "Convocatória para deliberação sobre obras de conservação.",
+    method: "mail",
+    proof: null,
   },
 ];

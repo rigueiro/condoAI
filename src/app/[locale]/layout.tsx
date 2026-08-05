@@ -8,6 +8,7 @@ import "../globals.css";
 import { AuthProvider } from "@/lib/auth";
 import { PortfolioProvider } from "@/lib/portfolio";
 import { CollectionsProvider } from "@/lib/collections";
+import { ComplianceProvider } from "@/lib/compliance";
 import { ThemeProvider, ThemeScript } from "@/lib/theme";
 import { routing } from "@/i18n/routing";
 
@@ -65,7 +66,9 @@ export default async function LocaleLayout({
           <ThemeProvider>
             <AuthProvider>
               <PortfolioProvider>
-                <CollectionsProvider>{children}</CollectionsProvider>
+                <CollectionsProvider>
+                  <ComplianceProvider>{children}</ComplianceProvider>
+                </CollectionsProvider>
               </PortfolioProvider>
             </AuthProvider>
           </ThemeProvider>

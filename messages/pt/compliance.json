@@ -1,0 +1,109 @@
+{
+  "title": "Conformidade",
+  "subtitle": "Assembleias, convocatórias, renovações de seguro e certificados — prazos que precisam de atenção.",
+  "add": "Adicionar registo",
+  "tabs": {
+    "attention": "Atenção",
+    "insurance": "Seguros",
+    "certificate": "Certificados",
+    "assembly": "Assembleias",
+    "summons": "Convocatórias"
+  },
+  "stats": {
+    "attention": "A vencer / em atraso",
+    "policies": "Apólices de seguro",
+    "certificates": "Certificados",
+    "assemblies": "Assembleias"
+  },
+  "attention": {
+    "title": "Renovações e validade",
+    "empty": "Nada a vencer nos próximos 60 dias.",
+    "overdue": "Em atraso",
+    "dueSoon": "A vencer",
+    "daysOverdue": "{count, plural, one {# dia em atraso} other {# dias em atraso}}",
+    "daysLeft": "{count, plural, one {# dia restante} other {# dias restantes}}",
+    "dueToday": "Vence hoje",
+    "markRenewed": "Marcar renovado",
+    "insuranceLabel": "Seguro · {insurer}",
+    "certificateLabel": "Certificado · {type}"
+  },
+  "filters": {
+    "allProperties": "Todos os condomínios",
+    "search": "Pesquisar…"
+  },
+  "table": {
+    "condominium": "Condomínio",
+    "insurer": "Seguradora",
+    "policyNumber": "Nº apólice",
+    "premium": "Prémio anual",
+    "renewal": "Renovação",
+    "type": "Tipo",
+    "validity": "Validade",
+    "date": "Data",
+    "assemblyType": "Tipo",
+    "sent": "Enviada",
+    "title": "Título",
+    "method": "Método",
+    "actions": "Ações",
+    "empty": "Ainda sem registos.",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "kinds": {
+    "insurance": "Seguro",
+    "certificate": "Certificado",
+    "assembly": "Assembleia",
+    "summons": "Convocatória"
+  },
+  "certificateTypes": {
+    "energy": "Certificado energético",
+    "technical-inspection": "Inspeção técnica",
+    "usage-license": "Licença de utilização"
+  },
+  "assemblyTypes": {
+    "ordinary": "Ordinária",
+    "extraordinary": "Extraordinária"
+  },
+  "summonsMethods": {
+    "email": "Email",
+    "mail": "Correio"
+  },
+  "modal": {
+    "addTitle": "Adicionar {kind}",
+    "editTitle": "Editar {kind}",
+    "kind": "Tipo de registo",
+    "condominium": "Condomínio",
+    "insurer": "Seguradora",
+    "policyNumber": "Número da apólice",
+    "coverages": "Coberturas (separadas por vírgula)",
+    "insuredCapital": "Capital seguro",
+    "annualPremium": "Prémio anual",
+    "renewalDate": "Data de renovação",
+    "certificateType": "Tipo de certificado",
+    "validity": "Válido até",
+    "assemblyDate": "Data da assembleia",
+    "assemblyType": "Tipo de assembleia",
+    "summonsTitle": "Título",
+    "summonsContent": "Conteúdo",
+    "sentDate": "Data de envio",
+    "method": "Método de envio",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "validation": {
+      "condominiumRequired": "Selecione um condomínio",
+      "insurerRequired": "A seguradora é obrigatória",
+      "policyRequired": "O número da apólice é obrigatório",
+      "renewalRequired": "A data de renovação é obrigatória",
+      "validityRequired": "A data de validade é obrigatória",
+      "dateRequired": "A data é obrigatória",
+      "titleRequired": "O título é obrigatório",
+      "contentRequired": "O conteúdo é obrigatório"
+    }
+  },
+  "confirmDelete": "Eliminar este registo?",
+  "flash": {
+    "saved": "Registo guardado",
+    "deleted": "Registo eliminado",
+    "renewed": "Marcado como renovado"
+  }
+}

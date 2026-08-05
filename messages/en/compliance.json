@@ -1,0 +1,109 @@
+{
+  "title": "Compliance",
+  "subtitle": "Assemblies, summons, insurance renewals, and certificates — deadlines that need attention.",
+  "add": "Add record",
+  "tabs": {
+    "attention": "Needs attention",
+    "insurance": "Insurance",
+    "certificate": "Certificates",
+    "assembly": "Assemblies",
+    "summons": "Summons"
+  },
+  "stats": {
+    "attention": "Due soon / overdue",
+    "policies": "Insurance policies",
+    "certificates": "Certificates",
+    "assemblies": "Assemblies"
+  },
+  "attention": {
+    "title": "Renewals & validity",
+    "empty": "Nothing due in the next 60 days.",
+    "overdue": "Overdue",
+    "dueSoon": "Due soon",
+    "daysOverdue": "{count, plural, one {# day overdue} other {# days overdue}}",
+    "daysLeft": "{count, plural, one {# day left} other {# days left}}",
+    "dueToday": "Due today",
+    "markRenewed": "Mark renewed",
+    "insuranceLabel": "Insurance · {insurer}",
+    "certificateLabel": "Certificate · {type}"
+  },
+  "filters": {
+    "allProperties": "All condominiums",
+    "search": "Search…"
+  },
+  "table": {
+    "condominium": "Condominium",
+    "insurer": "Insurer",
+    "policyNumber": "Policy nº",
+    "premium": "Annual premium",
+    "renewal": "Renewal",
+    "type": "Type",
+    "validity": "Validity",
+    "date": "Date",
+    "assemblyType": "Type",
+    "sent": "Sent",
+    "title": "Title",
+    "method": "Method",
+    "actions": "Actions",
+    "empty": "No records yet.",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "kinds": {
+    "insurance": "Insurance",
+    "certificate": "Certificate",
+    "assembly": "Assembly",
+    "summons": "Summons"
+  },
+  "certificateTypes": {
+    "energy": "Energy certificate",
+    "technical-inspection": "Technical inspection",
+    "usage-license": "Usage license"
+  },
+  "assemblyTypes": {
+    "ordinary": "Ordinary",
+    "extraordinary": "Extraordinary"
+  },
+  "summonsMethods": {
+    "email": "Email",
+    "mail": "Mail"
+  },
+  "modal": {
+    "addTitle": "Add {kind}",
+    "editTitle": "Edit {kind}",
+    "kind": "Record type",
+    "condominium": "Condominium",
+    "insurer": "Insurer",
+    "policyNumber": "Policy number",
+    "coverages": "Coverages (comma-separated)",
+    "insuredCapital": "Insured capital",
+    "annualPremium": "Annual premium",
+    "renewalDate": "Renewal date",
+    "certificateType": "Certificate type",
+    "validity": "Valid until",
+    "assemblyDate": "Assembly date",
+    "assemblyType": "Assembly type",
+    "summonsTitle": "Title",
+    "summonsContent": "Content",
+    "sentDate": "Sent date",
+    "method": "Delivery method",
+    "save": "Save",
+    "cancel": "Cancel",
+    "validation": {
+      "condominiumRequired": "Select a condominium",
+      "insurerRequired": "Insurer is required",
+      "policyRequired": "Policy number is required",
+      "renewalRequired": "Renewal date is required",
+      "validityRequired": "Validity date is required",
+      "dateRequired": "Date is required",
+      "titleRequired": "Title is required",
+      "contentRequired": "Content is required"
+    }
+  },
+  "confirmDelete": "Delete this record?",
+  "flash": {
+    "saved": "Record saved",
+    "deleted": "Record deleted",
+    "renewed": "Marked as renewed"
+  }
+}

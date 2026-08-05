@@ -4,6 +4,10 @@ export {
   mockDomainOwners,
   mockQuotaPayments,
   mockAnnualBudgets,
+  mockInsurancePolicies,
+  mockCertificates,
+  mockAssemblyMinutes,
+  mockSummons,
 } from "./domain";
 export {
   mockOwners,

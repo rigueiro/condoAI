@@ -48,6 +48,12 @@ function Header() {
         tooltip: t("nav.occurrencesTooltip"),
       },
       {
+        label: t("nav.compliance"),
+        path: "/compliance",
+        icon: "ScrollText",
+        tooltip: t("nav.complianceTooltip"),
+      },
+      {
         label: t("nav.reports"),
         path: "/reports-analytics",
         icon: "BarChart3",
