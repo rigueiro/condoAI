@@ -1,6 +1,5 @@
 import { rest } from "msw";
-import { mockOwners } from "@/app/[locale]/owners-management/__fixtures__/mock-owners";
-import { mockCondominiums } from "@/fixtures/domain";
+import { mockDomainOwners, mockCondominiums } from "@/fixtures/domain";
 import { mockOccurrences } from "@/app/[locale]/occurrences/__fixtures__/mock-occurrences";
 
 export const handlers = [
@@ -18,10 +17,17 @@ export const handlers = [
     return res(ctx.status(200), ctx.json({ token: "fake-jwt-token" }));
   }),
   rest.get("/api/owners", (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json([...mockOwners]));
-  }),
-  rest.get("/api/user", (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json([...mockOwners]));
+    return res(
+      ctx.status(200),
+      ctx.json(
+        mockDomainOwners.map((o) => ({
+          id: o.id,
+          fullName: o.fullName,
+          email: o.contacts.email,
+          unitId: o.unitId,
+        })),
+      ),
+    );
   }),
   rest.get("/api/properties", (req, res, ctx) => {
     return res(

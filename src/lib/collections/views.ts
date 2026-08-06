@@ -1,6 +1,11 @@
 import type { QuotaPayment } from "@/types";
 import type { PaymentView } from "@/fixtures/views";
-import type { Owner as OwnerView } from "@/app/[locale]/owners-management/components/types";
+import type {
+  OwnerRow,
+  PaymentStatus,
+} from "@/app/[locale]/owners-management/components/types";
+import type { Portfolio } from "@/lib/portfolio/types";
+import { ownerDisplay, portfolioToOwnerRows } from "@/lib/portfolio/mappers";
 import type { OverdueItem, PaymentDetails } from "./types";
 
 const QUOTA_TO_PAYMENT_STATUS: Record<
@@ -15,15 +20,68 @@ const QUOTA_TO_PAYMENT_STATUS: Record<
 /** Payment history row with stable quota id for mutations. */
 export type PaymentRow = PaymentView & { quotaId: string };
 
+function quotasByOwnerId(
+  quotas: QuotaPayment[],
+): Map<string, QuotaPayment[]> {
+  const map = new Map<string, QuotaPayment[]>();
+  for (const q of quotas) {
+    const list = map.get(q.ownerId) ?? [];
+    list.push(q);
+    map.set(q.ownerId, list);
+  }
+  return map;
+}
+
+function deriveBalances(
+  quotas: QuotaPayment[],
+): Pick<OwnerRow, "paymentStatus" | "currentBalance" | "lastPayment"> {
+  let balance = 0;
+  let hasOverdue = false;
+  let hasPending = false;
+  let lastPayment = "";
+
+  for (const q of quotas) {
+    if (q.status === "overdue" || q.status === "pending") {
+      balance += q.amount;
+      if (q.status === "overdue") hasOverdue = true;
+      else hasPending = true;
+    } else if (q.status === "paid" && q.paymentDate) {
+      const paid = String(q.paymentDate).slice(0, 10);
+      if (!lastPayment || paid > lastPayment) lastPayment = paid;
+    }
+  }
+
+  const paymentStatus: PaymentStatus = hasOverdue
+    ? "overdue"
+    : hasPending
+      ? "pending"
+      : quotas.length > 0
+        ? "current"
+        : "";
+
+  return { paymentStatus, currentBalance: balance, lastPayment };
+}
+
+function portfolioLookup(portfolio: Portfolio) {
+  return {
+    ownerById: new Map(portfolio.owners.map((o) => [o.id, o])),
+    unitById: new Map(portfolio.units.map((u) => [u.id, u])),
+    condoById: new Map(portfolio.condominiums.map((c) => [c.id, c])),
+  };
+}
+
 export function quotasToPaymentRows(
   quotas: QuotaPayment[],
-  owners: OwnerView[],
+  portfolio: Portfolio,
   details: Record<string, PaymentDetails>,
 ): PaymentRow[] {
-  const ownerById = new Map(owners.map((o) => [o.id, o]));
+  const { ownerById, unitById, condoById } = portfolioLookup(portfolio);
 
   return quotas.map((quota, index) => {
     const owner = ownerById.get(quota.ownerId);
+    const display = owner
+      ? ownerDisplay(portfolio, owner, unitById, condoById)
+      : undefined;
     const date =
       quota.paymentDate != null
         ? String(quota.paymentDate).slice(0, 10)
@@ -35,10 +93,10 @@ export function quotasToPaymentRows(
       quotaId: quota.id,
       date,
       ownerId: quota.ownerId,
-      ownerName: owner?.name ?? "",
-      property: owner?.property ?? "",
-      propertyId: owner?.propertyId,
-      unit: owner?.unit ?? "",
+      ownerName: owner?.fullName ?? "",
+      property: display?.condominiumName ?? "",
+      propertyId: display?.condominiumId,
+      unit: display?.unitLabel ?? "",
       amount: quota.amount,
       paymentMethod: meta?.paymentMethod ?? "Bank Transfer",
       status: QUOTA_TO_PAYMENT_STATUS[quota.status],
@@ -54,21 +112,24 @@ export function quotasToPaymentRows(
 
 export function quotasToOverdueItems(
   quotas: QuotaPayment[],
-  owners: OwnerView[],
+  portfolio: Portfolio,
 ): OverdueItem[] {
-  const ownerById = new Map(owners.map((o) => [o.id, o]));
+  const { ownerById, unitById, condoById } = portfolioLookup(portfolio);
 
   return quotas
     .filter((q) => q.status === "overdue")
     .map((q) => {
       const owner = ownerById.get(q.ownerId);
+      const display = owner
+        ? ownerDisplay(portfolio, owner, unitById, condoById)
+        : undefined;
       return {
         id: q.id,
         ownerId: q.ownerId,
-        ownerName: owner?.name ?? "",
-        email: owner?.email ?? "",
-        unit: owner?.unit ?? "",
-        property: owner?.property ?? "",
+        ownerName: owner?.fullName ?? "",
+        email: owner?.contacts.email ?? "",
+        unit: display?.unitLabel ?? "",
+        property: display?.condominiumName ?? "",
         amount: q.amount,
         dueDate: `${q.monthYear}-08`,
         monthYear: q.monthYear,
@@ -76,46 +137,15 @@ export function quotasToOverdueItems(
     });
 }
 
+/** Join domain owners with quota-derived payment balances. */
 export function applyOwnerBalances(
-  owners: OwnerView[],
+  portfolio: Portfolio,
   quotas: QuotaPayment[],
-): OwnerView[] {
-  const byOwner = new Map<string, QuotaPayment[]>();
-  for (const q of quotas) {
-    const list = byOwner.get(q.ownerId) ?? [];
-    list.push(q);
-    byOwner.set(q.ownerId, list);
-  }
-
-  return owners.map((owner) => {
-    const list = byOwner.get(owner.id) ?? [];
-    let balance = 0;
-    let hasOverdue = false;
-    let hasPending = false;
-    let lastPayment = owner.lastPayment;
-
-    for (const q of list) {
-      if (q.status === "overdue" || q.status === "pending") {
-        balance += q.amount;
-        if (q.status === "overdue") hasOverdue = true;
-        else hasPending = true;
-      } else if (q.status === "paid" && q.paymentDate) {
-        const paid = String(q.paymentDate).slice(0, 10);
-        if (!lastPayment || paid > lastPayment) lastPayment = paid;
-      }
-    }
-
-    return {
-      ...owner,
-      paymentStatus: hasOverdue
-        ? "overdue"
-        : hasPending
-          ? "pending"
-          : list.length > 0
-            ? "current"
-            : "",
-      currentBalance: balance,
-      lastPayment,
-    };
-  });
+  avatars: Record<string, string> = {},
+): OwnerRow[] {
+  const byOwner = quotasByOwnerId(quotas);
+  return portfolioToOwnerRows(portfolio, avatars).map((row) => ({
+    ...row,
+    ...deriveBalances(byOwner.get(row.owner.id) ?? []),
+  }));
 }

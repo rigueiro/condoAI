@@ -11,11 +11,10 @@ import Icon from "@/components/icon";
 import Image from "@/components/image";
 import PaymentHistoryTable from "@/app/[locale]/payment-tracking/components/payment-history-table";
 import RecordPaymentModal from "@/app/[locale]/payment-tracking/components/record-payment-modal";
-import OwnerModal from "../components/owner-modal";
-import { mockOwners } from "../__fixtures__/mock-owners";
-import { mockProperties } from "../__fixtures__/mock-properties";
-import { mockPayments } from "@/app/[locale]/payment-tracking/__fixtures__/mock-payments";
+import OwnerModal, { type OwnerFormSave } from "../components/owner-modal";
 import type { PaymentStatus } from "../components/types";
+import { ownerFromFormSave, usePortfolio } from "@/lib/portfolio";
+import { useCollections, type RecordPaymentInput } from "@/lib/collections";
 
 function OwnerDetailPage() {
   const t = useTranslations("ownersManagement.detail");
@@ -24,23 +23,29 @@ function OwnerDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
 
+  const { portfolio, upsertOwner } = usePortfolio();
+  const { ownersWithBalances, payments, recordPayment } = useCollections();
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
 
-  const owner = useMemo(
-    () => (id ? mockOwners.find((o) => o.id === id) : undefined),
-    [id],
+  const row = useMemo(
+    () =>
+      id
+        ? ownersWithBalances.find((o) => o.owner.id === id)
+        : undefined,
+    [id, ownersWithBalances],
   );
 
   const ownerPayments = useMemo(() => {
-    if (!owner) return [];
-    return mockPayments.filter(
-      (p) =>
-        p.ownerId === owner.id ||
-        p.ownerName === owner.name ||
-        (p.propertyId === owner.propertyId && p.unit === owner.unit),
-    );
-  }, [owner]);
+    if (!row) return [];
+    return payments.filter((p) => p.ownerId === row.owner.id);
+  }, [row, payments]);
+
+  const properties = portfolio.condominiums.map((c) => ({
+    id: c.id,
+    name: c.name,
+  }));
 
   const getPaymentStatusBadge = (status: PaymentStatus) => {
     const statusConfig = {
@@ -63,7 +68,19 @@ function OwnerDetailPage() {
     );
   };
 
-  if (!id || !owner) {
+  const handleSaveOwner = (data: OwnerFormSave) => {
+    if (!row) return;
+    const { owner, unit } = ownerFromFormSave(portfolio, data, row.owner);
+    upsertOwner(owner, unit);
+    setIsEditModalOpen(false);
+  };
+
+  const handleRecordPayment = (paymentData: RecordPaymentInput) => {
+    recordPayment(paymentData);
+    setIsRecordPaymentOpen(false);
+  };
+
+  if (!id || !row) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -94,7 +111,9 @@ function OwnerDetailPage() {
     );
   }
 
-  const balanceIsClear = owner.currentBalance === 0;
+  const { owner } = row;
+  const balanceIsClear = row.currentBalance === 0;
+  const joinDate = String(owner.entryDate).slice(0, 10);
 
   return (
     <div className="min-h-screen bg-background">
@@ -104,40 +123,37 @@ function OwnerDetailPage() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Breadcrumb />
 
-          {/* Owner header */}
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-start gap-4">
               <div className="w-16 h-16 rounded-full overflow-hidden bg-secondary-100 shrink-0">
                 <Image
-                  src={owner.avatar || ""}
-                  alt={owner.name}
+                  src={row.avatar || ""}
+                  alt={owner.fullName}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-3 mb-1">
                   <h1 className="text-3xl font-bold text-text-primary">
-                    {owner.name}
+                    {owner.fullName}
                   </h1>
-                  {getPaymentStatusBadge(owner.paymentStatus)}
+                  {getPaymentStatusBadge(row.paymentStatus)}
                 </div>
                 <p className="text-text-secondary">
                   {t("unitProperty", {
-                    unit: owner.unit,
-                    property: owner.property,
+                    unit: row.unitLabel,
+                    property: row.condominiumName,
                   })}
                 </p>
                 <p className="text-sm text-text-secondary mt-1">
-                  {owner.email}
+                  {owner.contacts.email}
                 </p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            {/* Main content */}
             <div className="xl:col-span-2 space-y-8">
-              {/* Balance status */}
               <section className="bg-surface rounded-lg border border-border-light p-6">
                 <h2 className="text-lg font-semibold text-text-primary mb-4">
                   {t("balanceStatus")}
@@ -152,7 +168,7 @@ function OwnerDetailPage() {
                     <p
                       className={`text-2xl font-bold ${balanceIsClear ? "text-success" : "text-error"}`}
                     >
-                      {formatCurrency(owner.currentBalance)}
+                      {formatCurrency(row.currentBalance)}
                     </p>
                   </div>
                   <div className="rounded-lg p-4 bg-secondary-50">
@@ -160,7 +176,7 @@ function OwnerDetailPage() {
                       {t("paymentStatus")}
                     </p>
                     <div className="mt-1">
-                      {getPaymentStatusBadge(owner.paymentStatus)}
+                      {getPaymentStatusBadge(row.paymentStatus)}
                     </div>
                   </div>
                   <div className="rounded-lg p-4 bg-secondary-50">
@@ -168,13 +184,12 @@ function OwnerDetailPage() {
                       {t("lastPayment")}
                     </p>
                     <p className="text-lg font-semibold text-text-primary">
-                      {owner.lastPayment}
+                      {row.lastPayment || "—"}
                     </p>
                   </div>
                 </div>
               </section>
 
-              {/* Payment history */}
               <section>
                 <h2 className="text-xl font-semibold text-text-primary mb-4">
                   {t("paymentHistory")}
@@ -191,9 +206,7 @@ function OwnerDetailPage() {
               </section>
             </div>
 
-            {/* Sidebar */}
             <div className="xl:col-span-1 space-y-6">
-              {/* Owner info */}
               <div className="bg-surface rounded-lg border border-border-light p-6">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">
                   {t("ownerInfo")}
@@ -202,14 +215,14 @@ function OwnerDetailPage() {
                   <div>
                     <dt className="text-text-secondary">{t("email")}</dt>
                     <dd className="font-medium text-text-primary break-all">
-                      {owner.email}
+                      {owner.contacts.email}
                     </dd>
                   </div>
-                  {owner.phone && (
+                  {owner.contacts.phone && (
                     <div>
                       <dt className="text-text-secondary">{t("phone")}</dt>
                       <dd className="font-medium text-text-primary">
-                        {owner.phone}
+                        {owner.contacts.phone}
                       </dd>
                     </div>
                   )}
@@ -221,20 +234,20 @@ function OwnerDetailPage() {
                       </dd>
                     </div>
                   )}
-                  {owner.emergencyContact && (
+                  {owner.contacts.mailingAddress && (
                     <div>
                       <dt className="text-text-secondary">
                         {t("emergencyContact")}
                       </dt>
                       <dd className="font-medium text-text-primary">
-                        {owner.emergencyContact}
+                        {owner.contacts.mailingAddress}
                       </dd>
                     </div>
                   )}
                   <div>
                     <dt className="text-text-secondary">{t("unit")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {owner.unit}
+                      {row.unitLabel}
                     </dd>
                   </div>
                   {owner.unitPermillage != null && (
@@ -249,33 +262,28 @@ function OwnerDetailPage() {
                     <dt className="text-text-secondary">{t("property")}</dt>
                     <dd>
                       <Link
-                        href={`/properties-management/${owner.propertyId}`}
+                        href={`/properties-management/${row.condominiumId}`}
                         className="font-medium text-primary hover:underline"
                       >
-                        {owner.property}
+                        {row.condominiumName}
                       </Link>
                     </dd>
                   </div>
                   <div>
                     <dt className="text-text-secondary">{t("joinDate")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {owner.joinDate}
+                      {joinDate}
                     </dd>
                   </div>
-                  {(owner.monthlyQuota != null || owner.monthlyFee) && (
-                    <div>
-                      <dt className="text-text-secondary">{t("monthlyFee")}</dt>
-                      <dd className="font-medium text-text-primary">
-                        {owner.monthlyQuota != null
-                          ? formatCurrency(owner.monthlyQuota)
-                          : owner.monthlyFee}
-                      </dd>
-                    </div>
-                  )}
+                  <div>
+                    <dt className="text-text-secondary">{t("monthlyFee")}</dt>
+                    <dd className="font-medium text-text-primary">
+                      {formatCurrency(owner.monthlyQuota)}
+                    </dd>
+                  </div>
                 </dl>
               </div>
 
-              {/* Quick actions */}
               <div className="bg-surface rounded-lg border border-border-light p-6 sticky top-24">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">
                   {t("quickActions")}
@@ -293,13 +301,6 @@ function OwnerDetailPage() {
                     {t("recordPayment")}
                   </button>
                   <button
-                    onClick={() => console.log("Send reminder to:", owner.id)}
-                    className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
-                  >
-                    <Icon name="Mail" size={16} className="mr-2 shrink-0" />
-                    {t("sendReminder")}
-                  </button>
-                  <button
                     onClick={() => setIsEditModalOpen(true)}
                     className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
                   >
@@ -307,7 +308,7 @@ function OwnerDetailPage() {
                     {t("editOwner")}
                   </button>
                   <Link
-                    href={`/properties-management/${owner.propertyId}`}
+                    href={`/properties-management/${row.condominiumId}`}
                     className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
                   >
                     <Icon
@@ -340,27 +341,24 @@ function OwnerDetailPage() {
 
       {isEditModalOpen && (
         <OwnerModal
-          owner={owner}
-          properties={mockProperties}
+          owner={row}
+          properties={properties}
           onClose={() => setIsEditModalOpen(false)}
-          onSave={(ownerData) => {
-            console.log("Saving owner:", ownerData);
-            setIsEditModalOpen(false);
-          }}
+          onSave={handleSaveOwner}
         />
       )}
 
       <RecordPaymentModal
         isOpen={isRecordPaymentOpen}
         onClose={() => setIsRecordPaymentOpen(false)}
-        onSubmit={(paymentData) => {
-          console.log("Recording payment:", paymentData);
-          setIsRecordPaymentOpen(false);
+        onSubmit={handleRecordPayment}
+        initialValues={{
+          ownerId: owner.id,
+          amount: row.currentBalance > 0 ? row.currentBalance : owner.monthlyQuota,
         }}
       />
     </div>
   );
 }
-
 
 export default OwnerDetailPage;

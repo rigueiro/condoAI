@@ -38,8 +38,9 @@ function PropertyDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
 
-  const { portfolio, isDemo, owners, upsertCondominium } = usePortfolio();
-  const { quotas, payments, recordPayment } = useCollections();
+  const { portfolio, isDemo, upsertCondominium } = usePortfolio();
+  const { quotas, payments, recordPayment, ownersWithBalances } =
+    useCollections();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
@@ -61,8 +62,8 @@ function PropertyDetailPage() {
 
   const propertyOwners = useMemo(() => {
     if (!id) return [];
-    return owners.filter((o) => o.propertyId === id);
-  }, [id, owners]);
+    return ownersWithBalances.filter((o) => o.condominiumId === id);
+  }, [id, ownersWithBalances]);
 
   const propertyPayments = useMemo(() => {
     if (!id) return [];

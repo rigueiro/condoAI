@@ -34,7 +34,6 @@ function Dashboard() {
   const router = useRouter();
   const {
     isDemo,
-    owners,
     portfolio,
     isReady,
     needsOnboarding: mustOnboard,
@@ -54,7 +53,7 @@ function Dashboard() {
     () => overdueItems.reduce((sum, item) => sum + item.amount, 0),
     [overdueItems],
   );
-  const displayOwners = ownersWithBalances.length > 0 ? ownersWithBalances : owners;
+  const displayOwners = ownersWithBalances;
   const overdueHint =
     overdueItems.length > 0
       ? t("stats.overdueCount", { count: overdueItems.length })
@@ -106,7 +105,7 @@ function Dashboard() {
       ];
     }
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-    const target = displayOwners.reduce((s, o) => s + (o.monthlyQuota ?? 0), 0);
+    const target = displayOwners.reduce((s, o) => s + o.owner.monthlyQuota, 0);
     return months.map((month) => ({
       month,
       collected: 0,
@@ -146,8 +145,8 @@ function Dashboard() {
           id: 1,
           type: "payment",
           title: t("mockActivities.paymentReceived"),
-          description: `Fração A-101 - ${displayOwners[0]?.property ?? ""} - Quota mensal`,
-          amount: displayOwners[0]?.monthlyQuota,
+          description: `Fração A-101 - ${displayOwners[0]?.condominiumName ?? ""} - Quota mensal`,
+          amount: displayOwners[0]?.owner.monthlyQuota,
           timestamp: new Date(now - 300000),
           icon: "CreditCard",
           iconColor: "var(--color-success)",
@@ -156,7 +155,7 @@ function Dashboard() {
           id: 2,
           type: "owner",
           title: t("mockActivities.newOwner"),
-          description: `${displayOwners[1]?.name ?? ""} - Fração ${displayOwners[1]?.unit ?? ""} - ${displayOwners[1]?.property ?? ""}`,
+          description: `${displayOwners[1]?.owner.fullName ?? ""} - Fração ${displayOwners[1]?.unitLabel ?? ""} - ${displayOwners[1]?.condominiumName ?? ""}`,
           timestamp: new Date(now - 1800000),
           icon: "UserPlus",
           iconColor: "var(--color-primary)",
@@ -174,7 +173,7 @@ function Dashboard() {
           id: 4,
           type: "payment",
           title: t("mockActivities.paymentOverdue"),
-          description: `Fração ${displayOwners[4]?.unit ?? ""} - ${displayOwners[4]?.property ?? ""} - Quota em atraso`,
+          description: `Fração ${displayOwners[4]?.unitLabel ?? ""} - ${displayOwners[4]?.condominiumName ?? ""} - Quota em atraso`,
           timestamp: new Date(now - 7200000),
           icon: "AlertTriangle",
           iconColor: "var(--color-warning)",

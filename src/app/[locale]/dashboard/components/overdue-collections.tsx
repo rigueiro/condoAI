@@ -90,9 +90,7 @@ function OverdueCollections({
   const openRecord = (item: OverdueItem) => {
     setRecordQuotaId(item.id);
     setRecordInitial({
-      ownerName: item.ownerName,
-      property: item.property,
-      unit: item.unit,
+      ownerId: item.ownerId,
       amount: item.amount,
       notes: item.monthYear
         ? t("recordNotes", { month: item.monthYear })
@@ -112,9 +110,12 @@ function OverdueCollections({
       ...data,
       quotaId: recordQuotaId ?? undefined,
     });
+    const ownerName =
+      items.find((i) => i.ownerId === data.ownerId)?.ownerName ??
+      data.ownerId;
     setFlash({
       message: result
-        ? t("paymentRecorded", { name: data.ownerName })
+        ? t("paymentRecorded", { name: ownerName })
         : t("paymentRecordedGeneric"),
       tone: "success",
     });

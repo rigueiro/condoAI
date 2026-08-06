@@ -4,10 +4,10 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
-import { Owner } from "./types";
+import type { OwnerRow } from "./types";
 import { downloadCsv } from "@/lib/export-csv";
 
-function OwnerStatistics({ owners }: { owners: Owner[] }) {
+function OwnerStatistics({ owners }: { owners: OwnerRow[] }) {
   const t = useTranslations("ownersManagement.stats");
   const tStatus = useTranslations("ownersManagement.status");
   const { formatCurrency } = useFormatCurrency();
@@ -15,19 +15,19 @@ function OwnerStatistics({ owners }: { owners: Owner[] }) {
   const totalOwners = owners.length;
   const unitsOccupied = owners.length;
   const currentPayments = owners.filter(
-    (owner) => owner.paymentStatus === "current",
+    (row) => row.paymentStatus === "current",
   ).length;
   const overduePayments = owners.filter(
-    (owner) => owner.paymentStatus === "overdue",
+    (row) => row.paymentStatus === "overdue",
   ).length;
   const pendingPayments = owners.filter(
-    (owner) => owner.paymentStatus === "pending",
+    (row) => row.paymentStatus === "pending",
   ).length;
 
   const complianceRate =
     totalOwners > 0 ? Math.round((currentPayments / totalOwners) * 100) : 0;
   const totalOutstanding = owners.reduce(
-    (sum, owner) => sum + owner.currentBalance,
+    (sum, row) => sum + row.currentBalance,
     0,
   );
 
@@ -75,17 +75,17 @@ function OwnerStatistics({ owners }: { owners: Owner[] }) {
       t("csvHeaders.lastPayment"),
       t("csvHeaders.joinDate"),
     ];
-    const rows = owners.map((owner) => [
-      owner.name,
-      owner.email,
-      owner.phone ?? "",
-      owner.unit,
-      owner.property,
-      owner.paymentStatus ? tStatus(owner.paymentStatus) : "",
-      owner.currentBalance,
-      owner.monthlyFee ?? "",
-      owner.lastPayment,
-      owner.joinDate,
+    const rows = owners.map((row) => [
+      row.owner.fullName,
+      row.owner.contacts.email,
+      row.owner.contacts.phone,
+      row.unitLabel,
+      row.condominiumName,
+      row.paymentStatus ? tStatus(row.paymentStatus) : "",
+      row.currentBalance,
+      row.owner.monthlyQuota,
+      row.lastPayment,
+      String(row.owner.entryDate).slice(0, 10),
     ]);
 
     downloadCsv(headers, rows, "owners-export.csv");

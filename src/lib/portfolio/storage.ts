@@ -193,3 +193,54 @@ export function removeCondominiumInMemory(
     owners: portfolio.owners.filter((o) => !unitIds.has(o.unitId)),
   };
 }
+
+/** Upsert owner and optionally its unit (create/update by id). */
+export function upsertOwnerInMemory(
+  portfolio: Portfolio,
+  owner: Owner,
+  unit?: Unit,
+): Portfolio {
+  let units = portfolio.units;
+  if (unit) {
+    const unitExists = units.some((u) => u.id === unit.id);
+    units = unitExists
+      ? units.map((u) => (u.id === unit.id ? unit : u))
+      : [...units, unit];
+  }
+
+  const ownerExists = portfolio.owners.some((o) => o.id === owner.id);
+  const owners = ownerExists
+    ? portfolio.owners.map((o) => (o.id === owner.id ? owner : o))
+    : [...portfolio.owners, owner];
+
+  return { ...portfolio, units, owners };
+}
+
+export function upsertOwner(
+  email: string,
+  owner: Owner,
+  unit?: Unit,
+): Portfolio {
+  const current = readPortfolio(email);
+  const next = upsertOwnerInMemory(current, owner, unit);
+  writePortfolio(email, next);
+  return next;
+}
+
+/** Remove owner; leave the unit in place (may be reassigned later). */
+export function removeOwnerInMemory(
+  portfolio: Portfolio,
+  ownerId: string,
+): Portfolio {
+  return {
+    ...portfolio,
+    owners: portfolio.owners.filter((o) => o.id !== ownerId),
+  };
+}
+
+export function removeOwner(email: string, ownerId: string): Portfolio {
+  const current = readPortfolio(email);
+  const next = removeOwnerInMemory(current, ownerId);
+  writePortfolio(email, next);
+  return next;
+}

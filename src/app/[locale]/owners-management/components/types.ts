@@ -1,24 +1,26 @@
+import type { Owner } from "@/types";
+
 export type PaymentStatus = "current" | "overdue" | "pending" | "";
 
-export type Owner = {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  unit: string;
-  property: string;
-  propertyId: string;
+/** Derived list/detail row: domain Owner + Unit/Condo joins + quota balances. */
+export type OwnerRow = {
+  owner: Owner;
+  unitLabel: string;
+  condominiumId: string;
+  condominiumName: string;
   paymentStatus: PaymentStatus;
   currentBalance: number;
-  lastPayment: string; // ISO date string
+  lastPayment: string;
   avatar?: string;
-  joinDate: string; // ISO date string
-  emergencyContact?: string;
-  monthlyFee?: string;
-  /** Owner NIF (from domain) */
-  taxId?: string;
-  /** Unit permillage (‰) */
-  unitPermillage?: number;
-  /** Auto-calculated monthly quota in EUR */
-  monthlyQuota?: number;
+};
+
+export type SortConfig = {
+  key:
+    | "fullName"
+    | "unitLabel"
+    | "condominiumName"
+    | "currentBalance"
+    | "paymentStatus"
+    | "lastPayment";
+  direction: "asc" | "desc";
 };

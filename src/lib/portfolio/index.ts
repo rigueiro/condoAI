@@ -10,6 +10,7 @@ export {
 export { PortfolioProvider, usePortfolio } from "./portfolio-provider";
 export {
   buildEmptyCondominium,
+  buildEmptyOwner,
   buildCollectionFromPortfolio,
   breakdownFromStats,
   collectionSummaryForCondo,
@@ -17,10 +18,13 @@ export {
   condoStatsFromOwners,
   ownersByCondoId,
   ownersForCondo,
+  ownerDisplay,
+  ownerFromFormSave,
+  portfolioToOwnerRows,
+  resolveOrCreateUnit,
   summarizeCollection,
   labelCommonAreas,
   formatPortugueseAddress,
-  portfolioToOwnerViews,
   COMMON_AREA_LABELS,
   BUILDING_TYPES,
   CONDOMINIUM_STATUSES,
@@ -29,6 +33,7 @@ export {
   type CondoStats,
   type CollectionSummaryData,
   type CollectionBreakdown,
+  type OwnerDisplay,
 } from "./mappers";
 export {
   buildImportTemplateCsv,

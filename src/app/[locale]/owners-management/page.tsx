@@ -6,13 +6,17 @@ import Header from "@/components/ui/header";
 import BreadcrumbNavigation from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 
-import OwnerModal from "./components/owner-modal";
+import OwnerModal, { type OwnerFormSave } from "./components/owner-modal";
 import OwnerStatistics from "./components/owner-statistics";
 import OwnerFilters from "./components/owner-filters";
 import OwnerTable from "./components/owner-table";
 import BulkOperations from "./components/bulk-operations";
-import { Owner, PaymentStatus } from "./components/types";
-import { usePortfolio } from "@/lib/portfolio";
+import { type OwnerRow, type PaymentStatus } from "./components/types";
+import {
+  ownerFromFormSave,
+  usePortfolio,
+} from "@/lib/portfolio";
+import { useCollections } from "@/lib/collections";
 
 interface Filters {
   search: string;
@@ -23,14 +27,15 @@ interface Filters {
 
 function OwnersManagement() {
   const t = useTranslations("ownersManagement");
-  const { owners: portfolioOwners, portfolio } = usePortfolio();
+  const { portfolio, upsertOwner, removeOwner } = usePortfolio();
+  const { ownersWithBalances } = useCollections();
   const portfolioProperties = portfolio.condominiums.map((c) => ({
     id: c.id,
     name: c.name,
   }));
   const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
   const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
-  const [editingOwner, setEditingOwner] = useState<Owner | null>(null);
+  const [editingOwner, setEditingOwner] = useState<OwnerRow | null>(null);
   const [filters, setFilters] = useState<Filters>({
     search: "",
     property: "",
@@ -38,35 +43,37 @@ function OwnersManagement() {
     balanceRange: "",
   });
 
-  // Filter owners based on current filters
   const filteredOwners = useMemo(() => {
-    return portfolioOwners.filter((owner) => {
+    return ownersWithBalances.filter((row) => {
+      const { owner } = row;
       const matchesSearch =
         !filters.search ||
-        owner.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        owner.unit.toLowerCase().includes(filters.search.toLowerCase()) ||
-        owner.email.toLowerCase().includes(filters.search.toLowerCase());
+        owner.fullName.toLowerCase().includes(filters.search.toLowerCase()) ||
+        row.unitLabel.toLowerCase().includes(filters.search.toLowerCase()) ||
+        owner.contacts.email
+          .toLowerCase()
+          .includes(filters.search.toLowerCase());
 
       const matchesProperty =
-        !filters.property || owner.property === filters.property;
+        !filters.property || row.condominiumName === filters.property;
 
       const matchesPaymentStatus =
-        !filters.paymentStatus || owner.paymentStatus === filters.paymentStatus;
+        !filters.paymentStatus || row.paymentStatus === filters.paymentStatus;
 
       const matchesBalanceRange =
         !filters.balanceRange ||
         (() => {
           switch (filters.balanceRange) {
             case "zero":
-              return owner.currentBalance === 0;
+              return row.currentBalance === 0;
             case "low":
-              return owner.currentBalance > 0 && owner.currentBalance <= 1000;
+              return row.currentBalance > 0 && row.currentBalance <= 1000;
             case "medium":
               return (
-                owner.currentBalance > 1000 && owner.currentBalance <= 3000
+                row.currentBalance > 1000 && row.currentBalance <= 3000
               );
             case "high":
-              return owner.currentBalance > 3000;
+              return row.currentBalance > 3000;
             default:
               return true;
           }
@@ -79,25 +86,34 @@ function OwnersManagement() {
         matchesBalanceRange
       );
     });
-  }, [filters, portfolioOwners]);
+  }, [filters, ownersWithBalances]);
 
   const handleAddOwner = () => {
     setEditingOwner(null);
     setIsOwnerModalOpen(true);
   };
 
-  const handleEditOwner = (owner: Owner) => {
-    setEditingOwner(owner);
+  const handleEditOwner = (row: OwnerRow) => {
+    setEditingOwner(row);
     setIsOwnerModalOpen(true);
   };
 
   const handleDeleteOwner = (ownerId: string) => {
-    if (
-      window.confirm(t("confirmDeleteUndone"))
-    ) {
-      console.log("Deleting owner:", ownerId);
-      // In real app, this would call an API to delete the owner
+    if (window.confirm(t("confirmDeleteUndone"))) {
+      removeOwner(ownerId);
+      setSelectedOwners((prev) => prev.filter((id) => id !== ownerId));
     }
+  };
+
+  const handleSaveOwner = (data: OwnerFormSave) => {
+    const { owner, unit } = ownerFromFormSave(
+      portfolio,
+      data,
+      editingOwner?.owner,
+    );
+    upsertOwner(owner, unit);
+    setIsOwnerModalOpen(false);
+    setEditingOwner(null);
   };
 
   const handleOwnerSelect = (ownerId: string, isSelected: boolean) => {
@@ -110,7 +126,7 @@ function OwnersManagement() {
 
   const handleSelectAll = (isSelected: boolean) => {
     if (isSelected) {
-      setSelectedOwners(filteredOwners.map((owner) => owner.id));
+      setSelectedOwners(filteredOwners.map((row) => row.owner.id));
     } else {
       setSelectedOwners([]);
     }
@@ -124,7 +140,6 @@ function OwnersManagement() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <BreadcrumbNavigation />
 
-          {/* Page Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold text-text-primary mb-2">
@@ -144,21 +159,17 @@ function OwnersManagement() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Left Sidebar - Statistics */}
             <div className="lg:col-span-1">
-              <OwnerStatistics owners={portfolioOwners} />
+              <OwnerStatistics owners={ownersWithBalances} />
             </div>
 
-            {/* Main Content */}
             <div className="lg:col-span-3 space-y-6">
-              {/* Filters */}
               <OwnerFilters
                 filters={filters}
                 onFiltersChange={setFilters}
                 properties={portfolioProperties}
               />
 
-              {/* Bulk Operations */}
               {selectedOwners.length > 0 && (
                 <BulkOperations
                   selectedCount={selectedOwners.length}
@@ -166,7 +177,6 @@ function OwnersManagement() {
                 />
               )}
 
-              {/* Owners Table */}
               <OwnerTable
                 owners={filteredOwners}
                 selectedOwners={selectedOwners}
@@ -180,17 +190,12 @@ function OwnersManagement() {
         </div>
       </div>
 
-      {/* Owner Modal */}
       {isOwnerModalOpen && (
         <OwnerModal
           owner={editingOwner}
           properties={portfolioProperties}
           onClose={() => setIsOwnerModalOpen(false)}
-          onSave={(ownerData) => {
-            console.log("Saving owner:", ownerData);
-            setIsOwnerModalOpen(false);
-            // In real app, this would call an API to save the owner
-          }}
+          onSave={handleSaveOwner}
         />
       )}
     </div>

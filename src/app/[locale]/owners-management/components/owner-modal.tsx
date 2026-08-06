@@ -5,22 +5,24 @@ import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
-import { Owner } from "./types";
+import type { OwnerRow } from "./types";
+
+export type OwnerFormSave = {
+  fullName: string;
+  email: string;
+  phone: string;
+  unitLabel: string;
+  condominiumId: string;
+  mailingAddress?: string;
+  monthlyQuota?: string;
+  taxId?: string;
+};
 
 interface Props {
-  owner: Owner | null;
+  owner: OwnerRow | null;
   properties: { id: string; name: string }[];
   onClose: () => void;
-  onSave: (ownerData: {
-    id?: string;
-    name: string;
-    email: string;
-    phone: string;
-    unit: string;
-    propertyId: string;
-    emergencyContact?: string;
-    monthlyFee?: string;
-  }) => void;
+  onSave: (ownerData: OwnerFormSave) => void;
 }
 
 type Errors = {
@@ -31,13 +33,17 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
   const t = useTranslations("ownersManagement.modal");
   const { currencySymbol } = useFormatCurrency();
   const [formData, setFormData] = useState(() => ({
-    name: owner?.name || "",
-    email: owner?.email || "",
-    phone: owner?.phone || "",
-    unit: owner?.unit || "",
-    propertyId: owner?.propertyId || "",
-    emergencyContact: owner?.emergencyContact || "",
-    monthlyFee: owner?.monthlyFee || "",
+    fullName: owner?.owner.fullName || "",
+    email: owner?.owner.contacts.email || "",
+    phone: owner?.owner.contacts.phone || "",
+    unitLabel: owner?.unitLabel || "",
+    condominiumId: owner?.condominiumId || "",
+    mailingAddress: owner?.owner.contacts.mailingAddress || "",
+    monthlyQuota:
+      owner?.owner.monthlyQuota != null
+        ? String(owner.owner.monthlyQuota)
+        : "",
+    taxId: owner?.owner.taxId || "",
   }));
 
   const [errors, setErrors] = useState<Errors>({});
@@ -45,8 +51,8 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
   const validateForm = () => {
     const newErrors: Errors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = t("validation.nameRequired");
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = t("validation.nameRequired");
     }
 
     if (!formData.email.trim()) {
@@ -59,12 +65,12 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
       newErrors.phone = t("validation.phoneRequired");
     }
 
-    if (!formData.unit.trim()) {
-      newErrors.unit = t("validation.unitRequired");
+    if (!formData.unitLabel.trim()) {
+      newErrors.unitLabel = t("validation.unitRequired");
     }
 
-    if (!formData.propertyId) {
-      newErrors.propertyId = t("validation.propertyRequired");
+    if (!formData.condominiumId) {
+      newErrors.condominiumId = t("validation.propertyRequired");
     }
 
     setErrors(newErrors);
@@ -84,7 +90,6 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
       [field]: value,
     }));
 
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({
         ...prev,
@@ -105,7 +110,6 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
       onClick={handleBackdropClick}
     >
       <div className="bg-surface bg-white rounded-lg shadow-modal w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border-light">
           <h2 className="text-xl font-semibold text-text-primary">
             {owner ? t("editTitle") : t("addTitle")}
@@ -118,9 +122,7 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Personal Information */}
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-4">
               {t("personalInfo")}
@@ -132,15 +134,15 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
                 </label>
                 <input
                   type="text"
-                  value={formData.name}
-                  onChange={(e) => handleChange("name", e.target.value)}
+                  value={formData.fullName}
+                  onChange={(e) => handleChange("fullName", e.target.value)}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth ${
-                    errors.name ? "border-error" : "border-border-light"
+                    errors.fullName ? "border-error" : "border-border-light"
                   }`}
                   placeholder={t("placeholderName")}
                 />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-error">{errors.name}</p>
+                {errors.fullName && (
+                  <p className="mt-1 text-sm text-error">{errors.fullName}</p>
                 )}
               </div>
 
@@ -186,9 +188,9 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
                 </label>
                 <input
                   type="text"
-                  value={formData.emergencyContact}
+                  value={formData.mailingAddress}
                   onChange={(e) =>
-                    handleChange("emergencyContact", e.target.value)
+                    handleChange("mailingAddress", e.target.value)
                   }
                   className="w-full px-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth"
                   placeholder={t("placeholderEmergency")}
@@ -197,7 +199,6 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
             </div>
           </div>
 
-          {/* Property Information */}
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-4">
               {t("propertyInfo")}
@@ -208,9 +209,11 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
                   {t("property")}
                 </label>
                 <Select
-                  value={formData.propertyId}
-                  onChange={(e) => handleChange("propertyId", e.target.value)}
-                  invalid={Boolean(errors.propertyId)}
+                  value={formData.condominiumId}
+                  onChange={(e) =>
+                    handleChange("condominiumId", e.target.value)
+                  }
+                  invalid={Boolean(errors.condominiumId)}
                 >
                   <option value="">{t("selectProperty")}</option>
                   {properties.map((property) => (
@@ -219,8 +222,10 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
                     </option>
                   ))}
                 </Select>
-                {errors.propertyId && (
-                  <p className="mt-1 text-sm text-error">{errors.propertyId}</p>
+                {errors.condominiumId && (
+                  <p className="mt-1 text-sm text-error">
+                    {errors.condominiumId}
+                  </p>
                 )}
               </div>
 
@@ -230,15 +235,15 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
                 </label>
                 <input
                   type="text"
-                  value={formData.unit}
-                  onChange={(e) => handleChange("unit", e.target.value)}
+                  value={formData.unitLabel}
+                  onChange={(e) => handleChange("unitLabel", e.target.value)}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth ${
-                    errors.unit ? "border-error" : "border-border-light"
+                    errors.unitLabel ? "border-error" : "border-border-light"
                   }`}
                   placeholder={t("placeholderUnit")}
                 />
-                {errors.unit && (
-                  <p className="mt-1 text-sm text-error">{errors.unit}</p>
+                {errors.unitLabel && (
+                  <p className="mt-1 text-sm text-error">{errors.unitLabel}</p>
                 )}
               </div>
 
@@ -252,8 +257,10 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
                   </span>
                   <input
                     type="number"
-                    value={formData.monthlyFee}
-                    onChange={(e) => handleChange("monthlyFee", e.target.value)}
+                    value={formData.monthlyQuota}
+                    onChange={(e) =>
+                      handleChange("monthlyQuota", e.target.value)
+                    }
                     className="w-full pl-8 pr-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth"
                     placeholder={t("placeholderFee")}
                     min="0"
@@ -264,7 +271,6 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
             </div>
           </div>
 
-          {/* Form Actions */}
           <div className="flex items-center justify-end space-x-4 pt-6 border-t border-border-light">
             <button
               type="button"

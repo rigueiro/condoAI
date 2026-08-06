@@ -5,14 +5,12 @@ import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import Select from "@/components/ui/select";
-import { useCollections } from "@/lib/collections";
+import { useCollections, type RecordPaymentInput } from "@/lib/collections";
 
 type ErrorsType = { [key: string]: string };
 
 export type RecordPaymentInitialValues = {
-  ownerName?: string;
-  property?: string;
-  unit?: string;
+  ownerId?: string;
   amount?: number | string;
   notes?: string;
 };
@@ -20,7 +18,7 @@ export type RecordPaymentInitialValues = {
 interface RecordPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: RecordPaymentInput) => void;
   initialValues?: RecordPaymentInitialValues | null;
 }
 
@@ -31,9 +29,7 @@ function RecordPaymentModal({
   initialValues,
 }: RecordPaymentModalProps) {
   const [formData, setFormData] = useState({
-    ownerName: "",
-    property: "",
-    unit: "",
+    ownerId: "",
     amount: "",
     paymentMethod: "Bank Transfer",
     notes: "",
@@ -63,22 +59,14 @@ function RecordPaymentModal({
   };
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const properties = ownersWithBalances
-    .map((o) => o.property)
-    .filter((name, index, arr) => name && arr.indexOf(name) === index);
-
-  const owners = ownersWithBalances.map((o) => ({
-    name: o.name,
-    property: o.property,
-    unit: o.unit,
-  }));
+  const selectedOwner = ownersWithBalances.find(
+    (o) => o.owner.id === formData.ownerId,
+  );
 
   useEffect(() => {
     if (isOpen) {
       setFormData({
-        ownerName: initialValues?.ownerName ?? "",
-        property: initialValues?.property ?? "",
-        unit: initialValues?.unit ?? "",
+        ownerId: initialValues?.ownerId ?? "",
         amount:
           initialValues?.amount != null && initialValues.amount !== ""
             ? String(initialValues.amount)
@@ -97,38 +85,16 @@ function RecordPaymentModal({
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-
-    // Auto-populate property and unit when owner is selected
-    if (field === "ownerName") {
-      const selectedOwner = owners.find((owner) => owner.name === value);
-      if (selectedOwner) {
-        setFormData((prev) => ({
-          ...prev,
-          ownerName: value,
-          property: selectedOwner.property,
-          unit: selectedOwner.unit,
-        }));
-      }
     }
   };
 
   const validateForm = () => {
     const newErrors: ErrorsType = {};
 
-    if (!formData.ownerName.trim()) {
-      newErrors.ownerName = tVal("ownerRequired");
-    }
-
-    if (!formData.property.trim()) {
-      newErrors.property = tVal("propertyRequired");
-    }
-
-    if (!formData.unit.trim()) {
-      newErrors.unit = tVal("unitRequired");
+    if (!formData.ownerId) {
+      newErrors.ownerId = tVal("ownerRequired");
     }
 
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
@@ -153,7 +119,13 @@ function RecordPaymentModal({
     setIsSubmitting(true);
 
     try {
-      onSubmit(formData);
+      onSubmit({
+        ownerId: formData.ownerId,
+        amount: formData.amount,
+        paymentMethod: formData.paymentMethod,
+        notes: formData.notes,
+        paymentDate: formData.paymentDate,
+      });
     } catch (error) {
       console.error("Error recording payment:", error);
     } finally {
@@ -172,7 +144,6 @@ function RecordPaymentModal({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-1001 p-4">
       <div className="bg-surface bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border-light">
           <div>
             <h2 className="text-xl font-semibold text-text-primary">
@@ -191,73 +162,54 @@ function RecordPaymentModal({
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Owner Selection */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-text-primary mb-2">
                 {t("owner")} <span className="text-error">*</span>
               </label>
               <Select
-                value={formData.ownerName}
-                onChange={(e) => handleInputChange("ownerName", e.target.value)}
-                invalid={Boolean(errors.ownerName)}
+                value={formData.ownerId}
+                onChange={(e) => handleInputChange("ownerId", e.target.value)}
+                invalid={Boolean(errors.ownerId)}
               >
                 <option value="">{t("selectOwner")}</option>
-                {owners.map((owner) => (
-                  <option
-                    key={`${owner.name}-${owner.unit}`}
-                    value={owner.name}
-                  >
-                    {owner.name} - {owner.property} Unit {owner.unit}
+                {ownersWithBalances.map((row) => (
+                  <option key={row.owner.id} value={row.owner.id}>
+                    {row.owner.fullName} - {row.condominiumName} Unit{" "}
+                    {row.unitLabel}
                   </option>
                 ))}
               </Select>
-              {errors.ownerName && (
-                <p className="text-error text-xs mt-1">{errors.ownerName}</p>
+              {errors.ownerId && (
+                <p className="text-error text-xs mt-1">{errors.ownerId}</p>
               )}
             </div>
 
-            {/* Property */}
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
-                {t("property")} <span className="text-error">*</span>
-              </label>
-              <Select
-                value={formData.property}
-                onChange={(e) => handleInputChange("property", e.target.value)}
-                disabled={!!formData.ownerName}
-                invalid={Boolean(errors.property)}
-              >
-                <option value="">{t("selectProperty")}</option>
-                {properties.map((property) => (
-                  <option key={property} value={property}>
-                    {property}
-                  </option>
-                ))}
-              </Select>
-              {errors.property && (
-                <p className="text-error text-xs mt-1">{errors.property}</p>
-              )}
-            </div>
-
-            {/* Unit */}
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                {t("unit")} <span className="text-error">*</span>
+                {t("property")}
               </label>
               <Input
                 type="text"
-                value={formData.unit}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => handleInputChange("unit", e.target.value)}
-                placeholder={t("unitPlaceholder")}
-                error={errors.unit}
-                disabled={!!formData.ownerName}
+                value={selectedOwner?.condominiumName ?? ""}
+                disabled
+                placeholder={t("selectProperty")}
               />
             </div>
 
-            {/* Amount */}
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                {t("unit")}
+              </label>
+              <Input
+                type="text"
+                value={selectedOwner?.unitLabel ?? ""}
+                disabled
+                placeholder={t("unitPlaceholder")}
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
                 {t("amount")} <span className="text-error">*</span>
@@ -279,7 +231,6 @@ function RecordPaymentModal({
               </div>
             </div>
 
-            {/* {t("paymentMethod")} */}
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
                 {t("paymentMethod")}
@@ -298,7 +249,6 @@ function RecordPaymentModal({
               </Select>
             </div>
 
-            {/* {t("paymentDate")} */}
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
                 {t("paymentDate")} <span className="text-error">*</span>
@@ -313,7 +263,6 @@ function RecordPaymentModal({
               />
             </div>
 
-            {/* Notes */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-text-primary mb-2">
                 {t("notes")}
@@ -328,7 +277,6 @@ function RecordPaymentModal({
             </div>
           </div>
 
-          {/* Amount Validation */}
           {formData.amount && (
             <div className="mt-4 p-3 bg-primary-50 border border-primary-100 rounded-lg">
               <div className="flex items-center space-x-2">
@@ -345,7 +293,6 @@ function RecordPaymentModal({
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex flex-col-reverse sm:flex-row justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 mt-6">
             <Button
               type="button"

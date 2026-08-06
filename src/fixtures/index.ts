@@ -13,12 +13,11 @@ export {
   mockExpenses,
 } from "./domain";
 export {
-  mockOwners,
   mockPayments,
   mockPortfolio,
-  toOwnerView,
   toPaymentView,
   mockCondoStats,
   buildMockCollectionSummary,
+  OWNER_AVATARS,
 } from "./views";
 export type { PaymentView, CondoStats, CollectionSummaryData } from "./views";

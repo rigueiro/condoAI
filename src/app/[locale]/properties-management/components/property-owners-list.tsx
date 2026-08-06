@@ -6,10 +6,13 @@ import { Link } from "@/i18n/navigation";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import Image from "@/components/image";
-import type { Owner, PaymentStatus } from "@/app/[locale]/owners-management/components/types";
+import type {
+  OwnerRow,
+  PaymentStatus,
+} from "@/app/[locale]/owners-management/components/types";
 
 interface Props {
-  owners: Owner[];
+  owners: OwnerRow[];
 }
 
 function PropertyOwnersList({ owners }: Props) {
@@ -61,29 +64,30 @@ function PropertyOwnersList({ owners }: Props) {
         </span>
       </div>
       <ul className="divide-y divide-border-light">
-        {owners.map((owner) => (
+        {owners.map((row) => (
           <li
-            key={owner.id}
+            key={row.owner.id}
             className="px-6 py-4 hover:bg-secondary-50 transition-smooth"
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-secondary-100 shrink-0">
                   <Image
-                    src={owner.avatar || ""}
-                    alt={owner.name}
+                    src={row.avatar || ""}
+                    alt={row.owner.fullName}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="min-w-0">
                   <Link
-                    href={`/owners-management/${owner.id}`}
+                    href={`/owners-management/${row.owner.id}`}
                     className="font-medium text-text-primary hover:text-primary transition-smooth truncate block"
                   >
-                    {owner.name}
+                    {row.owner.fullName}
                   </Link>
                   <p className="text-sm text-text-secondary truncate">
-                    {t("ownerUnit", { unit: owner.unit })} • {owner.email}
+                    {t("ownerUnit", { unit: row.unitLabel })} •{" "}
+                    {row.owner.contacts.email}
                   </p>
                 </div>
               </div>
@@ -91,14 +95,14 @@ function PropertyOwnersList({ owners }: Props) {
                 <div className="text-right hidden sm:block">
                   <p className="text-xs text-text-secondary">{t("balance")}</p>
                   <p
-                    className={`text-sm font-medium ${owner.currentBalance > 0 ? "text-error" : "text-success"}`}
+                    className={`text-sm font-medium ${row.currentBalance > 0 ? "text-error" : "text-success"}`}
                   >
-                    {formatCurrency(owner.currentBalance)}
+                    {formatCurrency(row.currentBalance)}
                   </p>
                 </div>
-                {getPaymentStatusBadge(owner.paymentStatus)}
+                {getPaymentStatusBadge(row.paymentStatus)}
                 <Link
-                  href={`/owners-management/${owner.id}`}
+                  href={`/owners-management/${row.owner.id}`}
                   className="p-1 text-text-secondary hover:text-primary transition-smooth"
                   title={t("viewOwner")}
                 >

@@ -6,23 +6,18 @@ import { Link } from "@/i18n/navigation";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import Image from "@/components/image";
-import { Owner, PaymentStatus } from "./types";
+import { type OwnerRow, type PaymentStatus, type SortConfig } from "./types";
 
-type SortKey = keyof Owner;
-type SortDirection = "asc" | "desc";
+type SortKey = SortConfig["key"];
+type SortDirection = SortConfig["direction"];
 
 interface Props {
-  owners: Owner[];
+  owners: OwnerRow[];
   selectedOwners: string[];
   onOwnerSelect: (ownerId: string, isSelected: boolean) => void;
   onSelectAll: (isSelected: boolean) => void;
-  onEditOwner: (owner: Owner) => void;
+  onEditOwner: (owner: OwnerRow) => void;
   onDeleteOwner: (ownerId: string) => void;
-}
-
-interface SortConfig {
-  key: SortKey | null;
-  direction: SortDirection;
 }
 
 function SortableHeader({
@@ -35,7 +30,7 @@ function SortableHeader({
   children: string;
   sortKey: SortKey;
   className?: string;
-  sortConfig: SortConfig;
+  sortConfig: { key: SortKey | null; direction: SortDirection };
   onSort: (key: SortKey) => void;
 }) {
   return (
@@ -62,6 +57,23 @@ function SortableHeader({
   );
 }
 
+function sortValue(row: OwnerRow, key: SortKey): string | number {
+  switch (key) {
+    case "fullName":
+      return row.owner.fullName;
+    case "unitLabel":
+      return row.unitLabel;
+    case "condominiumName":
+      return row.condominiumName;
+    case "currentBalance":
+      return row.currentBalance;
+    case "paymentStatus":
+      return row.paymentStatus;
+    case "lastPayment":
+      return row.lastPayment;
+  }
+}
+
 function OwnerTable({
   owners,
   selectedOwners,
@@ -73,7 +85,10 @@ function OwnerTable({
   const t = useTranslations("ownersManagement.table");
   const tStatus = useTranslations("ownersManagement.status");
   const { formatCurrency } = useFormatCurrency();
-  const [sortConfig, setSortConfig] = useState<SortConfig>({
+  const [sortConfig, setSortConfig] = useState<{
+    key: SortKey | null;
+    direction: SortDirection;
+  }>({
     key: null,
     direction: "asc",
   });
@@ -91,8 +106,8 @@ function OwnerTable({
     if (!key) return owners;
 
     return [...owners].sort((a, b) => {
-      const aValue = a[key];
-      const bValue = b[key];
+      const aValue = sortValue(a, key);
+      const bValue = sortValue(b, key);
 
       if (typeof aValue === "string" && typeof bValue === "string") {
         return sortConfig.direction === "asc"
@@ -138,7 +153,6 @@ function OwnerTable({
 
   return (
     <div className="bg-surface rounded-lg border border-border-light overflow-hidden">
-      {/* Desktop Table */}
       <div className="hidden lg:block overflow-x-auto">
         <table className="min-w-full divide-y divide-border-light">
           <thead className="bg-secondary-50">
@@ -155,21 +169,21 @@ function OwnerTable({
                 />
               </th>
               <SortableHeader
-                sortKey="name"
+                sortKey="fullName"
                 sortConfig={sortConfig}
                 onSort={handleSort}
               >
                 {t("owner")}
               </SortableHeader>
               <SortableHeader
-                sortKey="unit"
+                sortKey="unitLabel"
                 sortConfig={sortConfig}
                 onSort={handleSort}
               >
                 {t("unit")}
               </SortableHeader>
               <SortableHeader
-                sortKey="property"
+                sortKey="condominiumName"
                 sortConfig={sortConfig}
                 onSort={handleSort}
               >
@@ -202,16 +216,18 @@ function OwnerTable({
             </tr>
           </thead>
           <tbody className="bg-surface divide-y divide-border-light">
-            {sortedOwners.map((owner) => (
+            {sortedOwners.map((row) => (
               <tr
-                key={owner.id}
+                key={row.owner.id}
                 className="hover:bg-secondary-50 transition-smooth"
               >
                 <td className="px-6 py-4">
                   <input
                     type="checkbox"
-                    checked={selectedOwners.includes(owner.id)}
-                    onChange={(e) => onOwnerSelect(owner.id, e.target.checked)}
+                    checked={selectedOwners.includes(row.owner.id)}
+                    onChange={(e) =>
+                      onOwnerSelect(row.owner.id, e.target.checked)
+                    }
                     className="rounded border-border-medium text-primary focus:ring-primary"
                   />
                 </td>
@@ -219,60 +235,60 @@ function OwnerTable({
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-secondary-100">
                       <Image
-                        src={owner.avatar || ""}
-                        alt={owner.name}
+                        src={row.avatar || ""}
+                        alt={row.owner.fullName}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div>
                       <Link
-                        href={`/owners-management/${owner.id}`}
+                        href={`/owners-management/${row.owner.id}`}
                         className="text-sm font-medium text-text-primary hover:text-primary transition-smooth"
                       >
-                        {owner.name}
+                        {row.owner.fullName}
                       </Link>
                       <div className="text-sm text-text-secondary">
-                        {owner.email}
+                        {row.owner.contacts.email}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm font-medium text-text-primary">
-                    {owner.unit}
+                    {row.unitLabel}
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-text-primary">
-                    {owner.property}
+                    {row.condominiumName}
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div
-                    className={`text-sm font-medium ${owner.currentBalance > 0 ? "text-error" : "text-success"}`}
+                    className={`text-sm font-medium ${row.currentBalance > 0 ? "text-error" : "text-success"}`}
                   >
-                    {formatCurrency(owner.currentBalance)}
+                    {formatCurrency(row.currentBalance)}
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  {getPaymentStatusBadge(owner.paymentStatus)}
+                  {getPaymentStatusBadge(row.paymentStatus)}
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-text-secondary">
-                    {owner.lastPayment}
+                    {row.lastPayment}
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => onEditOwner(owner)}
+                      onClick={() => onEditOwner(row)}
                       className="p-1 text-text-secondary hover:text-primary transition-smooth"
                       title={t("editOwner")}
                     >
                       <Icon name="Edit2" size={16} />
                     </button>
                     <Link
-                      href={`/owners-management/${owner.id}`}
+                      href={`/owners-management/${row.owner.id}`}
                       className="p-1 text-text-secondary hover:text-accent transition-smooth"
                       title={t("viewPaymentHistory")}
                     >
@@ -285,7 +301,7 @@ function OwnerTable({
                       <Icon name="Mail" size={16} />
                     </button>
                     <button
-                      onClick={() => onDeleteOwner(owner.id)}
+                      onClick={() => onDeleteOwner(row.owner.id)}
                       className="p-1 text-text-secondary hover:text-error transition-smooth"
                       title={t("deleteOwner")}
                     >
@@ -299,21 +315,22 @@ function OwnerTable({
         </table>
       </div>
 
-      {/* Mobile Cards */}
       <div className="lg:hidden divide-y divide-border-light">
-        {sortedOwners.map((owner) => (
-          <div key={owner.id} className="p-4">
+        {sortedOwners.map((row) => (
+          <div key={row.owner.id} className="p-4">
             <div className="flex items-start space-x-3">
               <input
                 type="checkbox"
-                checked={selectedOwners.includes(owner.id)}
-                onChange={(e) => onOwnerSelect(owner.id, e.target.checked)}
+                checked={selectedOwners.includes(row.owner.id)}
+                onChange={(e) =>
+                  onOwnerSelect(row.owner.id, e.target.checked)
+                }
                 className="mt-1 rounded border-border-medium text-primary focus:ring-primary"
               />
               <div className="w-12 h-12 rounded-full overflow-hidden bg-secondary-100">
                 <Image
-                  src={owner.avatar || ""}
-                  alt={owner.name}
+                  src={row.avatar || ""}
+                  alt={row.owner.fullName}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -321,24 +338,24 @@ function OwnerTable({
                 <div className="flex items-start justify-between">
                   <div>
                     <Link
-                      href={`/owners-management/${owner.id}`}
+                      href={`/owners-management/${row.owner.id}`}
                       className="text-sm font-medium text-text-primary hover:text-primary transition-smooth"
                     >
-                      {owner.name}
+                      {row.owner.fullName}
                     </Link>
                     <p className="text-sm text-text-secondary">
-                      {owner.unit} • {owner.property}
+                      {row.unitLabel} • {row.condominiumName}
                     </p>
                   </div>
                   <div className="flex items-center space-x-1">
                     <button
-                      onClick={() => onEditOwner(owner)}
+                      onClick={() => onEditOwner(row)}
                       className="p-2 text-text-secondary hover:text-primary transition-smooth"
                     >
                       <Icon name="Edit2" size={16} />
                     </button>
                     <button
-                      onClick={() => onDeleteOwner(owner.id)}
+                      onClick={() => onDeleteOwner(row.owner.id)}
                       className="p-2 text-text-secondary hover:text-error transition-smooth"
                     >
                       <Icon name="Trash2" size={16} />
@@ -348,15 +365,15 @@ function OwnerTable({
                 <div className="mt-2 flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div
-                      className={`text-sm font-medium ${owner.currentBalance > 0 ? "text-error" : "text-success"}`}
+                      className={`text-sm font-medium ${row.currentBalance > 0 ? "text-error" : "text-success"}`}
                     >
-                      {formatCurrency(owner.currentBalance)}
+                      {formatCurrency(row.currentBalance)}
                     </div>
-                    {getPaymentStatusBadge(owner.paymentStatus)}
+                    {getPaymentStatusBadge(row.paymentStatus)}
                   </div>
                 </div>
                 <div className="mt-2 text-xs text-text-secondary">
-                  {t("lastPaymentMobile")} {owner.lastPayment}
+                  {t("lastPaymentMobile")} {row.lastPayment}
                 </div>
               </div>
             </div>
@@ -364,7 +381,6 @@ function OwnerTable({
         ))}
       </div>
 
-      {/* Empty State */}
       {owners.length === 0 && (
         <div className="text-center py-12">
           <Icon

@@ -1,9 +1,6 @@
 import { formatPortugueseAddress } from "@/lib/address";
 import { roundCurrency } from "@/lib/quota";
-import type {
-  Owner as OwnerView,
-  PaymentStatus,
-} from "@/app/[locale]/owners-management/components/types";
+import type { OwnerRow } from "@/app/[locale]/owners-management/components/types";
 import type { Condominium, Owner, QuotaPayment, Unit } from "@/types";
 import type { Portfolio } from "./types";
 
@@ -249,34 +246,183 @@ export function buildCollectionFromPortfolio(
   );
 }
 
-export function portfolioToOwnerViews(portfolio: Portfolio): OwnerView[] {
+export type OwnerDisplay = {
+  unit: Unit | undefined;
+  condominium: Condominium | undefined;
+  unitLabel: string;
+  condominiumId: string;
+  condominiumName: string;
+};
+
+/** Resolve Unit + Condominium labels for a domain owner. */
+export function ownerDisplay(
+  portfolio: Portfolio,
+  owner: Owner,
+  unitById = new Map(portfolio.units.map((u) => [u.id, u])),
+  condoById = new Map(portfolio.condominiums.map((c) => [c.id, c])),
+): OwnerDisplay {
+  const unit = unitById.get(owner.unitId);
+  const condominium = unit ? condoById.get(unit.condominiumId) : undefined;
+  return {
+    unit,
+    condominium,
+    unitLabel: unit?.label ?? owner.unitId,
+    condominiumId: condominium?.id ?? unit?.condominiumId ?? "",
+    condominiumName: condominium?.name ?? "",
+  };
+}
+
+/** Owner rows without quota balances (balances filled by collections). */
+export function portfolioToOwnerRows(
+  portfolio: Portfolio,
+  avatars: Record<string, string> = {},
+): OwnerRow[] {
   const unitById = new Map(portfolio.units.map((u) => [u.id, u]));
   const condoById = new Map(portfolio.condominiums.map((c) => [c.id, c]));
-
   return portfolio.owners.map((owner) => {
-    const unit = unitById.get(owner.unitId);
-    const condo = unit ? condoById.get(unit.condominiumId) : undefined;
-    const paymentStatus: PaymentStatus = "";
-
+    const display = ownerDisplay(portfolio, owner, unitById, condoById);
     return {
-      id: owner.id,
-      name: owner.fullName,
-      email: owner.contacts.email,
-      phone: owner.contacts.phone,
-      unit: unit?.label ?? owner.unitId,
-      property: condo?.name ?? "",
-      propertyId: condo?.id ?? "",
-      paymentStatus,
+      owner,
+      unitLabel: display.unitLabel,
+      condominiumId: display.condominiumId,
+      condominiumName: display.condominiumName,
+      paymentStatus: "" as const,
       currentBalance: 0,
       lastPayment: "",
-      joinDate: String(owner.entryDate).slice(0, 10),
-      emergencyContact: owner.contacts.mailingAddress ?? undefined,
-      monthlyFee: String(owner.monthlyQuota),
-      taxId: owner.taxId,
-      unitPermillage: owner.unitPermillage,
-      monthlyQuota: owner.monthlyQuota,
+      avatar: avatars[owner.id],
     };
   });
+}
+
+/**
+ * Find a unit in a condominium by label, or build a new one.
+ * Used when the owner modal only collects a free-text unit label.
+ */
+export function resolveOrCreateUnit(
+  portfolio: Portfolio,
+  condominiumId: string,
+  unitLabel: string,
+  existingUnitId?: string,
+): Unit {
+  const label = unitLabel.trim();
+  if (existingUnitId) {
+    const existing = portfolio.units.find((u) => u.id === existingUnitId);
+    if (existing) {
+      return {
+        ...existing,
+        condominiumId,
+        label,
+      };
+    }
+  }
+
+  const match = portfolio.units.find(
+    (u) =>
+      u.condominiumId === condominiumId &&
+      u.label.toLowerCase() === label.toLowerCase(),
+  );
+  if (match) return match;
+
+  return {
+    id: crypto.randomUUID(),
+    condominiumId,
+    label,
+    floor: null,
+    permillage: 0,
+    type: "apartment",
+    areaSqm: null,
+  };
+}
+
+export function buildEmptyOwner(input: {
+  fullName: string;
+  email: string;
+  phone: string;
+  mailingAddress?: string | null;
+  taxId?: string;
+  unitId: string;
+  unitPermillage?: number;
+  monthlyQuota?: number;
+  type?: Owner["type"];
+}): Owner {
+  const today = new Date().toISOString().slice(0, 10);
+  return {
+    id: crypto.randomUUID(),
+    fullName: input.fullName.trim(),
+    contacts: {
+      phone: input.phone.trim(),
+      email: input.email.trim(),
+      mailingAddress: input.mailingAddress?.trim() || null,
+    },
+    taxId: input.taxId?.trim() ?? "",
+    unitId: input.unitId,
+    unitPermillage: input.unitPermillage ?? 0,
+    monthlyQuota: input.monthlyQuota ?? 0,
+    type: input.type ?? "owner",
+    documents: [],
+    entryDate: today,
+    exitDate: null,
+  };
+}
+
+/** Apply owner-modal form fields onto a new or existing domain Owner + Unit. */
+export function ownerFromFormSave(
+  portfolio: Portfolio,
+  data: {
+    fullName: string;
+    email: string;
+    phone: string;
+    unitLabel: string;
+    condominiumId: string;
+    mailingAddress?: string;
+    monthlyQuota?: string;
+    taxId?: string;
+  },
+  existing?: Owner,
+): { owner: Owner; unit: Unit } {
+  const unit = resolveOrCreateUnit(
+    portfolio,
+    data.condominiumId,
+    data.unitLabel,
+    existing?.unitId,
+  );
+  const parsedQuota = data.monthlyQuota ? parseFloat(data.monthlyQuota) : NaN;
+  const monthlyQuota = Number.isFinite(parsedQuota)
+    ? parsedQuota
+    : (existing?.monthlyQuota ?? 0);
+
+  if (existing) {
+    return {
+      unit,
+      owner: {
+        ...existing,
+        fullName: data.fullName.trim(),
+        contacts: {
+          phone: data.phone.trim(),
+          email: data.email.trim(),
+          mailingAddress: data.mailingAddress?.trim() || null,
+        },
+        taxId: data.taxId?.trim() ?? existing.taxId,
+        unitId: unit.id,
+        unitPermillage: unit.permillage || existing.unitPermillage,
+        monthlyQuota,
+      },
+    };
+  }
+
+  return {
+    unit,
+    owner: buildEmptyOwner({
+      fullName: data.fullName,
+      email: data.email,
+      phone: data.phone,
+      mailingAddress: data.mailingAddress,
+      taxId: data.taxId,
+      unitId: unit.id,
+      unitPermillage: unit.permillage,
+      monthlyQuota,
+    }),
+  };
 }
 
 export function buildEmptyCondominium(input: {

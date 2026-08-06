@@ -66,9 +66,14 @@ function PaymentTracking() {
 
   const handleRecordPayment = (paymentData: RecordPaymentInput) => {
     const result = recordPayment(paymentData);
+    const ownerName =
+      paymentHistory.find((p) => p.ownerId === paymentData.ownerId)
+        ?.ownerName ??
+      portfolio.owners.find((o) => o.id === paymentData.ownerId)?.fullName ??
+      paymentData.ownerId;
     setFlash(
       result
-        ? tDash("paymentRecorded", { name: paymentData.ownerName })
+        ? tDash("paymentRecorded", { name: ownerName })
         : tDash("paymentRecordedGeneric"),
     );
     setIsRecordPaymentModalOpen(false);

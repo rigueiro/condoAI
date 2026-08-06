@@ -14,9 +14,7 @@ import {
   mockDomainOwners,
   mockUnits,
 } from "@/fixtures/domain";
-import { mockOwners } from "@/fixtures/views";
 import type { Organization } from "@/app/[locale]/account/types";
-import type { Owner as OwnerView } from "@/app/[locale]/owners-management/components/types";
 import type { Condominium, Owner, Unit } from "@/types";
 import {
   applyImport,
@@ -24,13 +22,16 @@ import {
   readPortfolio,
   removeCondominium as removeCondominiumStored,
   removeCondominiumInMemory,
+  removeOwner as removeOwnerStored,
+  removeOwnerInMemory,
   saveFirstCondominium,
   saveOrganization,
   upsertCondominium as upsertCondominiumStored,
   upsertCondominiumInMemory,
+  upsertOwner as upsertOwnerStored,
+  upsertOwnerInMemory,
   writePortfolio,
 } from "./storage";
-import { portfolioToOwnerViews } from "./mappers";
 import {
   EMPTY_PORTFOLIO,
   isOnboardingComplete,
@@ -44,13 +45,14 @@ interface PortfolioContextValue {
   isReady: boolean;
   needsOnboarding: boolean;
   isOnboardingComplete: boolean;
-  owners: OwnerView[];
   organization: Organization | null;
   refresh: () => void;
   saveOrganization: (organization: Organization) => void;
   saveFirstCondominium: (condominium: Condominium) => void;
   upsertCondominium: (condominium: Condominium) => void;
   removeCondominium: (condominiumId: string) => void;
+  upsertOwner: (owner: Owner, unit?: Unit) => void;
+  removeOwner: (ownerId: string) => void;
   applyImport: (units: Unit[], owners: Owner[]) => void;
   completeOnboarding: () => void;
   updateOrganization: (organization: Organization) => void;
@@ -154,6 +156,28 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     [isDemo, withUserWrite],
   );
 
+  const upsertOwnerFn = useCallback(
+    (owner: Owner, unit?: Unit) => {
+      if (isDemo) {
+        setPortfolio((prev) => upsertOwnerInMemory(prev, owner, unit));
+        return;
+      }
+      withUserWrite((userEmail) => upsertOwnerStored(userEmail, owner, unit));
+    },
+    [isDemo, withUserWrite],
+  );
+
+  const removeOwnerFn = useCallback(
+    (ownerId: string) => {
+      if (isDemo) {
+        setPortfolio((prev) => removeOwnerInMemory(prev, ownerId));
+        return;
+      }
+      withUserWrite((userEmail) => removeOwnerStored(userEmail, ownerId));
+    },
+    [isDemo, withUserWrite],
+  );
+
   const doImport = useCallback(
     (units: Unit[], owners: Owner[]) => {
       withUserWrite((userEmail) => applyImport(userEmail, units, owners));
@@ -176,11 +200,6 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     [withUserWrite, portfolio],
   );
 
-  const owners = useMemo(() => {
-    if (isDemo) return mockOwners;
-    return portfolioToOwnerViews(portfolio);
-  }, [isDemo, portfolio]);
-
   const value = useMemo<PortfolioContextValue>(
     () => ({
       portfolio,
@@ -189,13 +208,14 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       needsOnboarding: Boolean(email) && !isDemo && needsOnboarding(portfolio),
       isOnboardingComplete:
         !email || isDemo || isOnboardingComplete(portfolio),
-      owners,
       organization: portfolio.organization,
       refresh,
       saveOrganization: saveOrg,
       saveFirstCondominium: saveCondo,
       upsertCondominium: upsertCondo,
       removeCondominium: removeCondo,
+      upsertOwner: upsertOwnerFn,
+      removeOwner: removeOwnerFn,
       applyImport: doImport,
       completeOnboarding: finishOnboarding,
       updateOrganization,
@@ -204,12 +224,13 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       portfolio,
       isDemo,
       email,
-      owners,
       refresh,
       saveOrg,
       saveCondo,
       upsertCondo,
       removeCondo,
+      upsertOwnerFn,
+      removeOwnerFn,
       doImport,
       finishOnboarding,
       updateOrganization,

@@ -1,1 +1,1 @@
-export { mockOwners } from "@/fixtures/views";
+export { mockDomainOwners as mockOwners } from "@/fixtures/domain";

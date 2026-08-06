@@ -5,12 +5,12 @@ import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import type { Condominium } from "@/types";
 import type { CondoStats } from "@/lib/portfolio";
-import type { Owner } from "@/app/[locale]/owners-management/components/types";
+import type { OwnerRow } from "@/app/[locale]/owners-management/components/types";
 
 interface Props {
   condo: Condominium;
   stats: CondoStats;
-  owners: Owner[];
+  owners: OwnerRow[];
 }
 
 function PropertyDetailStats({ condo, stats, owners }: Props) {

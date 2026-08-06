@@ -10,8 +10,9 @@ import {
 } from "react";
 import { useUser } from "@/lib/auth";
 import { usePortfolio } from "@/lib/portfolio";
-import type { Owner as OwnerView } from "@/app/[locale]/owners-management/components/types";
+import type { OwnerRow } from "@/app/[locale]/owners-management/components/types";
 import type { QuotaPayment } from "@/types";
+import { OWNER_AVATARS } from "@/fixtures/views";
 import { monthYearFromDate } from "./dates";
 import {
   openPaymentReminders,
@@ -41,9 +42,7 @@ import {
 } from "./views";
 
 export type RecordPaymentInput = {
-  ownerName: string;
-  property: string;
-  unit: string;
+  ownerId: string;
   amount: number | string;
   paymentMethod?: string;
   paymentDate?: string;
@@ -57,7 +56,7 @@ interface CollectionsContextValue {
   quotas: QuotaPayment[];
   payments: PaymentRow[];
   overdueItems: OverdueItem[];
-  ownersWithBalances: OwnerView[];
+  ownersWithBalances: OwnerRow[];
   remindedIds: Set<string>;
   recordPayment: (input: RecordPaymentInput) => { quotaId: string } | null;
   sendReminders: (
@@ -71,22 +70,10 @@ const CollectionsContext = createContext<CollectionsContextValue | undefined>(
   undefined,
 );
 
-function matchOwner(
-  owners: OwnerView[],
-  input: Pick<RecordPaymentInput, "ownerName" | "property" | "unit">,
-): OwnerView | undefined {
-  return owners.find(
-    (o) =>
-      o.name === input.ownerName &&
-      o.property === input.property &&
-      o.unit === input.unit,
-  );
-}
-
 export function CollectionsProvider({ children }: { children: ReactNode }) {
   const user = useUser();
   const email = user?.email ?? null;
-  const { isDemo, owners, portfolio } = usePortfolio();
+  const { isDemo, portfolio } = usePortfolio();
 
   const [state, setState] = useState<CollectionsState>(EMPTY_COLLECTIONS);
   const [remindedIds, setRemindedIds] = useState<Set<string>>(() => new Set());
@@ -125,18 +112,18 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
   }, [email, isDemo, domainOwners]);
 
   const ownersWithBalances = useMemo(
-    () => applyOwnerBalances(owners, state.quotas),
-    [owners, state.quotas],
+    () => applyOwnerBalances(portfolio, state.quotas, OWNER_AVATARS),
+    [portfolio, state.quotas],
   );
 
   const payments = useMemo(
-    () => quotasToPaymentRows(state.quotas, ownersWithBalances, state.details),
-    [state.quotas, state.details, ownersWithBalances],
+    () => quotasToPaymentRows(state.quotas, portfolio, state.details),
+    [state.quotas, state.details, portfolio],
   );
 
   const overdueItems = useMemo(
-    () => quotasToOverdueItems(state.quotas, ownersWithBalances),
-    [state.quotas, ownersWithBalances],
+    () => quotasToOverdueItems(state.quotas, portfolio),
+    [state.quotas, portfolio],
   );
 
   const recordPayment = useCallback(
@@ -146,10 +133,13 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
           ? parseFloat(input.amount)
           : input.amount;
       if (!Number.isFinite(amount) || amount <= 0) return null;
+      if (!input.ownerId) return null;
+
+      const owner = portfolio.owners.find((o) => o.id === input.ownerId);
+      if (!owner) return null;
 
       const paidOn =
         input.paymentDate ?? new Date().toISOString().slice(0, 10);
-      const owner = matchOwner(ownersWithBalances, input);
       const details: PaymentDetails = {
         paymentMethod: input.paymentMethod ?? "Bank Transfer",
         receiptNumber: `RCP-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
@@ -160,16 +150,12 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       const existingId =
         input.quotaId && state.quotas.some((q) => q.id === input.quotaId)
           ? input.quotaId
-          : owner
-            ? findOpenQuota(state.quotas, owner.id, amount)?.id
-            : undefined;
+          : findOpenQuota(state.quotas, owner.id, amount)?.id;
 
       if (existingId) {
         persist(markQuotaPaid(state, existingId, paidOn, details));
         return { quotaId: existingId };
       }
-
-      if (!owner) return null;
 
       const newId = `pay-${crypto.randomUUID()}`;
       persist(
@@ -188,7 +174,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       );
       return { quotaId: newId };
     },
-    [ownersWithBalances, state, persist],
+    [portfolio.owners, state, persist],
   );
 
   const sendReminders = useCallback(
@@ -198,7 +184,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       }
 
       const idSet = new Set(ids);
-      const ownerById = new Map(ownersWithBalances.map((o) => [o.id, o]));
+      const ownerById = new Map(ownersWithBalances.map((o) => [o.owner.id, o]));
       const recipients: ReminderRecipient[] = state.quotas
         .filter(
           (q) =>
@@ -206,13 +192,13 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
             (q.status === "overdue" || q.status === "pending"),
         )
         .map((q) => {
-          const owner = ownerById.get(q.ownerId);
+          const row = ownerById.get(q.ownerId);
           return {
             id: q.id,
-            email: owner?.email ?? "",
-            ownerName: owner?.name ?? "",
-            unit: owner?.unit ?? "",
-            property: owner?.property ?? "",
+            email: row?.owner.contacts.email ?? "",
+            ownerName: row?.owner.fullName ?? "",
+            unit: row?.unitLabel ?? "",
+            property: row?.condominiumName ?? "",
             amount: q.amount,
             monthYear: q.monthYear,
           };
