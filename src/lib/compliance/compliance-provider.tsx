@@ -17,6 +17,12 @@ import type {
   Summons,
 } from "@/types";
 import {
+  openDeadlineDigest,
+  readDigestSentToday,
+  writeDigestSentToday,
+  type DigestCopy,
+} from "./digests";
+import {
   loadCompliance,
   removeAssembly,
   removeCertificate,
@@ -44,6 +50,7 @@ interface ComplianceContextValue {
   assemblies: AssemblyMinutes[];
   summons: Summons[];
   attentionItems: AttentionItem[];
+  digestSentToday: boolean;
   upsertInsurance: (policy: InsurancePolicy) => void;
   removeInsurance: (id: string) => void;
   markInsuranceRenewed: (id: string) => void;
@@ -54,6 +61,10 @@ interface ComplianceContextValue {
   removeAssemblyMinutes: (id: string) => void;
   upsertSummonsDoc: (summons: Summons) => void;
   removeSummonsDoc: (id: string) => void;
+  sendDeadlineDigest: (
+    items: AttentionItem[],
+    copy: DigestCopy,
+  ) => { sent: boolean; count: number; reason?: "no-email" | "empty" };
   refresh: () => void;
 }
 
@@ -67,6 +78,7 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
   const { isDemo, portfolio } = usePortfolio();
 
   const [state, setState] = useState<ComplianceState>(EMPTY_COMPLIANCE);
+  const [digestSentToday, setDigestSentToday] = useState(false);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
 
   const loadKey = `${email ?? "anon"}:${isDemo ? "demo" : "live"}`;
@@ -75,8 +87,10 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
     setLoadedKey(loadKey);
     if (email) {
       setState(loadCompliance(email, isDemo));
+      setDigestSentToday(readDigestSentToday(email));
     } else {
       setState(EMPTY_COMPLIANCE);
+      setDigestSentToday(false);
     }
   }
 
@@ -94,14 +108,37 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(() => {
     if (!email) {
       setState(EMPTY_COMPLIANCE);
+      setDigestSentToday(false);
       return;
     }
     setState(loadCompliance(email, isDemo));
+    setDigestSentToday(readDigestSentToday(email));
   }, [email, isDemo]);
 
   const attentionItems = useMemo(
     () => buildAttentionItems(state, portfolio.condominiums),
-    [state, portfolio.condominiums],
+    [state.policies, state.certificates, portfolio.condominiums],
+  );
+
+  const sendDeadlineDigest = useCallback(
+    (items: AttentionItem[], copy: DigestCopy) => {
+      if (!email) {
+        return { sent: false, count: 0, reason: "no-email" as const };
+      }
+      if (items.length === 0) {
+        return { sent: false, count: 0, reason: "empty" as const };
+      }
+
+      const sent = openDeadlineDigest(email, items, copy);
+      if (!sent) {
+        return { sent: false, count: 0, reason: "no-email" as const };
+      }
+
+      writeDigestSentToday(email);
+      setDigestSentToday(true);
+      return { sent: true, count: items.length };
+    },
+    [email],
   );
 
   const upsertInsurance = useCallback(
@@ -158,6 +195,7 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
       assemblies: state.assemblies,
       summons: state.summons,
       attentionItems,
+      digestSentToday,
       upsertInsurance,
       removeInsurance,
       markInsuranceRenewed,
@@ -168,6 +206,7 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
       removeAssemblyMinutes,
       upsertSummonsDoc,
       removeSummonsDoc,
+      sendDeadlineDigest,
       refresh,
     }),
     [
@@ -177,6 +216,7 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
       state.assemblies,
       state.summons,
       attentionItems,
+      digestSentToday,
       upsertInsurance,
       removeInsurance,
       markInsuranceRenewed,
@@ -187,6 +227,7 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
       removeAssemblyMinutes,
       upsertSummonsDoc,
       removeSummonsDoc,
+      sendDeadlineDigest,
       refresh,
     ],
   );

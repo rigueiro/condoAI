@@ -11,6 +11,7 @@ import { useFormatCurrency } from "@/hooks/use-format-currency";
 import { usePortfolio } from "@/lib/portfolio";
 import {
   useCompliance,
+  useDigestCopy,
   type AttentionItem,
   type ComplianceKind,
   type ComplianceTab,
@@ -19,6 +20,7 @@ import AttentionPanel from "./components/attention-panel";
 import ComplianceModal, {
   type ComplianceRecord,
 } from "./components/compliance-modal";
+import DocumentCell from "./components/document-cell";
 import RecordsTable from "./components/records-table";
 
 function filterByCondoAndSearch<T extends { condominiumId: string }>(
@@ -46,6 +48,7 @@ function CompliancePage() {
     assemblies,
     summons,
     attentionItems,
+    digestSentToday,
     upsertInsurance,
     removeInsurance,
     markInsuranceRenewed,
@@ -56,7 +59,9 @@ function CompliancePage() {
     removeAssemblyMinutes,
     upsertSummonsDoc,
     removeSummonsDoc,
+    sendDeadlineDigest,
   } = useCompliance();
+  const digestCopy = useDigestCopy();
 
   const [tab, setTab] = useState<ComplianceTab>("attention");
   const [condoFilter, setCondoFilter] = useState("");
@@ -181,6 +186,19 @@ function CompliancePage() {
     if (item.kind === "insurance") markInsuranceRenewed(item.id);
     else markCertificateRenewed(item.id);
     setFlash(t("flash.renewed"));
+  };
+
+  const handleSendDigest = () => {
+    const result = sendDeadlineDigest(filteredAttention, digestCopy);
+    if (!result.sent) {
+      setFlash(
+        result.reason === "empty"
+          ? t("flash.digestEmpty")
+          : t("flash.digestFailed"),
+      );
+      return;
+    }
+    setFlash(t("flash.digestSent", { count: result.count }));
   };
 
   const defaultKind: ComplianceKind =
@@ -326,7 +344,12 @@ function CompliancePage() {
           </div>
 
           {tab === "attention" && (
-            <AttentionPanel items={filteredAttention} onRenew={handleRenew} />
+            <AttentionPanel
+              items={filteredAttention}
+              digestSentToday={digestSentToday}
+              onRenew={handleRenew}
+              onSendDigest={handleSendDigest}
+            />
           )}
 
           {tab === "insurance" && (
@@ -367,9 +390,10 @@ function CompliancePage() {
                 t("table.condominium"),
                 t("table.type"),
                 t("table.validity"),
+                t("table.document"),
                 t("table.actions"),
               ]}
-              colSpan={4}
+              colSpan={5}
               empty={filteredCertificates.length === 0}
             >
               {filteredCertificates.map((c) => (
@@ -381,6 +405,7 @@ function CompliancePage() {
                   <td className="px-4 py-3">
                     {String(c.validity).slice(0, 10)}
                   </td>
+                  <DocumentCell value={c.file} />
                   {actionCell({ kind: "certificate", data: c })}
                 </tr>
               ))}
@@ -393,9 +418,10 @@ function CompliancePage() {
                 t("table.condominium"),
                 t("table.date"),
                 t("table.assemblyType"),
+                t("table.document"),
                 t("table.actions"),
               ]}
-              colSpan={4}
+              colSpan={5}
               empty={filteredAssemblies.length === 0}
             >
               {filteredAssemblies.map((a) => (
@@ -403,6 +429,7 @@ function CompliancePage() {
                   <td className="px-4 py-3">{nameOf(a.condominiumId)}</td>
                   <td className="px-4 py-3">{String(a.date).slice(0, 10)}</td>
                   <td className="px-4 py-3">{t(`assemblyTypes.${a.type}`)}</td>
+                  <DocumentCell value={a.file} />
                   {actionCell({ kind: "assembly", data: a })}
                 </tr>
               ))}
@@ -416,9 +443,10 @@ function CompliancePage() {
                 t("table.title"),
                 t("table.sent"),
                 t("table.method"),
+                t("table.document"),
                 t("table.actions"),
               ]}
-              colSpan={5}
+              colSpan={6}
               empty={filteredSummons.length === 0}
             >
               {filteredSummons.map((s) => (
@@ -431,6 +459,7 @@ function CompliancePage() {
                   <td className="px-4 py-3">
                     {t(`summonsMethods.${s.method}`)}
                   </td>
+                  <DocumentCell value={s.proof} />
                   {actionCell({ kind: "summons", data: s })}
                 </tr>
               ))}

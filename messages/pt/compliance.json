@@ -27,6 +27,18 @@
     "insuranceLabel": "Seguro · {insurer}",
     "certificateLabel": "Certificado · {type}"
   },
+  "digest": {
+    "title": "Resumo de prazos",
+    "subtitle": "Envie para si um resumo das renovações e certificados a vencer nos próximos 60 dias. Local no cliente até existir backend.",
+    "send": "Enviar resumo",
+    "sent": "Enviado",
+    "sentToday": "Enviado hoje",
+    "email": {
+      "subject": "{count, plural, one {Resumo de conformidade: # prazo} other {Resumo de conformidade: # prazos}}",
+      "intro": "{count, plural, one {Tem # prazo de conformidade que precisa de atenção:} other {Tem # prazos de conformidade que precisam de atenção:}}",
+      "outro": "Abra o CondoAI → Conformidade para marcar renovações ou atualizar registos."
+    }
+  },
   "filters": {
     "allProperties": "Todos os condomínios",
     "search": "Pesquisar…"
@@ -44,6 +56,9 @@
     "sent": "Enviada",
     "title": "Título",
     "method": "Método",
+    "document": "Documento",
+    "noFile": "—",
+    "viewFile": "Ver {type}",
     "actions": "Ações",
     "empty": "Ainda sem registos.",
     "edit": "Editar",
@@ -87,6 +102,20 @@
     "summonsContent": "Conteúdo",
     "sentDate": "Data de envio",
     "method": "Método de envio",
+    "file": {
+      "document": "Documento",
+      "minutes": "Ata (PDF)",
+      "proof": "Comprovativo de envio",
+      "hint": "PDF ou imagem, máx. 2 MB. Guardado localmente até os uploads terem API.",
+      "upload": "Carregar",
+      "replace": "Substituir",
+      "view": "Ver",
+      "remove": "Remover",
+      "attached": "{type} anexado",
+      "invalidType": "Use um ficheiro PDF, PNG ou JPEG.",
+      "tooLarge": "Ficheiro demasiado grande (máx. 2 MB).",
+      "readFailed": "Não foi possível ler o ficheiro."
+    },
     "save": "Guardar",
     "cancel": "Cancelar",
     "validation": {
@@ -104,6 +133,9 @@
   "flash": {
     "saved": "Registo guardado",
     "deleted": "Registo eliminado",
-    "renewed": "Marcado como renovado"
+    "renewed": "Marcado como renovado",
+    "digestSent": "Resumo aberto para {count, plural, one {# prazo} other {# prazos}}",
+    "digestEmpty": "Nada a incluir no resumo",
+    "digestFailed": "Não foi possível abrir o email do resumo"
   }
 }

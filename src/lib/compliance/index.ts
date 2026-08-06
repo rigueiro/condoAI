@@ -9,3 +9,8 @@ export {
   ComplianceProvider,
   useCompliance,
 } from "./compliance-provider";
+export { useDigestCopy } from "./use-digest-copy";
+export {
+  complianceFileLabel,
+  openComplianceDocument,
+} from "./files";

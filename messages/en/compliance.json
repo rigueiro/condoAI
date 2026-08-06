@@ -27,6 +27,18 @@
     "insuranceLabel": "Insurance · {insurer}",
     "certificateLabel": "Certificate · {type}"
   },
+  "digest": {
+    "title": "Deadline digest",
+    "subtitle": "Email yourself a summary of renewals and certificates due in the next 60 days. Client-local until the backend ships.",
+    "send": "Send digest",
+    "sent": "Sent",
+    "sentToday": "Sent today",
+    "email": {
+      "subject": "{count, plural, one {Compliance digest: # deadline} other {Compliance digest: # deadlines}}",
+      "intro": "{count, plural, one {You have # compliance deadline that needs attention:} other {You have # compliance deadlines that need attention:}}",
+      "outro": "Open CondoAI → Compliance to mark renewals or update records."
+    }
+  },
   "filters": {
     "allProperties": "All condominiums",
     "search": "Search…"
@@ -44,6 +56,9 @@
     "sent": "Sent",
     "title": "Title",
     "method": "Method",
+    "document": "Document",
+    "noFile": "—",
+    "viewFile": "View {type}",
     "actions": "Actions",
     "empty": "No records yet.",
     "edit": "Edit",
@@ -87,6 +102,20 @@
     "summonsContent": "Content",
     "sentDate": "Sent date",
     "method": "Delivery method",
+    "file": {
+      "document": "Document",
+      "minutes": "Minutes (PDF)",
+      "proof": "Delivery proof",
+      "hint": "PDF or image, max 2 MB. Stored locally until uploads are backed by the API.",
+      "upload": "Upload",
+      "replace": "Replace",
+      "view": "View",
+      "remove": "Remove",
+      "attached": "{type} attached",
+      "invalidType": "Use a PDF, PNG, or JPEG file.",
+      "tooLarge": "File is too large (max 2 MB).",
+      "readFailed": "Could not read that file."
+    },
     "save": "Save",
     "cancel": "Cancel",
     "validation": {
@@ -104,6 +133,9 @@
   "flash": {
     "saved": "Record saved",
     "deleted": "Record deleted",
-    "renewed": "Marked as renewed"
+    "renewed": "Marked as renewed",
+    "digestSent": "Digest opened for {count, plural, one {# deadline} other {# deadlines}}",
+    "digestEmpty": "Nothing to include in the digest",
+    "digestFailed": "Could not open the digest email"
   }
 }

@@ -11,6 +11,7 @@ import type {
   Summons,
 } from "@/types";
 import type { ComplianceKind } from "@/lib/compliance";
+import DocumentUpload from "./document-upload";
 
 export type ComplianceRecord =
   | { kind: "insurance"; data: InsurancePolicy }
@@ -91,6 +92,12 @@ function ComplianceModal({
   const [method, setMethod] = useState<Summons["method"]>(
     record?.kind === "summons" ? record.data.method : "email",
   );
+  const [documentFile, setDocumentFile] = useState<string | null>(() => {
+    if (record?.kind === "certificate") return record.data.file;
+    if (record?.kind === "assembly") return record.data.file;
+    if (record?.kind === "summons") return record.data.proof;
+    return null;
+  });
   const [errors, setErrors] = useState<Errors>({});
 
   const validate = (): boolean => {
@@ -152,7 +159,7 @@ function ComplianceModal({
           condominiumId,
           type: certificateType,
           validity,
-          file: record?.kind === "certificate" ? record.data.file : null,
+          file: documentFile,
         },
       });
       return;
@@ -166,7 +173,7 @@ function ComplianceModal({
           condominiumId,
           date: assemblyDate,
           type: assemblyType,
-          file: record?.kind === "assembly" ? record.data.file : null,
+          file: documentFile,
           participants:
             record?.kind === "assembly" ? record.data.participants : [],
         },
@@ -183,7 +190,7 @@ function ComplianceModal({
         title: summonsTitle.trim(),
         content: summonsContent.trim(),
         method,
-        proof: record?.kind === "summons" ? record.data.proof : null,
+        proof: documentFile,
       },
     });
   };
@@ -222,7 +229,10 @@ function ComplianceModal({
               <label className={labelClass}>{t("modal.kind")}</label>
               <Select
                 value={kind}
-                onChange={(e) => setKind(e.target.value as ComplianceKind)}
+                onChange={(e) => {
+                  setKind(e.target.value as ComplianceKind);
+                  setDocumentFile(null);
+                }}
               >
                 <option value="insurance">{t("kinds.insurance")}</option>
                 <option value="certificate">{t("kinds.certificate")}</option>
@@ -355,6 +365,11 @@ function ComplianceModal({
                   <p className="mt-1 text-xs text-error">{errors.validity}</p>
                 )}
               </div>
+              <DocumentUpload
+                label={t("modal.file.document")}
+                value={documentFile}
+                onChange={setDocumentFile}
+              />
             </>
           )}
 
@@ -388,6 +403,11 @@ function ComplianceModal({
                   </option>
                 </Select>
               </div>
+              <DocumentUpload
+                label={t("modal.file.minutes")}
+                value={documentFile}
+                onChange={setDocumentFile}
+              />
             </>
           )}
 
@@ -445,6 +465,11 @@ function ComplianceModal({
                   </Select>
                 </div>
               </div>
+              <DocumentUpload
+                label={t("modal.file.proof")}
+                value={documentFile}
+                onChange={setDocumentFile}
+              />
             </>
           )}
 
