@@ -7,7 +7,7 @@ import Header from "@/components/ui/header";
 import BreadcrumbNavigation from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 import { downloadCsv } from "@/lib/export-csv";
-import { mockProperties } from "@/app/[locale]/owners-management/__fixtures__/mock-properties";
+import { mockCondominiums, mockDomainOwners, mockUnits } from "@/fixtures";
 
 import NewOccurrenceModal from "./components/new-occurrence-modal";
 import OccurrenceStatistics from "./components/occurrence-statistics";
@@ -17,7 +17,12 @@ import OccurrenceFilters, {
 import OccurrenceTable from "./components/occurrence-table";
 import BulkOperations from "./components/bulk-operations";
 import { mockOccurrences } from "./__fixtures__/mock-occurrences";
-import { Occurrence } from "./types";
+import {
+  formatOccurrenceDate,
+  toOccurrenceRows,
+  type Occurrence,
+  type OccurrenceRow,
+} from "./types";
 
 function OccurrencesPage() {
   const t = useTranslations("occurrences");
@@ -33,58 +38,46 @@ function OccurrencesPage() {
   );
   const [filters, setFilters] = useState<OccurrenceFiltersState>({
     search: "",
-    property: "",
+    condominiumId: "",
     category: "",
     state: "",
     priority: "",
   });
 
-  const filteredOccurrences = useMemo(() => {
-    return occurrences.filter((occurrence) => {
+  const occurrenceRows = useMemo(
+    () => toOccurrenceRows(occurrences, mockCondominiums, mockDomainOwners),
+    [occurrences],
+  );
+
+  const filteredRows = useMemo(() => {
+    const q = filters.search.trim().toLowerCase();
+    return occurrenceRows.filter((row) => {
+      const { occurrence, ownerName } = row;
       const matchesSearch =
-        !filters.search ||
-        occurrence.title
-          .toLowerCase()
-          .includes(filters.search.toLowerCase()) ||
-        occurrence.description
-          .toLowerCase()
-          .includes(filters.search.toLowerCase()) ||
-        (occurrence.unit ?? "")
-          .toLowerCase()
-          .includes(filters.search.toLowerCase()) ||
-        occurrence.reportedBy
-          .toLowerCase()
-          .includes(filters.search.toLowerCase());
-
-      const matchesProperty =
-        !filters.property || occurrence.property === filters.property;
-
-      const matchesCategory =
-        !filters.category || occurrence.category === filters.category;
-
-      const matchesState =
-        !filters.state || occurrence.state === filters.state;
-
-      const matchesPriority =
-        !filters.priority || occurrence.priority === filters.priority;
+        !q ||
+        occurrence.title.toLowerCase().includes(q) ||
+        occurrence.description.toLowerCase().includes(q) ||
+        (occurrence.unit ?? "").toLowerCase().includes(q) ||
+        (ownerName ?? "").toLowerCase().includes(q);
 
       return (
         matchesSearch &&
-        matchesProperty &&
-        matchesCategory &&
-        matchesState &&
-        matchesPriority
+        (!filters.condominiumId ||
+          occurrence.condominiumId === filters.condominiumId) &&
+        (!filters.category || occurrence.category === filters.category) &&
+        (!filters.state || occurrence.status === filters.state) &&
+        (!filters.priority || occurrence.priority === filters.priority)
       );
     });
-  }, [occurrences, filters]);
+  }, [occurrenceRows, filters]);
 
   const handleAddOccurrence = useCallback(() => {
     setEditingOccurrence(null);
     setIsModalOpen(true);
   }, []);
 
-  const handleEditOccurrence = useCallback((occurrence: Occurrence) => {
-    setEditingOccurrence(occurrence);
+  const handleEditOccurrence = useCallback((row: OccurrenceRow) => {
+    setEditingOccurrence(row.occurrence);
     setIsModalOpen(true);
   }, []);
 
@@ -123,17 +116,17 @@ function OccurrencesPage() {
   const handleSelectAll = useCallback(
     (isSelected: boolean) => {
       setSelectedOccurrences(
-        isSelected ? filteredOccurrences.map((o) => o.id) : [],
+        isSelected ? filteredRows.map((r) => r.occurrence.id) : [],
       );
     },
-    [filteredOccurrences],
+    [filteredRows],
   );
 
   const handleBulkMarkResolved = useCallback(() => {
     setOccurrences((prev) =>
       prev.map((o) =>
         selectedOccurrences.includes(o.id)
-          ? { ...o, state: "Resolved" }
+          ? { ...o, status: "Resolved" }
           : o,
       ),
     );
@@ -141,8 +134,8 @@ function OccurrencesPage() {
   }, [selectedOccurrences]);
 
   const handleBulkExport = useCallback(() => {
-    const selected = occurrences.filter((o) =>
-      selectedOccurrences.includes(o.id),
+    const selected = occurrenceRows.filter((r) =>
+      selectedOccurrences.includes(r.occurrence.id),
     );
     const headers = [
       t("stats.csvHeaders.title"),
@@ -155,19 +148,19 @@ function OccurrencesPage() {
       t("stats.csvHeaders.reportedAt"),
       t("stats.csvHeaders.assignedTo"),
     ];
-    const rows = selected.map((o) => [
-      o.title,
-      tCategory(o.category),
-      o.property ?? "",
-      o.unit ?? "",
-      tPriority(o.priority),
-      tState(o.state),
-      o.reportedBy,
-      o.reportedAt,
-      o.assignedTo ?? "",
+    const rows = selected.map(({ occurrence, condominiumName, ownerName }) => [
+      occurrence.title,
+      tCategory(occurrence.category),
+      condominiumName,
+      occurrence.unit ?? "",
+      tPriority(occurrence.priority),
+      tState(occurrence.status),
+      ownerName ?? "",
+      formatOccurrenceDate(occurrence.dateTime),
+      occurrence.assignedTo ?? "",
     ]);
     downloadCsv(headers, rows, "occurrences-selected.csv");
-  }, [occurrences, selectedOccurrences, t, tCategory, tPriority, tState]);
+  }, [occurrenceRows, selectedOccurrences, t, tCategory, tPriority, tState]);
 
   const handleBulkDelete = useCallback(() => {
     if (!window.confirm(t("confirmDeleteSelected"))) return;
@@ -185,7 +178,6 @@ function OccurrencesPage() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <BreadcrumbNavigation />
 
-          {/* Page Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold text-text-primary mb-2">
@@ -205,17 +197,15 @@ function OccurrencesPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Left Sidebar - Statistics */}
             <div className="lg:col-span-1">
-              <OccurrenceStatistics occurrences={occurrences} />
+              <OccurrenceStatistics rows={occurrenceRows} />
             </div>
 
-            {/* Main Content */}
             <div className="lg:col-span-3 space-y-6">
               <OccurrenceFilters
                 filters={filters}
                 onFiltersChange={setFilters}
-                properties={mockProperties}
+                condominiums={mockCondominiums}
               />
 
               {selectedOccurrences.length > 0 && (
@@ -229,7 +219,7 @@ function OccurrencesPage() {
               )}
 
               <OccurrenceTable
-                occurrences={filteredOccurrences}
+                rows={filteredRows}
                 selectedOccurrences={selectedOccurrences}
                 onOccurrenceSelect={handleOccurrenceSelect}
                 onSelectAll={handleSelectAll}
@@ -244,7 +234,9 @@ function OccurrencesPage() {
       {isModalOpen && (
         <NewOccurrenceModal
           occurrence={editingOccurrence}
-          properties={mockProperties}
+          condominiums={mockCondominiums}
+          owners={mockDomainOwners}
+          units={mockUnits}
           onClose={() => {
             setIsModalOpen(false);
             setEditingOccurrence(null);

@@ -119,6 +119,7 @@
     "changeStatus": "Alterar estado",
     "editOccurrence": "Editar ocorrência",
     "viewProperty": "Ver condomínio",
+    "viewOwner": "Ver proprietário",
     "allOccurrences": "Todas as ocorrências"
   },
   "modal": {
@@ -138,7 +139,7 @@
     "unit": "Fração",
     "unitPlaceholder": "ex.: 22",
     "reportedBy": "Reportado por",
-    "reportedByPlaceholder": "Nome de quem reportou",
+    "selectOwner": "Selecione um proprietário (opcional)",
     "assignedTo": "Atribuído a",
     "assignedToPlaceholder": "Equipa ou prestador",
     "status": "Estado",
@@ -148,8 +149,7 @@
     "validation": {
       "titleRequired": "O título da ocorrência é obrigatório",
       "descriptionRequired": "Introduza uma descrição da ocorrência",
-      "propertyRequired": "Selecione um condomínio",
-      "reportedByRequired": "Indique quem reportou a ocorrência"
+      "propertyRequired": "Selecione um condomínio"
     }
   }
 }

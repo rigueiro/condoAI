@@ -119,6 +119,7 @@
     "changeStatus": "Change status",
     "editOccurrence": "Edit occurrence",
     "viewProperty": "View property",
+    "viewOwner": "View owner",
     "allOccurrences": "All occurrences"
   },
   "modal": {
@@ -138,7 +139,7 @@
     "unit": "Unit",
     "unitPlaceholder": "e.g. 22",
     "reportedBy": "Reported by",
-    "reportedByPlaceholder": "Name of the reporter",
+    "selectOwner": "Select an owner (optional)",
     "assignedTo": "Assigned to",
     "assignedToPlaceholder": "Staff or contractor",
     "status": "Status",
@@ -148,8 +149,7 @@
     "validation": {
       "titleRequired": "Occurrence title is required",
       "descriptionRequired": "Please enter a description of the occurrence",
-      "propertyRequired": "Please select a property",
-      "reportedByRequired": "Please enter who reported the occurrence"
+      "propertyRequired": "Please select a property"
     }
   }
 }

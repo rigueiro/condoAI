@@ -1,14 +1,18 @@
+import type { Condominium, Occurrence, Owner } from "@/types";
+
+export type { Occurrence, OccurrenceComment, OccurrenceStatus } from "@/types";
+
 export enum OccurrenceState {
-  Open = "OPEN", // Assigned or visible to staff/manager
-  Acknowledged = "ACKNOWLEDGED", // Staff has replied or commented
-  InProgress = "IN_PROGRESS", // Work has started (technician assigned, etc.)
-  WaitingForResident = "WAITING_FOR_RESIDENT", // Need more info/photos/approval
-  Scheduled = "SCHEDULED", // Work date/time is set
-  OnHold = "ON_HOLD", // Waiting for parts, contractor, board approval, etc.
-  Resolved = "RESOLVED", // Fixed/completed, waiting for resident confirmation
-  Closed = "CLOSED", // Resident confirmed OK or auto-closed after X days
-  Cancelled = "CANCELLED", // Duplicate, invalid, or withdrawn by resident
-  Rejected = "REJECTED", // Not approved (e.g., not building's responsibility)
+  Open = "Open",
+  Acknowledged = "Acknowledged",
+  InProgress = "InProgress",
+  WaitingForResident = "WaitingForResident",
+  Scheduled = "Scheduled",
+  OnHold = "OnHold",
+  Resolved = "Resolved",
+  Closed = "Closed",
+  Cancelled = "Cancelled",
+  Rejected = "Rejected",
 }
 
 export enum OccurrenceCategory {
@@ -29,70 +33,65 @@ export enum OccurrencePriority {
   Low = "LOW",
   Medium = "MEDIUM",
   High = "HIGH",
-  Urgent = "URGENT", // e.g., flood, fire alarm, security breach
-}
-
-export enum ViolationStatus {
-  Reported = "REPORTED",
-  WarningIssued = "WARNING_ISSUED",
-  FineIssued = "FINE_ISSUED",
-  UnderReview = "UNDER_REVIEW",
-  Appealed = "APPEALED",
-  Resolved = "RESOLVED",
-  Closed = "CLOSED",
-}
-
-export enum AmenityType {
-  Gym = "GYM",
-  Pool = "POOL",
-  BBQ = "BBQ",
-  PartyRoom = "PARTY_ROOM",
-  GuestSuite = "GUEST_SUITE",
-  Rooftop = "ROOFTOP",
-  TennisCourt = "TENNIS_COURT",
-  Other = "OTHER",
-}
-
-export enum PaymentStatus {
-  Pending = "PENDING",
-  Paid = "PAID",
-  Overdue = "OVERDUE",
-  Waived = "WAIVED",
-  Refunded = "REFUNDED",
-}
-
-export enum AnnouncementType {
-  General = "GENERAL",
-  Emergency = "EMERGENCY",
-  Maintenance = "MAINTENANCE",
-  Event = "EVENT",
-}
-
-export interface OccurrenceComment {
-  id: string;
-  author: string;
-  message: string;
-  createdAt: string; // ISO date
+  Urgent = "URGENT",
 }
 
 export type OccurrenceStateKey = keyof typeof OccurrenceState;
 export type OccurrencePriorityValue = `${OccurrencePriority}`;
 export type OccurrenceCategoryValue = `${OccurrenceCategory}`;
 
-export interface Occurrence {
-  id: string;
-  name?: string;
-  propertyId?: string;
-  property?: string; // Property name for display
-  title: string; // e.g., "Leak in bathroom ceiling"
-  description: string;
-  category: OccurrenceCategoryValue; // e.g., "MAINTENANCE", "NOISE"
-  unit?: string; // Unit number or apartment ID
-  reportedBy: string; // User ID or name
-  reportedAt: string; // ISO date
-  state: OccurrenceStateKey;
-  priority: OccurrencePriorityValue;
-  assignedTo?: string; // Staff/maintenance user ID
-  photos?: string[]; // Array of image URLs
-  comments?: OccurrenceComment[]; // Internal + resident visible comments
+/** Derived list/detail row: domain Occurrence + condo/owner display names. */
+export type OccurrenceRow = {
+  occurrence: Occurrence;
+  condominiumName: string;
+  ownerName: string | null;
+};
+
+export function formatOccurrenceDate(value: Date | string): string {
+  return typeof value === "string"
+    ? value.slice(0, 10)
+    : value.toISOString().slice(0, 10);
+}
+
+function buildLookupMaps(
+  condominiums: Pick<Condominium, "id" | "name">[],
+  owners: Pick<Owner, "id" | "fullName">[],
+) {
+  return {
+    condoById: new Map(condominiums.map((c) => [c.id, c.name])),
+    ownerById: new Map(owners.map((o) => [o.id, o.fullName])),
+  };
+}
+
+function joinOccurrence(
+  occurrence: Occurrence,
+  condoById: Map<string, string>,
+  ownerById: Map<string, string>,
+): OccurrenceRow {
+  return {
+    occurrence,
+    condominiumName:
+      condoById.get(occurrence.condominiumId) ?? occurrence.condominiumId,
+    ownerName: occurrence.ownerId
+      ? (ownerById.get(occurrence.ownerId) ?? null)
+      : null,
+  };
+}
+
+export function toOccurrenceRow(
+  occurrence: Occurrence,
+  condominiums: Pick<Condominium, "id" | "name">[],
+  owners: Pick<Owner, "id" | "fullName">[],
+): OccurrenceRow {
+  const { condoById, ownerById } = buildLookupMaps(condominiums, owners);
+  return joinOccurrence(occurrence, condoById, ownerById);
+}
+
+export function toOccurrenceRows(
+  occurrences: Occurrence[],
+  condominiums: Pick<Condominium, "id" | "name">[],
+  owners: Pick<Owner, "id" | "fullName">[],
+): OccurrenceRow[] {
+  const { condoById, ownerById } = buildLookupMaps(condominiums, owners);
+  return occurrences.map((o) => joinOccurrence(o, condoById, ownerById));
 }

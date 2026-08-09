@@ -15,6 +15,7 @@ import PropertyModal from "../components/property-modal";
 import PropertyDetailStats from "../components/property-detail-stats";
 import PropertyOwnersList from "../components/property-owners-list";
 import { mockOccurrences } from "@/app/[locale]/occurrences/__fixtures__/mock-occurrences";
+import { formatOccurrenceDate } from "@/app/[locale]/occurrences/types";
 import type { Condominium } from "@/types";
 import { useCollections } from "@/lib/collections";
 import {
@@ -72,7 +73,7 @@ function PropertyDetailPage() {
 
   const propertyOccurrences = useMemo(() => {
     if (!id) return [];
-    return mockOccurrences.filter((o) => o.propertyId === id);
+    return mockOccurrences.filter((o) => o.condominiumId === id);
   }, [id]);
 
   const collectionDataForProperty = useMemo(() => {
@@ -221,7 +222,7 @@ function PropertyDetailPage() {
                                 <p className="text-sm text-text-secondary">
                                   {tOccCategory(occ.category)} •{" "}
                                   {t("unit", { unit: occ.unit ?? "—" })} •{" "}
-                                  {occ.reportedAt}
+                                  {formatOccurrenceDate(occ.dateTime)}
                                 </p>
                               </div>
                               <div className="flex items-center gap-2">
@@ -229,7 +230,7 @@ function PropertyDetailPage() {
                                   {tOccPriority(occ.priority)}
                                 </span>
                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-text-primary">
-                                  {tOccState(occ.state)}
+                                  {tOccState(occ.status)}
                                 </span>
                               </div>
                             </div>

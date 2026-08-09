@@ -185,15 +185,56 @@ export interface Certificate {
     file: string | null;
 }
 
+export type OccurrenceCategory =
+    | "MAINTENANCE"
+    | "NOISE"
+    | "PARKING"
+    | "PET"
+    | "CLEANLINESS"
+    | "SECURITY"
+    | "LEAK_WATER_DAMAGE"
+    | "ELEVATOR"
+    | "COMMON_AREA"
+    | "RULE_VIOLATION"
+    | "OTHER";
+
+/** Workflow status keys (also used as i18n keys under occurrences.states). */
+export type OccurrenceStatus =
+    | "Open"
+    | "Acknowledged"
+    | "InProgress"
+    | "WaitingForResident"
+    | "Scheduled"
+    | "OnHold"
+    | "Resolved"
+    | "Closed"
+    | "Cancelled"
+    | "Rejected";
+
+export type OccurrencePriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+
+export interface OccurrenceComment {
+    id: string;
+    author: string;
+    message: string;
+    createdAt: string; // ISO date
+}
+
 export interface Occurrence {
     id: string;
     condominiumId: string;
-    dateTime: Date | string;
     ownerId: string | null;
+    title: string;
     description: string;
-    category: 'breakdown' | 'complaint' | 'suggestion';
+    category: OccurrenceCategory;
+    /** Free-text location (unit label, lobby, garage, etc.). */
+    unit: string | null;
+    dateTime: Date | string;
+    status: OccurrenceStatus;
+    priority: OccurrencePriority;
+    assignedTo: string | null;
     photos: string[];
-    status: 'new' | 'in-progress' | 'resolved' | 'archived';
+    comments: OccurrenceComment[];
     history: {
         action: string;
         date: Date | string;

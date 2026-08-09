@@ -10,6 +10,11 @@ import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
+import {
+  mockCondominiums,
+  mockDomainOwners,
+  mockUnits,
+} from "@/fixtures";
 import NewOccurrenceModal from "../components/new-occurrence-modal";
 import {
   OCCURRENCE_STATE_KEYS,
@@ -17,8 +22,12 @@ import {
   STATE_BADGE,
 } from "../components/occurrence-meta";
 import { mockOccurrences } from "../__fixtures__/mock-occurrences";
-import { mockProperties } from "@/app/[locale]/owners-management/__fixtures__/mock-properties";
-import type { Occurrence, OccurrenceComment } from "../types";
+import {
+  formatOccurrenceDate,
+  toOccurrenceRow,
+  type Occurrence,
+  type OccurrenceComment,
+} from "../types";
 
 function OccurrenceDetailPage() {
   const t = useTranslations("occurrences.detail");
@@ -36,17 +45,29 @@ function OccurrenceDetailPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [newComment, setNewComment] = useState("");
 
+  const row = useMemo(
+    () =>
+      occurrence
+        ? toOccurrenceRow(occurrence, mockCondominiums, mockDomainOwners)
+        : null,
+    [occurrence],
+  );
+
+  const dateLabel = occurrence
+    ? formatOccurrenceDate(occurrence.dateTime)
+    : "";
+
   const timeline = useMemo(() => {
-    if (!occurrence) return [];
+    if (!occurrence || !row) return [];
     const events = [
       {
         id: "reported",
         type: "reported" as const,
-        author: occurrence.reportedBy,
+        author: row.ownerName ?? t("none"),
         message: "",
-        createdAt: occurrence.reportedAt,
+        createdAt: dateLabel,
       },
-      ...(occurrence.comments ?? []).map((c) => ({
+      ...occurrence.comments.map((c) => ({
         id: c.id,
         type: "comment" as const,
         author: c.author,
@@ -55,9 +76,9 @@ function OccurrenceDetailPage() {
       })),
     ];
     return events;
-  }, [occurrence]);
+  }, [occurrence, row, dateLabel, t]);
 
-  if (!id || !occurrence) {
+  if (!id || !occurrence || !row) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -88,12 +109,13 @@ function OccurrenceDetailPage() {
     );
   }
 
-  const stateBadge = STATE_BADGE[occurrence.state] ?? STATE_BADGE.Open;
-  const priorityBadge = PRIORITY_BADGE[occurrence.priority] ?? PRIORITY_BADGE.LOW;
+  const stateBadge = STATE_BADGE[occurrence.status] ?? STATE_BADGE.Open;
+  const priorityBadge =
+    PRIORITY_BADGE[occurrence.priority] ?? PRIORITY_BADGE.LOW;
 
-  const handleStateChange = (state: string) => {
+  const handleStateChange = (status: string) => {
     setOccurrence((prev) =>
-      prev ? { ...prev, state: state as Occurrence["state"] } : prev,
+      prev ? { ...prev, status: status as Occurrence["status"] } : prev,
     );
   };
 
@@ -104,10 +126,10 @@ function OccurrenceDetailPage() {
       id: uuidv4(),
       author: user?.name ?? t("you"),
       message,
-      createdAt: new Date().toISOString().slice(0, 10),
+      createdAt: formatOccurrenceDate(new Date()),
     };
     setOccurrence((prev) =>
-      prev ? { ...prev, comments: [...(prev.comments ?? []), comment] } : prev,
+      prev ? { ...prev, comments: [...prev.comments, comment] } : prev,
     );
     setNewComment("");
   };
@@ -120,7 +142,6 @@ function OccurrenceDetailPage() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Breadcrumb />
 
-          {/* Occurrence header */}
           <div className="mb-8">
             <div className="flex flex-wrap items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold text-text-primary">
@@ -134,22 +155,20 @@ function OccurrenceDetailPage() {
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${stateBadge.bg} ${stateBadge.color}`}
               >
-                {tState(occurrence.state)}
+                {tState(occurrence.status)}
               </span>
             </div>
             <p className="text-text-secondary">
               {tCategory(occurrence.category)} •{" "}
               {t("reportedByOn", {
-                name: occurrence.reportedBy,
-                date: occurrence.reportedAt,
+                name: row.ownerName ?? t("none"),
+                date: dateLabel,
               })}
             </p>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            {/* Main content */}
             <div className="xl:col-span-2 space-y-8">
-              {/* Description */}
               <section className="bg-surface rounded-lg border border-border-light p-6">
                 <h2 className="text-lg font-semibold text-text-primary mb-3">
                   {t("description")}
@@ -159,12 +178,11 @@ function OccurrenceDetailPage() {
                 </p>
               </section>
 
-              {/* Photos */}
               <section className="bg-surface rounded-lg border border-border-light p-6">
                 <h2 className="text-lg font-semibold text-text-primary mb-4">
                   {t("photos")}
                 </h2>
-                {occurrence.photos && occurrence.photos.length > 0 ? (
+                {occurrence.photos.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {occurrence.photos.map((photo, index) => (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -188,7 +206,6 @@ function OccurrenceDetailPage() {
                 )}
               </section>
 
-              {/* Activity / timeline */}
               <section className="bg-surface rounded-lg border border-border-light p-6">
                 <h2 className="text-lg font-semibold text-text-primary mb-4">
                   {t("activity")}
@@ -225,7 +242,6 @@ function OccurrenceDetailPage() {
                   ))}
                 </ol>
 
-                {/* Add comment */}
                 <div className="mt-6 pt-6 border-t border-border-light">
                   <label className="block text-sm font-medium text-text-primary mb-2">
                     {t("addComment")}
@@ -251,9 +267,7 @@ function OccurrenceDetailPage() {
               </section>
             </div>
 
-            {/* Sidebar */}
             <div className="xl:col-span-1 space-y-6">
-              {/* Occurrence info */}
               <div className="bg-surface rounded-lg border border-border-light p-6">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">
                   {t("occurrenceInfo")}
@@ -274,18 +288,12 @@ function OccurrenceDetailPage() {
                   <div>
                     <dt className="text-text-secondary">{t("property")}</dt>
                     <dd>
-                      {occurrence.propertyId ? (
-                        <Link
-                          href={`/properties-management/${occurrence.propertyId}`}
-                          className="font-medium text-primary hover:underline"
-                        >
-                          {occurrence.property ?? occurrence.propertyId}
-                        </Link>
-                      ) : (
-                        <span className="font-medium text-text-primary">
-                          {occurrence.property ?? t("none")}
-                        </span>
-                      )}
+                      <Link
+                        href={`/properties-management/${occurrence.condominiumId}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {row.condominiumName}
+                      </Link>
                     </dd>
                   </div>
                   <div>
@@ -296,14 +304,25 @@ function OccurrenceDetailPage() {
                   </div>
                   <div>
                     <dt className="text-text-secondary">{t("reportedBy")}</dt>
-                    <dd className="font-medium text-text-primary">
-                      {occurrence.reportedBy}
+                    <dd>
+                      {occurrence.ownerId ? (
+                        <Link
+                          href={`/owners-management/${occurrence.ownerId}`}
+                          className="font-medium text-primary hover:underline"
+                        >
+                          {row.ownerName ?? occurrence.ownerId}
+                        </Link>
+                      ) : (
+                        <span className="font-medium text-text-primary">
+                          {t("none")}
+                        </span>
+                      )}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-text-secondary">{t("reportedAt")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {occurrence.reportedAt}
+                      {dateLabel}
                     </dd>
                   </div>
                   <div>
@@ -315,7 +334,6 @@ function OccurrenceDetailPage() {
                 </dl>
               </div>
 
-              {/* Status + quick actions */}
               <div className="bg-surface rounded-lg border border-border-light p-6 sticky top-24">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">
                   {t("manage")}
@@ -324,7 +342,7 @@ function OccurrenceDetailPage() {
                   {t("changeStatus")}
                 </label>
                 <Select
-                  value={occurrence.state}
+                  value={occurrence.status}
                   onChange={(e) => handleStateChange(e.target.value)}
                 >
                   {OCCURRENCE_STATE_KEYS.map((state) => (
@@ -342,17 +360,24 @@ function OccurrenceDetailPage() {
                     <Icon name="Edit2" size={16} className="mr-2 shrink-0" />
                     {t("editOccurrence")}
                   </button>
-                  {occurrence.propertyId && (
+                  <Link
+                    href={`/properties-management/${occurrence.condominiumId}`}
+                    className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
+                  >
+                    <Icon
+                      name="Building2"
+                      size={16}
+                      className="mr-2 shrink-0"
+                    />
+                    {t("viewProperty")}
+                  </Link>
+                  {occurrence.ownerId && (
                     <Link
-                      href={`/properties-management/${occurrence.propertyId}`}
+                      href={`/owners-management/${occurrence.ownerId}`}
                       className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
                     >
-                      <Icon
-                        name="Building2"
-                        size={16}
-                        className="mr-2 shrink-0"
-                      />
-                      {t("viewProperty")}
+                      <Icon name="User" size={16} className="mr-2 shrink-0" />
+                      {t("viewOwner")}
                     </Link>
                   )}
                   <Link
@@ -384,7 +409,9 @@ function OccurrenceDetailPage() {
       {isEditModalOpen && (
         <NewOccurrenceModal
           occurrence={occurrence}
-          properties={mockProperties}
+          condominiums={mockCondominiums}
+          owners={mockDomainOwners}
+          units={mockUnits}
           onClose={() => setIsEditModalOpen(false)}
           onSave={(updated) => {
             setOccurrence(updated);

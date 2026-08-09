@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState, ChangeEvent, SyntheticEvent, JSX } from "react";
+import React, { useMemo, useState, ChangeEvent, SyntheticEvent, JSX } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
-import type {
-  Occurrence,
-  OccurrenceCategoryValue,
-  OccurrencePriorityValue,
-  OccurrenceStateKey,
+import type { Condominium, Owner, Unit } from "@/types";
+import {
+  formatOccurrenceDate,
+  type Occurrence,
+  type OccurrenceCategoryValue,
+  type OccurrencePriorityValue,
+  type OccurrenceStateKey,
 } from "../types";
 import {
   OCCURRENCE_CATEGORY_VALUES,
@@ -24,17 +26,19 @@ interface FormState {
   title: string;
   description: string;
   category: OccurrenceCategoryValue;
-  propertyId: string;
+  condominiumId: string;
+  ownerId: string;
   unit: string;
-  reportedBy: string;
   assignedTo: string;
   priority: OccurrencePriorityValue;
-  state: OccurrenceStateKey;
+  status: OccurrenceStateKey;
 }
 
 interface Props {
   occurrence?: Occurrence | null;
-  properties: { id: string; name: string }[];
+  condominiums: Pick<Condominium, "id" | "name">[];
+  owners: Owner[];
+  units?: Unit[];
   onClose: () => void;
   onSave: (occurrence: Occurrence) => void;
 }
@@ -43,17 +47,19 @@ const emptyForm: FormState = {
   title: "",
   description: "",
   category: "MAINTENANCE",
-  propertyId: "",
+  condominiumId: "",
+  ownerId: "",
   unit: "",
-  reportedBy: "",
   assignedTo: "",
   priority: "MEDIUM",
-  state: "Open",
+  status: "Open",
 };
 
 function NewOccurrenceModal({
   occurrence,
-  properties,
+  condominiums,
+  owners,
+  units = [],
   onClose,
   onSave,
 }: Props): JSX.Element {
@@ -62,22 +68,48 @@ function NewOccurrenceModal({
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
 
+  const unitById = useMemo(
+    () => new Map(units.map((u) => [u.id, u])),
+    [units],
+  );
+
+  const ownersWithCondo = useMemo(
+    () =>
+      owners.map((owner) => ({
+        id: owner.id,
+        fullName: owner.fullName,
+        unitId: owner.unitId,
+        condominiumId: unitById.get(owner.unitId)?.condominiumId ?? "",
+      })),
+    [owners, unitById],
+  );
+
   const [formData, setFormData] = useState<FormState>(() =>
     occurrence
       ? {
           title: occurrence.title || "",
           description: occurrence.description || "",
           category: occurrence.category || "MAINTENANCE",
-          propertyId: occurrence.propertyId || "",
+          condominiumId: occurrence.condominiumId || "",
+          ownerId: occurrence.ownerId || "",
           unit: occurrence.unit || "",
-          reportedBy: occurrence.reportedBy || "",
           assignedTo: occurrence.assignedTo || "",
           priority: occurrence.priority || "MEDIUM",
-          state: occurrence.state || "Open",
+          status: occurrence.status || "Open",
         }
       : emptyForm,
   );
   const [errors, setErrors] = useState<Errors>({});
+
+  const condoOwners = useMemo(
+    () =>
+      formData.condominiumId
+        ? ownersWithCondo.filter(
+            (o) => o.condominiumId === formData.condominiumId,
+          )
+        : ownersWithCondo,
+    [ownersWithCondo, formData.condominiumId],
+  );
 
   const validateForm = () => {
     const newErrors: Errors = {};
@@ -90,12 +122,8 @@ function NewOccurrenceModal({
       newErrors.description = t("validation.descriptionRequired");
     }
 
-    if (!formData.propertyId) {
-      newErrors.propertyId = t("validation.propertyRequired");
-    }
-
-    if (!formData.reportedBy.trim()) {
-      newErrors.reportedBy = t("validation.reportedByRequired");
+    if (!formData.condominiumId) {
+      newErrors.condominiumId = t("validation.propertyRequired");
     }
 
     setErrors(newErrors);
@@ -106,30 +134,51 @@ function NewOccurrenceModal({
     e.preventDefault();
     if (!validateForm()) return;
 
-    const property = properties.find((p) => p.id === formData.propertyId);
-
     const result: Occurrence = {
       id: occurrence?.id ?? "",
       title: formData.title.trim(),
       description: formData.description.trim(),
       category: formData.category,
-      propertyId: formData.propertyId,
-      property: property?.name,
-      unit: formData.unit.trim() || undefined,
-      reportedBy: formData.reportedBy.trim(),
-      reportedAt: occurrence?.reportedAt ?? new Date().toISOString().slice(0, 10),
-      state: formData.state,
+      condominiumId: formData.condominiumId,
+      ownerId: formData.ownerId || null,
+      unit: formData.unit.trim() || null,
+      dateTime: occurrence?.dateTime ?? formatOccurrenceDate(new Date()),
+      status: formData.status,
       priority: formData.priority,
-      assignedTo: formData.assignedTo.trim() || undefined,
+      assignedTo: formData.assignedTo.trim() || null,
       photos: occurrence?.photos ?? [],
       comments: occurrence?.comments ?? [],
+      history: occurrence?.history ?? [
+        {
+          action: "reported",
+          date: formatOccurrenceDate(new Date()),
+          author: "Manager",
+        },
+      ],
     };
 
     onSave(result);
   };
 
   const handleChange = (field: keyof FormState, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [field]: value };
+      if (field === "condominiumId") {
+        const ownerStillValid = ownersWithCondo.some(
+          (o) => o.id === prev.ownerId && o.condominiumId === value,
+        );
+        if (!ownerStillValid) next.ownerId = "";
+      }
+      if (field === "ownerId" && value) {
+        const owner = ownersWithCondo.find((o) => o.id === value);
+        const unit = owner ? unitById.get(owner.unitId) : undefined;
+        if (unit) {
+          next.unit = unit.label;
+          if (!next.condominiumId) next.condominiumId = unit.condominiumId;
+        }
+      }
+      return next;
+    });
 
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -153,7 +202,6 @@ function NewOccurrenceModal({
       onClick={handleBackdropClick}
     >
       <div className="bg-surface bg-white rounded-lg shadow-modal w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border-light">
           <h2 className="text-xl font-semibold text-text-primary">
             {occurrence ? t("editTitle") : t("addTitle")}
@@ -166,7 +214,6 @@ function NewOccurrenceModal({
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-4">
@@ -253,19 +300,23 @@ function NewOccurrenceModal({
                   {t("property")} *
                 </label>
                 <Select
-                  value={formData.propertyId}
-                  onChange={(e) => handleChange("propertyId", e.target.value)}
-                  invalid={Boolean(errors.propertyId)}
+                  value={formData.condominiumId}
+                  onChange={(e) =>
+                    handleChange("condominiumId", e.target.value)
+                  }
+                  invalid={Boolean(errors.condominiumId)}
                 >
                   <option value="">{t("selectProperty")}</option>
-                  {properties.map((property) => (
-                    <option key={property.id} value={property.id}>
-                      {property.name}
+                  {condominiums.map((condo) => (
+                    <option key={condo.id} value={condo.id}>
+                      {condo.name}
                     </option>
                   ))}
                 </Select>
-                {errors.propertyId && (
-                  <p className="mt-1 text-sm text-error">{errors.propertyId}</p>
+                {errors.condominiumId && (
+                  <p className="mt-1 text-sm text-error">
+                    {errors.condominiumId}
+                  </p>
                 )}
               </div>
 
@@ -291,18 +342,19 @@ function NewOccurrenceModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-2">
-                  {t("reportedBy")} *
+                  {t("reportedBy")}
                 </label>
-                <input
-                  type="text"
-                  value={formData.reportedBy}
-                  onChange={(e) => handleChange("reportedBy", e.target.value)}
-                  className={inputClass(Boolean(errors.reportedBy))}
-                  placeholder={t("reportedByPlaceholder")}
-                />
-                {errors.reportedBy && (
-                  <p className="mt-1 text-sm text-error">{errors.reportedBy}</p>
-                )}
+                <Select
+                  value={formData.ownerId}
+                  onChange={(e) => handleChange("ownerId", e.target.value)}
+                >
+                  <option value="">{t("selectOwner")}</option>
+                  {condoOwners.map((owner) => (
+                    <option key={owner.id} value={owner.id}>
+                      {owner.fullName}
+                    </option>
+                  ))}
+                </Select>
               </div>
 
               <div>
@@ -323,8 +375,8 @@ function NewOccurrenceModal({
                   {t("status")}
                 </label>
                 <Select
-                  value={formData.state}
-                  onChange={(e) => handleChange("state", e.target.value)}
+                  value={formData.status}
+                  onChange={(e) => handleChange("status", e.target.value)}
                 >
                   {OCCURRENCE_STATE_KEYS.map((state) => (
                     <option key={state} value={state}>
@@ -336,7 +388,6 @@ function NewOccurrenceModal({
             </div>
           </div>
 
-          {/* Form Actions */}
           <div className="flex items-center justify-end space-x-4 pt-6 border-t border-border-light">
             <button
               type="button"

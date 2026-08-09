@@ -12,7 +12,7 @@ import {
 
 export interface OccurrenceFiltersState {
   search: string;
-  property: string;
+  condominiumId: string;
   category: string;
   state: string;
   priority: string;
@@ -21,23 +21,30 @@ export interface OccurrenceFiltersState {
 interface Props {
   filters: OccurrenceFiltersState;
   onFiltersChange: React.Dispatch<React.SetStateAction<OccurrenceFiltersState>>;
-  properties: { id: string; name: string }[];
+  condominiums: { id: string; name: string }[];
 }
 
-function OccurrenceFilters({ filters, onFiltersChange, properties }: Props) {
+function OccurrenceFilters({
+  filters,
+  onFiltersChange,
+  condominiums,
+}: Props) {
   const t = useTranslations("occurrences.filters");
   const tState = useTranslations("occurrences.states");
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
 
-  const handleFilterChange = (key: keyof OccurrenceFiltersState, value: string) => {
+  const handleFilterChange = (
+    key: keyof OccurrenceFiltersState,
+    value: string,
+  ) => {
     onFiltersChange((prev) => ({ ...prev, [key]: value }));
   };
 
   const clearFilters = () => {
     onFiltersChange({
       search: "",
-      property: "",
+      condominiumId: "",
       category: "",
       state: "",
       priority: "",
@@ -79,14 +86,14 @@ function OccurrenceFilters({ filters, onFiltersChange, properties }: Props) {
         </div>
 
         <Select
-          value={filters.property}
-          onChange={(e) => handleFilterChange("property", e.target.value)}
+          value={filters.condominiumId}
+          onChange={(e) => handleFilterChange("condominiumId", e.target.value)}
           className="text-ellipsis"
         >
           <option value="">{t("allProperties")}</option>
-          {properties.map((property) => (
-            <option key={property.id} value={property.name}>
-              {property.name}
+          {condominiums.map((condo) => (
+            <option key={condo.id} value={condo.id}>
+              {condo.name}
             </option>
           ))}
         </Select>

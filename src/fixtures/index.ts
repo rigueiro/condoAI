@@ -11,6 +11,7 @@ export {
   mockSummons,
   mockBankAccounts,
   mockExpenses,
+  mockOccurrences,
 } from "./domain";
 export {
   mockPayments,

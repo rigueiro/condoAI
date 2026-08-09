@@ -1,21 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import Icon from "@/components/icon";
-import { Occurrence } from "../types";
+import {
+  formatOccurrenceDate,
+  type OccurrenceRow,
+} from "../types";
 import { PRIORITY_BADGE, STATE_BADGE } from "./occurrence-meta";
 
-type SortKey = keyof Occurrence;
+type SortKey =
+  | "title"
+  | "category"
+  | "condominiumName"
+  | "priority"
+  | "status"
+  | "dateTime";
 type SortDirection = "asc" | "desc";
 
 interface Props {
-  occurrences: Occurrence[];
+  rows: OccurrenceRow[];
   selectedOccurrences: string[];
   onOccurrenceSelect: (id: string, isSelected: boolean) => void;
   onSelectAll: (isSelected: boolean) => void;
-  onEditOccurrence: (occurrence: Occurrence) => void;
+  onEditOccurrence: (row: OccurrenceRow) => void;
   onDeleteOccurrence: (id: string) => void;
 }
 
@@ -61,8 +70,59 @@ function SortableHeader({
   );
 }
 
+function sortValue(row: OccurrenceRow, key: SortKey): string {
+  switch (key) {
+    case "condominiumName":
+      return row.condominiumName;
+    case "title":
+      return row.occurrence.title;
+    case "category":
+      return row.occurrence.category;
+    case "priority":
+      return row.occurrence.priority;
+    case "status":
+      return row.occurrence.status;
+    case "dateTime":
+      return formatOccurrenceDate(row.occurrence.dateTime);
+  }
+}
+
+function StateBadge({
+  status,
+  label,
+}: {
+  status: OccurrenceRow["occurrence"]["status"];
+  label: string;
+}) {
+  const config = STATE_BADGE[status] ?? STATE_BADGE.Open;
+  return (
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.color}`}
+    >
+      {label}
+    </span>
+  );
+}
+
+function PriorityBadge({
+  priority,
+  label,
+}: {
+  priority: OccurrenceRow["occurrence"]["priority"];
+  label: string;
+}) {
+  const config = PRIORITY_BADGE[priority] ?? PRIORITY_BADGE.LOW;
+  return (
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.color}`}
+    >
+      {label}
+    </span>
+  );
+}
+
 function OccurrenceTable({
-  occurrences,
+  rows,
   selectedOccurrences,
   onOccurrenceSelect,
   onSelectAll,
@@ -79,63 +139,34 @@ function OccurrenceTable({
   });
 
   const handleSort = (key: SortKey) => {
-    let direction: SortDirection = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
+    setSortConfig((prev) => ({
+      key,
+      direction:
+        prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
   };
 
-  const sortedOccurrences = React.useMemo(() => {
+  const sortedRows = useMemo(() => {
     const key = sortConfig.key;
-    if (!key) return occurrences;
+    if (!key) return rows;
 
-    return [...occurrences].sort((a, b) => {
-      const aValue = a[key];
-      const bValue = b[key];
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortConfig.direction === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-
-      return 0;
+    return [...rows].sort((a, b) => {
+      const aValue = sortValue(a, key);
+      const bValue = sortValue(b, key);
+      return sortConfig.direction === "asc"
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
     });
-  }, [occurrences, sortConfig]);
-
-  const StateBadge = ({ occurrence }: { occurrence: Occurrence }) => {
-    const config = STATE_BADGE[occurrence.state] ?? STATE_BADGE.Open;
-    return (
-      <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.color}`}
-      >
-        {tState(occurrence.state)}
-      </span>
-    );
-  };
-
-  const PriorityBadge = ({ occurrence }: { occurrence: Occurrence }) => {
-    const config = PRIORITY_BADGE[occurrence.priority] ?? PRIORITY_BADGE.LOW;
-    return (
-      <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.color}`}
-      >
-        {tPriority(occurrence.priority)}
-      </span>
-    );
-  };
+  }, [rows, sortConfig]);
 
   const allSelected =
-    occurrences.length > 0 &&
-    selectedOccurrences.length === occurrences.length;
+    rows.length > 0 && selectedOccurrences.length === rows.length;
   const someSelected =
     selectedOccurrences.length > 0 &&
-    selectedOccurrences.length < occurrences.length;
+    selectedOccurrences.length < rows.length;
 
   return (
     <div className="bg-surface rounded-lg border border-border-light overflow-hidden">
-      {/* Desktop Table */}
       <div className="hidden lg:block overflow-x-auto">
         <table className="min-w-full divide-y divide-border-light">
           <thead className="bg-secondary-50">
@@ -166,7 +197,7 @@ function OccurrenceTable({
                 {t("category")}
               </SortableHeader>
               <SortableHeader
-                sortKey="property"
+                sortKey="condominiumName"
                 sortConfig={sortConfig}
                 onSort={handleSort}
               >
@@ -180,14 +211,14 @@ function OccurrenceTable({
                 {t("priority")}
               </SortableHeader>
               <SortableHeader
-                sortKey="state"
+                sortKey="status"
                 sortConfig={sortConfig}
                 onSort={handleSort}
               >
                 {t("state")}
               </SortableHeader>
               <SortableHeader
-                sortKey="reportedAt"
+                sortKey="dateTime"
                 sortConfig={sortConfig}
                 onSort={handleSort}
               >
@@ -199,143 +230,158 @@ function OccurrenceTable({
             </tr>
           </thead>
           <tbody className="bg-surface divide-y divide-border-light">
-            {sortedOccurrences.map((occurrence) => (
-              <tr
-                key={occurrence.id}
-                className="hover:bg-secondary-50 transition-smooth"
-              >
-                <td className="px-6 py-4">
-                  <input
-                    type="checkbox"
-                    checked={selectedOccurrences.includes(occurrence.id)}
-                    onChange={(e) =>
-                      onOccurrenceSelect(occurrence.id, e.target.checked)
-                    }
-                    className="rounded border-border-medium text-primary focus:ring-primary"
-                  />
-                </td>
-                <td className="px-6 py-4 max-w-xs">
-                  <Link
-                    href={`/occurrences/${occurrence.id}`}
-                    className="text-sm font-medium text-text-primary hover:text-primary transition-smooth"
-                  >
-                    {occurrence.title}
-                  </Link>
-                  <div className="text-sm text-text-secondary truncate">
-                    {t("unitLabel", { unit: occurrence.unit ?? "—" })} •{" "}
-                    {occurrence.reportedBy}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-text-primary">
-                    {tCategory(occurrence.category)}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-text-primary">
-                    {occurrence.property ?? "—"}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <PriorityBadge occurrence={occurrence} />
-                </td>
-                <td className="px-6 py-4">
-                  <StateBadge occurrence={occurrence} />
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-text-secondary">
-                    {occurrence.reportedAt}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center space-x-2">
-                    <Link
-                      href={`/occurrences/${occurrence.id}`}
-                      className="p-1 text-text-secondary hover:text-accent transition-smooth"
-                      title={t("viewOccurrence")}
-                    >
-                      <Icon name="Eye" size={16} />
-                    </Link>
-                    <button
-                      onClick={() => onEditOccurrence(occurrence)}
-                      className="p-1 text-text-secondary hover:text-primary transition-smooth"
-                      title={t("editOccurrence")}
-                    >
-                      <Icon name="Edit2" size={16} />
-                    </button>
-                    <button
-                      onClick={() => onDeleteOccurrence(occurrence.id)}
-                      className="p-1 text-text-secondary hover:text-error transition-smooth"
-                      title={t("deleteOccurrence")}
-                    >
-                      <Icon name="Trash2" size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Cards */}
-      <div className="lg:hidden divide-y divide-border-light">
-        {sortedOccurrences.map((occurrence) => (
-          <div key={occurrence.id} className="p-4">
-            <div className="flex items-start space-x-3">
-              <input
-                type="checkbox"
-                checked={selectedOccurrences.includes(occurrence.id)}
-                onChange={(e) =>
-                  onOccurrenceSelect(occurrence.id, e.target.checked)
-                }
-                className="mt-1 rounded border-border-medium text-primary focus:ring-primary"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between">
-                  <div className="min-w-0">
+            {sortedRows.map((row) => {
+              const { occurrence, condominiumName, ownerName } = row;
+              const dateLabel = formatOccurrenceDate(occurrence.dateTime);
+              return (
+                <tr
+                  key={occurrence.id}
+                  className="hover:bg-secondary-50 transition-smooth"
+                >
+                  <td className="px-6 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedOccurrences.includes(occurrence.id)}
+                      onChange={(e) =>
+                        onOccurrenceSelect(occurrence.id, e.target.checked)
+                      }
+                      className="rounded border-border-medium text-primary focus:ring-primary"
+                    />
+                  </td>
+                  <td className="px-6 py-4 max-w-xs">
                     <Link
                       href={`/occurrences/${occurrence.id}`}
                       className="text-sm font-medium text-text-primary hover:text-primary transition-smooth"
                     >
                       {occurrence.title}
                     </Link>
-                    <p className="text-sm text-text-secondary">
-                      {tCategory(occurrence.category)} •{" "}
-                      {occurrence.property ?? "—"}
-                    </p>
+                    <div className="text-sm text-text-secondary truncate">
+                      {t("unitLabel", { unit: occurrence.unit ?? "—" })} •{" "}
+                      {ownerName ?? "—"}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-text-primary">
+                      {tCategory(occurrence.category)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-text-primary">
+                      {condominiumName}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <PriorityBadge
+                      priority={occurrence.priority}
+                      label={tPriority(occurrence.priority)}
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <StateBadge
+                      status={occurrence.status}
+                      label={tState(occurrence.status)}
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-text-secondary">{dateLabel}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center space-x-2">
+                      <Link
+                        href={`/occurrences/${occurrence.id}`}
+                        className="p-1 text-text-secondary hover:text-accent transition-smooth"
+                        title={t("viewOccurrence")}
+                      >
+                        <Icon name="Eye" size={16} />
+                      </Link>
+                      <button
+                        onClick={() => onEditOccurrence(row)}
+                        className="p-1 text-text-secondary hover:text-primary transition-smooth"
+                        title={t("editOccurrence")}
+                      >
+                        <Icon name="Edit2" size={16} />
+                      </button>
+                      <button
+                        onClick={() => onDeleteOccurrence(occurrence.id)}
+                        className="p-1 text-text-secondary hover:text-error transition-smooth"
+                        title={t("deleteOccurrence")}
+                      >
+                        <Icon name="Trash2" size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="lg:hidden divide-y divide-border-light">
+        {sortedRows.map((row) => {
+          const { occurrence, condominiumName } = row;
+          const dateLabel = formatOccurrenceDate(occurrence.dateTime);
+          return (
+            <div key={occurrence.id} className="p-4">
+              <div className="flex items-start space-x-3">
+                <input
+                  type="checkbox"
+                  checked={selectedOccurrences.includes(occurrence.id)}
+                  onChange={(e) =>
+                    onOccurrenceSelect(occurrence.id, e.target.checked)
+                  }
+                  className="mt-1 rounded border-border-medium text-primary focus:ring-primary"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0">
+                      <Link
+                        href={`/occurrences/${occurrence.id}`}
+                        className="text-sm font-medium text-text-primary hover:text-primary transition-smooth"
+                      >
+                        {occurrence.title}
+                      </Link>
+                      <p className="text-sm text-text-secondary">
+                        {tCategory(occurrence.category)} • {condominiumName}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => onEditOccurrence(row)}
+                        className="p-2 text-text-secondary hover:text-primary transition-smooth"
+                      >
+                        <Icon name="Edit2" size={16} />
+                      </button>
+                      <button
+                        onClick={() => onDeleteOccurrence(occurrence.id)}
+                        className="p-2 text-text-secondary hover:text-error transition-smooth"
+                      >
+                        <Icon name="Trash2" size={16} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <button
-                      onClick={() => onEditOccurrence(occurrence)}
-                      className="p-2 text-text-secondary hover:text-primary transition-smooth"
-                    >
-                      <Icon name="Edit2" size={16} />
-                    </button>
-                    <button
-                      onClick={() => onDeleteOccurrence(occurrence.id)}
-                      className="p-2 text-text-secondary hover:text-error transition-smooth"
-                    >
-                      <Icon name="Trash2" size={16} />
-                    </button>
+                  <div className="mt-2 flex items-center gap-2">
+                    <PriorityBadge
+                      priority={occurrence.priority}
+                      label={tPriority(occurrence.priority)}
+                    />
+                    <StateBadge
+                      status={occurrence.status}
+                      label={tState(occurrence.status)}
+                    />
                   </div>
-                </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <PriorityBadge occurrence={occurrence} />
-                  <StateBadge occurrence={occurrence} />
-                </div>
-                <div className="mt-2 text-xs text-text-secondary">
-                  {t("unitLabel", { unit: occurrence.unit ?? "—" })} •{" "}
-                  {occurrence.reportedAt}
+                  <div className="mt-2 text-xs text-text-secondary">
+                    {t("unitLabel", { unit: occurrence.unit ?? "—" })} •{" "}
+                    {dateLabel}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Empty State */}
-      {occurrences.length === 0 && (
+      {rows.length === 0 && (
         <div className="text-center py-12">
           <Icon
             name="ClipboardList"

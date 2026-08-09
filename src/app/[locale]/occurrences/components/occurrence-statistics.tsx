@@ -4,26 +4,29 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import { downloadCsv } from "@/lib/export-csv";
-import { Occurrence } from "../types";
+import { formatOccurrenceDate, type OccurrenceRow } from "../types";
 import {
   PRIORITY_BADGE,
   isOpenState,
   isResolvedState,
 } from "./occurrence-meta";
 
-function OccurrenceStatistics({ occurrences }: { occurrences: Occurrence[] }) {
+function OccurrenceStatistics({ rows }: { rows: OccurrenceRow[] }) {
   const t = useTranslations("occurrences.stats");
   const tState = useTranslations("occurrences.states");
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
 
-  const total = occurrences.length;
-  const openCount = occurrences.filter((o) => isOpenState(o.state)).length;
-  const urgentCount = occurrences.filter(
-    (o) => o.priority === "URGENT" && isOpenState(o.state),
+  const total = rows.length;
+  const openCount = rows.filter((r) =>
+    isOpenState(r.occurrence.status),
   ).length;
-  const resolvedCount = occurrences.filter((o) =>
-    isResolvedState(o.state),
+  const urgentCount = rows.filter(
+    (r) =>
+      r.occurrence.priority === "URGENT" && isOpenState(r.occurrence.status),
+  ).length;
+  const resolvedCount = rows.filter((r) =>
+    isResolvedState(r.occurrence.status),
   ).length;
 
   const resolutionRate =
@@ -63,7 +66,7 @@ function OccurrenceStatistics({ occurrences }: { occurrences: Occurrence[] }) {
   const priorityStats = (["URGENT", "HIGH", "MEDIUM", "LOW"] as const).map(
     (priority) => ({
       label: tPriority(priority),
-      count: occurrences.filter((o) => o.priority === priority).length,
+      count: rows.filter((r) => r.occurrence.priority === priority).length,
       color: PRIORITY_BADGE[priority].color,
       bgColor: PRIORITY_BADGE[priority].bg,
     }),
@@ -81,19 +84,19 @@ function OccurrenceStatistics({ occurrences }: { occurrences: Occurrence[] }) {
       t("csvHeaders.reportedAt"),
       t("csvHeaders.assignedTo"),
     ];
-    const rows = occurrences.map((o) => [
-      o.title,
-      tCategory(o.category),
-      o.property ?? "",
-      o.unit ?? "",
-      tPriority(o.priority),
-      tState(o.state),
-      o.reportedBy,
-      o.reportedAt,
-      o.assignedTo ?? "",
+    const csvRows = rows.map(({ occurrence, condominiumName, ownerName }) => [
+      occurrence.title,
+      tCategory(occurrence.category),
+      condominiumName,
+      occurrence.unit ?? "",
+      tPriority(occurrence.priority),
+      tState(occurrence.status),
+      ownerName ?? "",
+      formatOccurrenceDate(occurrence.dateTime),
+      occurrence.assignedTo ?? "",
     ]);
 
-    downloadCsv(headers, rows, "occurrences-export.csv");
+    downloadCsv(headers, csvRows, "occurrences-export.csv");
   };
 
   return (
@@ -153,7 +156,7 @@ function OccurrenceStatistics({ occurrences }: { occurrences: Occurrence[] }) {
           </button>
           <button
             onClick={handleExportList}
-            disabled={occurrences.length === 0}
+            disabled={rows.length === 0}
             className="w-full text-left px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-secondary"
           >
             <Icon name="Download" size={16} className="inline mr-2" />
