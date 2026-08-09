@@ -9,7 +9,6 @@ type NavigationItem = {
   label: string;
   path: string;
   icon: string;
-  tooltip?: string;
 };
 
 interface MobileNavigationDrawerProps {
@@ -58,12 +57,12 @@ function MobileNavigationDrawer({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/50 z-1020 md:hidden animate-fade-in"
+        className="fixed inset-0 z-1020 animate-fade-in bg-black/50 lg:hidden"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      <div className="fixed top-0 left-0 h-full w-80 bg-surface shadow-modal z-1020 md:hidden animate-slide-in">
+      <div className="fixed top-0 left-0 z-1020 h-full w-80 max-w-[85vw] animate-slide-in bg-surface shadow-modal lg:hidden">
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-6 border-b border-border-light">
             <div className="flex items-center space-x-3">

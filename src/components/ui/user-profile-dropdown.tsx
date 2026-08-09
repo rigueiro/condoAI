@@ -84,7 +84,7 @@ function UserProfileDropdown({
         <div className="w-8 h-8 bg-secondary-100 rounded-full flex items-center justify-center text-text-secondary">
           <Icon name="User" size={18} />
         </div>
-        <span className="hidden sm:block text-sm font-medium">
+        <span className="hidden text-sm font-medium 2xl:block">
           {t("signIn")}
         </span>
       </Link>
@@ -95,9 +95,11 @@ function UserProfileDropdown({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={handleToggle}
-        className="flex items-center space-x-3 p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-secondary-50 transition-smooth"
+        type="button"
+        className="flex items-center gap-2 rounded-lg p-2 text-text-secondary transition-smooth hover:bg-secondary-50 hover:text-text-primary lg:gap-3"
         aria-expanded={isOpen}
         aria-haspopup="true"
+        aria-label={displayUser.name}
       >
         <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
           {displayUser.avatar ? (
@@ -110,16 +112,18 @@ function UserProfileDropdown({
             getInitials(displayUser.name)
           )}
         </div>
-        <div className="hidden sm:block text-left">
-          <div className="text-sm font-medium text-text-primary">
+        <div className="hidden min-w-0 max-w-40 text-left 2xl:block">
+          <div className="truncate text-sm font-medium text-text-primary">
             {displayUser.name}
           </div>
-          <div className="text-xs text-text-secondary">{displayUser.role}</div>
+          <div className="truncate text-xs text-text-secondary">
+            {displayUser.role}
+          </div>
         </div>
         <Icon
           name="ChevronDown"
           size={16}
-          className={`transition-smooth ${isOpen ? "rotate-180" : ""}`}
+          className={`hidden shrink-0 transition-smooth lg:block ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
