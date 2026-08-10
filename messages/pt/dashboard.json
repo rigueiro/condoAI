@@ -84,15 +84,34 @@
     },
     "record": "Registar pagamento",
     "sendReminder": "Enviar aviso",
+    "escalate": "Escalonar",
+    "escalateOverdue": "Escalonar atrasos",
     "sending": "A enviar…",
     "reminded": "Avisado",
-    "remindedToday": "Aviso enviado hoje",
+    "escalated": "Escalonado",
+    "remindedToday": "Aviso enviado por {channel}",
+    "escalatedToday": "Escalonado por {channel}",
     "allReminded": "Todos avisados hoje",
+    "allEscalated": "Nada por escalonar",
     "managePayments": "Gerir pagamentos",
     "sendReminders": "Enviar avisos",
-    "reminderSentOne": "Aviso de pagamento aberto no seu cliente de email.",
-    "reminderSentMany": "Avisos de pagamento abertos para {count} proprietários.",
+    "sendDigest": "Enviar resumo de atrasos",
+    "digestSentToday": "Resumo enviado hoje",
+    "digestSent": "Resumo de atrasos enviado para {count, plural, one {# quota} other {# quotas}}.",
+    "digestEmpty": "Nada a incluir no resumo.",
+    "digestFailed": "Não foi possível enviar o resumo.",
+    "reminderSentOne": "Aviso de pagamento enviado por {channel}.",
+    "reminderSentMany": "Avisos de pagamento enviados a {count} proprietários por {channel}.",
+    "escalationSentOne": "Escalonamento enviado por {channel}.",
+    "escalationSentMany": "Escalonamentos enviados a {count} proprietários por {channel}.",
     "reminderNoEmail": "Sem email do proprietário — adicione um contacto antes de enviar.",
+    "reminderNoContact": "Sem email ou telefone do proprietário — adicione um contacto antes de enviar.",
+    "alreadyContacted": "Já contactado hoje — escalone se necessário.",
+    "missingContact": "Sem email ou telefone no ficheiro",
+    "channel": {
+      "email": "email",
+      "sms": "SMS"
+    },
     "paymentRecorded": "Pagamento registado para {name}.",
     "paymentRecordedGeneric": "Pagamento registado.",
     "recordNotes": "Quota {month}",
@@ -100,9 +119,17 @@
     "emptyBody": "Está em dia. Volte quando novas quotas vencerem.",
     "email": {
       "subjectOne": "Aviso de pagamento — quota de condomínio",
-      "subjectMany": "Aviso de pagamento — quotas de condomínio em atraso",
       "bodyOne": "Exmo(a). Sr(a). {name},\n\nVimos por este meio recordar que a quota de condomínio da fração {unit} em {property} ({month}), no valor de {amount}, se encontra em atraso.\n\nAgradecemos que proceda ao pagamento com a maior brevidade possível.\n\nCom os melhores cumprimentos.",
-      "bodyMany": "Exmos(as). Senhores(as),\n\nVimos recordar que as seguintes quotas de condomínio ({count}) se encontram em atraso:\n\n{list}\n\nAgradecemos que procedam ao pagamento com a maior brevidade possível.\n\nCom os melhores cumprimentos."
+      "escalationSubject": "Urgente: quota de condomínio em atraso",
+      "escalationBody": "Exmo(a). Sr(a). {name},\n\nApesar do aviso anterior, a quota de condomínio da fração {unit} em {property} ({month}), no valor de {amount}, mantém-se em atraso.\n\nSolicitamos o pagamento imediato para evitar ulteriores diligências de cobrança.\n\nCom os melhores cumprimentos."
+    },
+    "sms": {
+      "reminder": "CondoAI: Quota da fração {unit} em {property} ({month}) de {amount} em atraso. Pague brevemente. — {name}",
+      "escalation": "CondoAI URGENTE: Quota da fração {unit} em {property} ({month}) de {amount} por pagar. Pague já para evitar diligências. — {name}"
+    },
+    "digest": {
+      "subject": "{count, plural, one {Resumo de cobranças: # quota em atraso} other {Resumo de cobranças: # quotas em atraso}}",
+      "body": "Tem {count, plural, one {# quota em atraso} other {# quotas em atraso}} que precisam de atenção:\n\n{list}\n\nAbra o CondoAI → Painel para avisar, escalonar ou registar pagamentos."
     }
   }
 }

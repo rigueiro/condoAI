@@ -1,33 +1,35 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import Icon from "@/components/icon";
+import Toast, { type ToastTone } from "@/components/ui/toast";
 import RecordPaymentModal, {
   type RecordPaymentInitialValues,
 } from "@/app/[locale]/payment-tracking/components/record-payment-modal";
 import {
+  isEscalationEligible,
   useCollections,
   useReminderCopy,
+  type ContactAttempt,
   type OverdueItem,
   type RecordPaymentInput,
+  type SendResult,
 } from "@/lib/collections";
+import { daysOverdue } from "@/lib/collections/dates";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 
 export type { OverdueItem };
 
 type FormatCurrency = (amount: number) => string;
-type FlashTone = "success" | "warning";
 
-function daysOverdue(dueDate: string): number {
-  const due = new Date(`${dueDate}T00:00:00`);
-  const now = new Date();
-  const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return Math.max(
-    0,
-    Math.round((startOfNow.getTime() - due.getTime()) / (1000 * 60 * 60 * 24)),
-  );
+function channelLabel(
+  channel: SendResult["channel"],
+  t: ReturnType<typeof useTranslations<"dashboard.upcomingPayments">>,
+): string {
+  if (channel === "sms") return t("channel.sms");
+  return t("channel.email");
 }
 
 function OverdueCollections({
@@ -43,30 +45,81 @@ function OverdueCollections({
   const {
     overdueItems: items,
     remindedIds,
+    contactAttempts,
+    digestSentToday,
     recordPayment,
     sendReminders,
+    escalateOverdue,
+    sendCollectionsDigest,
   } = useCollections();
 
+  const attemptById = useMemo(() => {
+    const map = new Map<string, ContactAttempt>();
+    for (const attempt of contactAttempts) {
+      map.set(attempt.quotaId, attempt);
+    }
+    return map;
+  }, [contactAttempts]);
+
   const [sendingIds, setSendingIds] = useState<Set<string>>(() => new Set());
-  const [flash, setFlash] = useState<{ message: string; tone: FlashTone } | null>(
+  const [flash, setFlash] = useState<{ message: string; tone: ToastTone } | null>(
     null,
   );
   const [isRecordOpen, setIsRecordOpen] = useState(false);
   const [recordInitial, setRecordInitial] =
     useState<RecordPaymentInitialValues | null>(null);
   const [recordQuotaId, setRecordQuotaId] = useState<string | null>(null);
+  const [digestBusy, setDigestBusy] = useState(false);
 
-  useEffect(() => {
-    if (!flash) return;
-    const timer = window.setTimeout(() => setFlash(null), 4000);
-    return () => window.clearTimeout(timer);
-  }, [flash]);
+  const dismissFlash = useCallback(() => setFlash(null), []);
 
   const pendingReminderIds = items
     .filter((item) => !remindedIds.has(item.id))
     .map((item) => item.id);
+
+  const pendingEscalationIds = items
+    .filter((item) =>
+      isEscalationEligible(
+        attemptById.get(item.id),
+        daysOverdue(item.dueDate),
+      ),
+    )
+    .map((item) => item.id);
+
   const totalOutstanding = items.reduce((sum, item) => sum + item.amount, 0);
   const isSending = sendingIds.size > 0;
+
+  const flashForResult = (
+    result: SendResult,
+    kind: "reminder" | "escalation",
+  ) => {
+    if (!result.sent) {
+      const message =
+        result.reason === "already-contacted"
+          ? t("alreadyContacted")
+          : t("reminderNoContact");
+      setFlash({ message, tone: "warning" });
+      return;
+    }
+    const channel = channelLabel(result.channel, t);
+    if (kind === "escalation") {
+      setFlash({
+        message:
+          result.count === 1
+            ? t("escalationSentOne", { channel })
+            : t("escalationSentMany", { count: result.count, channel }),
+        tone: "success",
+      });
+      return;
+    }
+    setFlash({
+      message:
+        result.count === 1
+          ? t("reminderSentOne", { channel })
+          : t("reminderSentMany", { count: result.count, channel }),
+      tone: "success",
+    });
+  };
 
   const handleSendReminders = async (ids: string[]) => {
     if (ids.length === 0 || isSending) return;
@@ -74,15 +127,34 @@ function OverdueCollections({
     await new Promise((resolve) => setTimeout(resolve, 200));
     const result = sendReminders(ids, reminderCopy);
     setSendingIds(new Set());
+    flashForResult(result, "reminder");
+  };
+
+  const handleEscalate = async (ids: string[]) => {
+    if (ids.length === 0 || isSending) return;
+    setSendingIds(new Set(ids));
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const result = escalateOverdue(ids, reminderCopy);
+    setSendingIds(new Set());
+    flashForResult(result, "escalation");
+  };
+
+  const handleSendDigest = async () => {
+    if (digestBusy || digestSentToday || items.length === 0) return;
+    setDigestBusy(true);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const result = sendCollectionsDigest(reminderCopy);
+    setDigestBusy(false);
     if (!result.sent) {
-      setFlash({ message: t("reminderNoEmail"), tone: "warning" });
+      setFlash({
+        message:
+          result.reason === "empty" ? t("digestEmpty") : t("digestFailed"),
+        tone: "warning",
+      });
       return;
     }
     setFlash({
-      message:
-        result.count === 1
-          ? t("reminderSentOne")
-          : t("reminderSentMany", { count: result.count }),
+      message: t("digestSent", { count: result.count }),
       tone: "success",
     });
   };
@@ -122,6 +194,18 @@ function OverdueCollections({
     closeRecord();
   };
 
+  const statusForAttempt = (attempt: ContactAttempt | undefined) => {
+    if (!attempt) return null;
+    if (attempt.stage === "escalation") {
+      return t("escalatedToday", {
+        channel: channelLabel(attempt.channel, t),
+      });
+    }
+    return t("remindedToday", {
+      channel: channelLabel(attempt.channel, t),
+    });
+  };
+
   return (
     <>
       <div className="bg-surface rounded-lg p-6 shadow-card border border-border-light">
@@ -141,7 +225,7 @@ function OverdueCollections({
         </div>
 
         {items.length > 0 && (
-          <div className="mb-5 flex items-center gap-4 text-sm">
+          <div className="mb-5 flex flex-wrap items-center gap-4 text-sm">
             <span className="inline-flex items-center gap-1.5 text-warning font-medium">
               <Icon
                 name="AlertTriangle"
@@ -153,36 +237,6 @@ function OverdueCollections({
             <span className="text-text-secondary">
               {formatCurrency(totalOutstanding)}
             </span>
-          </div>
-        )}
-
-        {flash && (
-          <div
-            className={`mb-4 p-3 rounded-lg border flex items-start gap-2 ${
-              flash.tone === "warning"
-                ? "bg-warning-50 border-warning-100"
-                : "bg-success-50 border-success-100"
-            }`}
-          >
-            <Icon
-              name={
-                flash.tone === "warning" ? "AlertTriangle" : "CheckCircle2"
-              }
-              size={16}
-              color={
-                flash.tone === "warning"
-                  ? "var(--color-warning)"
-                  : "var(--color-success)"
-              }
-              className="mt-0.5 shrink-0"
-            />
-            <p
-              className={`text-sm ${
-                flash.tone === "warning" ? "text-warning" : "text-success"
-              }`}
-            >
-              {flash.message}
-            </p>
           </div>
         )}
 
@@ -204,8 +258,15 @@ function OverdueCollections({
           <div className="space-y-3">
             {items.map((item) => {
               const overdueDays = daysOverdue(item.dueDate);
-              const reminded = remindedIds.has(item.id);
+              const attempt = attemptById.get(item.id);
+              const reminded = Boolean(attempt);
+              const escalated = attempt?.stage === "escalation";
+              const canEscalate = isEscalationEligible(attempt, overdueDays);
+              const hasContact = Boolean(
+                item.email?.trim() || item.phone?.trim(),
+              );
               const sending = sendingIds.has(item.id);
+              const statusText = statusForAttempt(attempt);
 
               return (
                 <div
@@ -223,6 +284,11 @@ function OverdueCollections({
                           property: item.property,
                         })}
                       </p>
+                      {!hasContact && (
+                        <p className="text-xs text-warning mt-1">
+                          {t("missingContact")}
+                        </p>
+                      )}
                     </div>
                     <div className="inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium border bg-error-50 text-error-700 border-error-200 shrink-0">
                       <Icon name="AlertTriangle" size={12} />
@@ -240,38 +306,64 @@ function OverdueCollections({
                           ? t("dueDate.today")
                           : t("dueDate.overdue", { days: overdueDays })}
                       </p>
-                      {reminded && (
+                      {statusText && (
                         <p className="text-xs text-success mt-1 flex items-center gap-1">
                           <Icon
-                            name="Bell"
+                            name={escalated ? "AlertTriangle" : "Bell"}
                             size={12}
                             color="var(--color-success)"
                           />
-                          {t("remindedToday")}
+                          {statusText}
                         </p>
                       )}
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <button
-                        type="button"
-                        disabled={sending || reminded || isSending}
-                        onClick={() => void handleSendReminders([item.id])}
-                        className="flex items-center justify-center space-x-1 px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary-700 transition-smooth text-xs font-medium disabled:opacity-60 disabled:cursor-not-allowed"
-                      >
-                        {sending ? (
-                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : (
+                      {!reminded ? (
+                        <button
+                          type="button"
+                          disabled={sending || isSending || !hasContact}
+                          onClick={() => void handleSendReminders([item.id])}
+                          className="flex items-center justify-center space-x-1 px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary-700 transition-smooth text-xs font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                          title={!hasContact ? t("reminderNoContact") : undefined}
+                        >
+                          {sending ? (
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Icon name="Bell" size={12} />
+                          )}
+                          <span>
+                            {sending ? t("sending") : t("sendReminder")}
+                          </span>
+                        </button>
+                      ) : canEscalate ? (
+                        <button
+                          type="button"
+                          disabled={sending || isSending}
+                          onClick={() => void handleEscalate([item.id])}
+                          className="flex items-center justify-center space-x-1 px-3 py-1.5 bg-warning-500 text-white rounded-lg hover:opacity-90 transition-smooth text-xs font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {sending ? (
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Icon name="AlertTriangle" size={12} />
+                          )}
+                          <span>
+                            {sending ? t("sending") : t("escalate")}
+                          </span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="flex items-center justify-center space-x-1 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium opacity-60 cursor-not-allowed"
+                        >
                           <Icon name="Bell" size={12} />
-                        )}
-                        <span>
-                          {reminded
-                            ? t("reminded")
-                            : sending
-                              ? t("sending")
-                              : t("sendReminder")}
-                        </span>
-                      </button>
+                          <span>
+                            {escalated ? t("escalated") : t("reminded")}
+                          </span>
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => openRecord(item)}
@@ -292,6 +384,24 @@ function OverdueCollections({
           <div className="grid grid-cols-1 gap-3">
             <button
               type="button"
+              disabled={
+                digestBusy || digestSentToday || items.length === 0 || isSending
+              }
+              onClick={() => void handleSendDigest()}
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-secondary-100 text-text-primary rounded-lg hover:bg-secondary-200 transition-smooth text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {digestBusy ? (
+                <div className="w-4 h-4 border-2 border-text-secondary border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Icon name="Mail" size={16} />
+              )}
+              <span>
+                {digestSentToday ? t("digestSentToday") : t("sendDigest")}
+              </span>
+            </button>
+
+            <button
+              type="button"
               disabled={isSending || pendingReminderIds.length === 0}
               onClick={() => void handleSendReminders(pendingReminderIds)}
               className="flex items-center justify-center space-x-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-700 transition-smooth text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
@@ -306,6 +416,20 @@ function OverdueCollections({
                 {pendingReminderIds.length === 0 && items.length > 0
                   ? t("allReminded")
                   : t("sendReminders")}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              disabled={isSending || pendingEscalationIds.length === 0}
+              onClick={() => void handleEscalate(pendingEscalationIds)}
+              className="flex items-center justify-center space-x-2 px-4 py-2 border border-warning text-warning rounded-lg hover:bg-warning-50 transition-smooth text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Icon name="AlertTriangle" size={16} />
+              <span>
+                {pendingEscalationIds.length === 0 && items.length > 0
+                  ? t("allEscalated")
+                  : t("escalateOverdue")}
               </span>
             </button>
 
@@ -326,6 +450,14 @@ function OverdueCollections({
         onSubmit={handleRecordSubmit}
         initialValues={recordInitial}
       />
+
+      {flash && (
+        <Toast
+          message={flash.message}
+          tone={flash.tone}
+          onDismiss={dismissFlash}
+        />
+      )}
     </>
   );
 }

@@ -1,3 +1,4 @@
+import { deliver } from "@/lib/delivery";
 import type { AttentionItem } from "./types";
 
 type DigestStore = {
@@ -68,10 +69,11 @@ function itemTitle(item: AttentionItem, labels: DigestItemLabels): string {
 }
 
 /**
- * Opens the manager's mail client with a deadline digest draft.
+ * Delivers a deadline digest to the manager via the shared outbox (email).
  * Returns false when the recipient email is missing.
  */
-export function openDeadlineDigest(
+export function sendDeadlineDigestMessage(
+  accountEmail: string,
   toEmail: string,
   items: AttentionItem[],
   copy: DigestCopy,
@@ -80,11 +82,15 @@ export function openDeadlineDigest(
   const to = toEmail.trim();
   if (!to || items.length === 0) return false;
 
-  const subject = copy.subject(items.length);
-  const body = copy.body(items);
-  const href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = href;
-  return true;
+  const message = deliver(accountEmail, {
+    channel: "email",
+    to,
+    subject: copy.subject(items.length),
+    body: copy.body(items),
+    kind: "compliance-digest",
+    relatedIds: items.map((item) => item.id),
+  });
+  return message !== null;
 }
 
 export function formatDigestBody(

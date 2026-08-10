@@ -128,6 +128,7 @@ export function quotasToOverdueItems(
         ownerId: q.ownerId,
         ownerName: owner?.fullName ?? "",
         email: owner?.contacts.email ?? "",
+        phone: owner?.contacts.phone ?? "",
         unit: display?.unitLabel ?? "",
         property: display?.condominiumName ?? "",
         amount: q.amount,

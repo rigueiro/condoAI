@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Button from "@/components/ui/button";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
+import Toast from "@/components/ui/toast";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import { usePortfolio } from "@/lib/portfolio";
 import {
@@ -68,13 +69,12 @@ function CompliancePage() {
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ComplianceRecord | null>(null);
-  const [flash, setFlash] = useState<string | null>(null);
+  const [flash, setFlash] = useState<{
+    message: string;
+    tone: "success" | "warning";
+  } | null>(null);
 
-  useEffect(() => {
-    if (!flash) return;
-    const timer = window.setTimeout(() => setFlash(null), 3000);
-    return () => window.clearTimeout(timer);
-  }, [flash]);
+  const dismissFlash = useCallback(() => setFlash(null), []);
 
   const condoOptions = useMemo(
     () => condominiums.map((c) => ({ id: c.id, name: c.name })),
@@ -163,7 +163,7 @@ function CompliancePage() {
     else upsertSummonsDoc(record.data);
     setModalOpen(false);
     setEditing(null);
-    setFlash(t("flash.saved"));
+    setFlash({ message: t("flash.saved"), tone: "success" });
     if (
       tab === "attention" &&
       record.kind !== "insurance" &&
@@ -179,26 +179,31 @@ function CompliancePage() {
     else if (kind === "certificate") removeCert(id);
     else if (kind === "assembly") removeAssemblyMinutes(id);
     else removeSummonsDoc(id);
-    setFlash(t("flash.deleted"));
+    setFlash({ message: t("flash.deleted"), tone: "success" });
   };
 
   const handleRenew = (item: AttentionItem) => {
     if (item.kind === "insurance") markInsuranceRenewed(item.id);
     else markCertificateRenewed(item.id);
-    setFlash(t("flash.renewed"));
+    setFlash({ message: t("flash.renewed"), tone: "success" });
   };
 
   const handleSendDigest = () => {
     const result = sendDeadlineDigest(filteredAttention, digestCopy);
     if (!result.sent) {
-      setFlash(
-        result.reason === "empty"
-          ? t("flash.digestEmpty")
-          : t("flash.digestFailed"),
-      );
+      setFlash({
+        message:
+          result.reason === "empty"
+            ? t("flash.digestEmpty")
+            : t("flash.digestFailed"),
+        tone: "warning",
+      });
       return;
     }
-    setFlash(t("flash.digestSent", { count: result.count }));
+    setFlash({
+      message: t("flash.digestSent", { count: result.count }),
+      tone: "success",
+    });
   };
 
   const defaultKind: ComplianceKind =
@@ -247,12 +252,6 @@ function CompliancePage() {
               {t("add")}
             </Button>
           </div>
-
-          {flash && (
-            <div className="mb-4 rounded-lg border border-success-100 bg-success-50 px-4 py-2 text-sm text-success">
-              {flash}
-            </div>
-          )}
 
           <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
@@ -478,6 +477,14 @@ function CompliancePage() {
             setEditing(null);
           }}
           onSave={handleSave}
+        />
+      )}
+
+      {flash && (
+        <Toast
+          message={flash.message}
+          tone={flash.tone}
+          onDismiss={dismissFlash}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import CollectionSummary from "./components/collection-summary";
 import PaymentHistoryTable from "./components/payment-history-table";
@@ -11,6 +11,7 @@ import CollectionAnalytics from "./components/collection-analytics";
 import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Button from "@/components/ui/button";
+import Toast, { type ToastTone } from "@/components/ui/toast";
 import {
   useCollections,
   useReminderCopy,
@@ -47,7 +48,11 @@ function PaymentTracking() {
     useState(false);
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
   const [selectedPayments, setSelectedPayments] = useState<number[]>([]);
-  const [flash, setFlash] = useState<string | null>(null);
+  const [flash, setFlash] = useState<{
+    message: string;
+    tone: ToastTone;
+  } | null>(null);
+  const dismissFlash = useCallback(() => setFlash(null), []);
   const [filters, setFilters] = useState<Filters>({
     dateRange: { start: "", end: "" },
     property: "",
@@ -71,11 +76,12 @@ function PaymentTracking() {
         ?.ownerName ??
       portfolio.owners.find((o) => o.id === paymentData.ownerId)?.fullName ??
       paymentData.ownerId;
-    setFlash(
-      result
+    setFlash({
+      message: result
         ? tDash("paymentRecorded", { name: ownerName })
         : tDash("paymentRecordedGeneric"),
-    );
+      tone: "success",
+    });
     setIsRecordPaymentModalOpen(false);
   };
 
@@ -98,13 +104,26 @@ function PaymentTracking() {
 
   const handleSendReminder = (payment: PaymentRow) => {
     if (payment.quotaStatus !== "overdue" && payment.quotaStatus !== "pending") {
-      setFlash(tDash("reminderNoEmail"));
+      setFlash({ message: tDash("reminderNoContact"), tone: "warning" });
       return;
     }
     const result = sendReminders([payment.quotaId], reminderCopy);
-    setFlash(
-      result.sent ? tDash("reminderSentOne") : tDash("reminderNoEmail"),
-    );
+    if (!result.sent) {
+      setFlash({
+        message:
+          result.reason === "already-contacted"
+            ? tDash("alreadyContacted")
+            : tDash("reminderNoContact"),
+        tone: "warning",
+      });
+      return;
+    }
+    const channel =
+      result.channel === "sms" ? tDash("channel.sms") : tDash("channel.email");
+    setFlash({
+      message: tDash("reminderSentOne", { channel }),
+      tone: "success",
+    });
   };
 
   const filteredPayments = paymentHistory.filter((payment) => {
@@ -178,12 +197,6 @@ function PaymentTracking() {
             </div>
           </div>
 
-          {flash && (
-            <div className="mb-6 p-3 rounded-lg bg-success-50 border border-success-100 text-sm text-success">
-              {flash}
-            </div>
-          )}
-
           <CollectionSummary collectionData={collectionData} />
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mt-8">
@@ -229,6 +242,14 @@ function PaymentTracking() {
           onClose={() => setIsBulkImportModalOpen(false)}
           onSubmit={handleBulkImport}
         />
+
+        {flash && (
+          <Toast
+            message={flash.message}
+            tone={flash.tone}
+            onDismiss={dismissFlash}
+          />
+        )}
       </main>
     </div>
   );

@@ -29,7 +29,7 @@
   },
   "digest": {
     "title": "Deadline digest",
-    "subtitle": "Email yourself a summary of renewals and certificates due in the next 60 days. Client-local until the backend ships.",
+    "subtitle": "Email yourself a summary of renewals and certificates due in the next 60 days. Delivered via the outbox until a real provider ships.",
     "send": "Send digest",
     "sent": "Sent",
     "sentToday": "Sent today",
@@ -134,8 +134,8 @@
     "saved": "Record saved",
     "deleted": "Record deleted",
     "renewed": "Marked as renewed",
-    "digestSent": "Digest opened for {count, plural, one {# deadline} other {# deadlines}}",
+    "digestSent": "Digest sent for {count, plural, one {# deadline} other {# deadlines}}",
     "digestEmpty": "Nothing to include in the digest",
-    "digestFailed": "Could not open the digest email"
+    "digestFailed": "Could not send the digest email"
   }
 }

@@ -17,7 +17,7 @@ function isCertificateType(type: string): type is CertificateType {
   );
 }
 
-/** Localized mailto subject/body for compliance deadline digests. */
+/** Localized email subject/body for compliance deadline digests. */
 export function useDigestCopy(): DigestCopy {
   const t = useTranslations("compliance.digest");
   const tAttention = useTranslations("compliance.attention");

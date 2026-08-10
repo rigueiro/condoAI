@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import type { ReminderCopy } from "./types";
 
-/** Localized mailto subject/body for payment reminders. */
+/** Localized email/SMS copy for payment reminders, escalations, and digests. */
 export function useReminderCopy(): ReminderCopy {
   const t = useTranslations("dashboard.upcomingPayments");
   const { formatCurrency } = useFormatCurrency();
@@ -17,7 +17,6 @@ export function useReminderCopy(): ReminderCopy {
 
   return {
     subjectOne: t("email.subjectOne"),
-    subjectMany: t("email.subjectMany"),
     bodyOne: (r) =>
       t("email.bodyOne", {
         name: r.ownerName,
@@ -26,13 +25,41 @@ export function useReminderCopy(): ReminderCopy {
         amount: money(r.amount),
         month: r.monthYear ?? "",
       }),
-    bodyMany: (recipients) =>
-      t("email.bodyMany", {
+    smsReminder: (r) =>
+      t("sms.reminder", {
+        name: r.ownerName,
+        unit: r.unit,
+        property: r.property,
+        amount: money(r.amount),
+        month: r.monthYear ?? "",
+      }),
+    escalationSubject: t("email.escalationSubject"),
+    escalationBody: (r) =>
+      t("email.escalationBody", {
+        name: r.ownerName,
+        unit: r.unit,
+        property: r.property,
+        amount: money(r.amount),
+        month: r.monthYear ?? "",
+      }),
+    smsEscalation: (r) =>
+      t("sms.escalation", {
+        name: r.ownerName,
+        unit: r.unit,
+        property: r.property,
+        amount: money(r.amount),
+        month: r.monthYear ?? "",
+      }),
+    digestSubject: (count) => t("digest.subject", { count }),
+    digestBody: (recipients) =>
+      t("digest.body", {
         count: recipients.length,
         list: recipients
           .map(
             (r) =>
-              `• ${r.ownerName} — ${r.unit} / ${r.property} — ${money(r.amount)}`,
+              `• ${r.ownerName} — ${r.unit} / ${r.property} — ${money(r.amount)}${
+                r.monthYear ? ` (${r.monthYear})` : ""
+              }`,
           )
           .join("\n"),
       }),

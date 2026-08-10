@@ -84,15 +84,34 @@
     },
     "record": "Record payment",
     "sendReminder": "Send reminder",
+    "escalate": "Escalate",
+    "escalateOverdue": "Escalate overdue",
     "sending": "Sending…",
     "reminded": "Reminded",
-    "remindedToday": "Reminder sent today",
+    "escalated": "Escalated",
+    "remindedToday": "Reminder sent via {channel}",
+    "escalatedToday": "Escalated via {channel}",
     "allReminded": "All reminded today",
+    "allEscalated": "Nothing left to escalate",
     "managePayments": "Manage payments",
     "sendReminders": "Send reminders",
-    "reminderSentOne": "Payment reminder opened in your email client.",
-    "reminderSentMany": "Payment reminders opened for {count} owners.",
+    "sendDigest": "Email overdue digest",
+    "digestSentToday": "Digest sent today",
+    "digestSent": "Overdue digest sent for {count, plural, one {# quota} other {# quotas}}.",
+    "digestEmpty": "Nothing to include in the digest.",
+    "digestFailed": "Could not send the digest.",
+    "reminderSentOne": "Payment reminder sent via {channel}.",
+    "reminderSentMany": "Payment reminders sent to {count} owners via {channel}.",
+    "escalationSentOne": "Escalation sent via {channel}.",
+    "escalationSentMany": "Escalations sent to {count} owners via {channel}.",
     "reminderNoEmail": "No owner email on file — add a contact before sending.",
+    "reminderNoContact": "No owner email or phone on file — add a contact before sending.",
+    "alreadyContacted": "Already contacted today — escalate if needed.",
+    "missingContact": "No email or phone on file",
+    "channel": {
+      "email": "email",
+      "sms": "SMS"
+    },
     "paymentRecorded": "Payment recorded for {name}.",
     "paymentRecordedGeneric": "Payment recorded.",
     "recordNotes": "Quota {month}",
@@ -100,9 +119,17 @@
     "emptyBody": "You're clear for today. Check back when new quotas fall due.",
     "email": {
       "subjectOne": "Payment reminder — condominium quota",
-      "subjectMany": "Payment reminder — overdue condominium quotas",
       "bodyOne": "Dear {name},\n\nThis is a reminder that the condominium quota for unit {unit} at {property} ({month}) of {amount} is overdue.\n\nPlease arrange payment at your earliest convenience.\n\nThank you.",
-      "bodyMany": "Dear owners,\n\nThis is a reminder that the following condominium quotas ({count}) are overdue:\n\n{list}\n\nPlease arrange payment at your earliest convenience.\n\nThank you."
+      "escalationSubject": "Urgent: overdue condominium quota",
+      "escalationBody": "Dear {name},\n\nDespite our earlier reminder, the condominium quota for unit {unit} at {property} ({month}) of {amount} remains overdue.\n\nPlease arrange payment immediately to avoid further collection steps.\n\nThank you."
+    },
+    "sms": {
+      "reminder": "CondoAI: Quota for {unit} at {property} ({month}) of {amount} is overdue. Please pay soon. — {name}",
+      "escalation": "CondoAI URGENT: Quota for {unit} at {property} ({month}) of {amount} still unpaid. Pay now to avoid further steps. — {name}"
+    },
+    "digest": {
+      "subject": "{count, plural, one {Collections digest: # overdue quota} other {Collections digest: # overdue quotas}}",
+      "body": "You have {count, plural, one {# overdue quota} other {# overdue quotas}} needing attention:\n\n{list}\n\nOpen CondoAI → Dashboard to remind, escalate, or record payments."
     }
   }
 }

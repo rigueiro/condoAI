@@ -24,6 +24,7 @@ export type OverdueItem = {
   ownerId?: string;
   ownerName: string;
   email?: string;
+  phone?: string;
   unit: string;
   property: string;
   amount: number;
@@ -35,16 +36,32 @@ export type OverdueItem = {
 export type ReminderRecipient = {
   id: string;
   email: string;
+  phone: string;
   ownerName: string;
   unit: string;
   property: string;
   amount: number;
   monthYear?: string;
+  /** ISO due date — used for escalation eligibility. */
+  dueDate?: string;
+};
+
+export type ReminderStage = "reminder" | "escalation";
+
+export type ContactAttempt = {
+  quotaId: string;
+  channel: "email" | "sms";
+  stage: ReminderStage;
+  at: string;
 };
 
 export type ReminderCopy = {
   subjectOne: string;
-  subjectMany: string;
   bodyOne: (r: ReminderRecipient) => string;
-  bodyMany: (recipients: ReminderRecipient[]) => string;
+  smsReminder: (r: ReminderRecipient) => string;
+  escalationSubject: string;
+  escalationBody: (r: ReminderRecipient) => string;
+  smsEscalation: (r: ReminderRecipient) => string;
+  digestSubject: (count: number) => string;
+  digestBody: (recipients: ReminderRecipient[]) => string;
 };

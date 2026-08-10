@@ -29,7 +29,7 @@
   },
   "digest": {
     "title": "Resumo de prazos",
-    "subtitle": "Envie para si um resumo das renovações e certificados a vencer nos próximos 60 dias. Local no cliente até existir backend.",
+    "subtitle": "Envie para si um resumo das renovações e certificados a vencer nos próximos 60 dias. Entregue pela caixa de saída até existir um fornecedor real.",
     "send": "Enviar resumo",
     "sent": "Enviado",
     "sentToday": "Enviado hoje",
@@ -134,8 +134,8 @@
     "saved": "Registo guardado",
     "deleted": "Registo eliminado",
     "renewed": "Marcado como renovado",
-    "digestSent": "Resumo aberto para {count, plural, one {# prazo} other {# prazos}}",
+    "digestSent": "Resumo enviado para {count, plural, one {# prazo} other {# prazos}}",
     "digestEmpty": "Nada a incluir no resumo",
-    "digestFailed": "Não foi possível abrir o email do resumo"
+    "digestFailed": "Não foi possível enviar o email do resumo"
   }
 }

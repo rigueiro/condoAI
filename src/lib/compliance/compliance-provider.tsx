@@ -17,7 +17,7 @@ import type {
   Summons,
 } from "@/types";
 import {
-  openDeadlineDigest,
+  sendDeadlineDigestMessage,
   readDigestSentToday,
   writeDigestSentToday,
   type DigestCopy,
@@ -129,7 +129,7 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
         return { sent: false, count: 0, reason: "empty" as const };
       }
 
-      const sent = openDeadlineDigest(email, items, copy);
+      const sent = sendDeadlineDigestMessage(email, email, items, copy);
       if (!sent) {
         return { sent: false, count: 0, reason: "no-email" as const };
       }

@@ -13,11 +13,17 @@ import { usePortfolio } from "@/lib/portfolio";
 import type { OwnerRow } from "@/app/[locale]/owners-management/components/types";
 import type { QuotaPayment } from "@/types";
 import { OWNER_AVATARS } from "@/fixtures/views";
-import { monthYearFromDate } from "./dates";
+import { daysOverdue, monthYearFromDate } from "./dates";
 import {
-  openPaymentReminders,
-  readRemindedIds,
-  writeRemindedIds,
+  deliverCollectionsDigest,
+  deliverPaymentEscalations,
+  deliverPaymentReminders,
+  isEscalationEligible,
+  readCollectionsDigestSentToday,
+  readContactAttempts,
+  writeCollectionsDigestSentToday,
+  writeContactAttempts,
+  type SendResult,
 } from "./reminders";
 import {
   appendPaidQuota,
@@ -29,6 +35,7 @@ import {
 import {
   EMPTY_COLLECTIONS,
   type CollectionsState,
+  type ContactAttempt,
   type OverdueItem,
   type PaymentDetails,
   type ReminderCopy,
@@ -40,6 +47,8 @@ import {
   quotasToPaymentRows,
   type PaymentRow,
 } from "./views";
+
+export type { SendResult };
 
 export type RecordPaymentInput = {
   ownerId: string;
@@ -58,11 +67,12 @@ interface CollectionsContextValue {
   overdueItems: OverdueItem[];
   ownersWithBalances: OwnerRow[];
   remindedIds: Set<string>;
+  contactAttempts: ContactAttempt[];
+  digestSentToday: boolean;
   recordPayment: (input: RecordPaymentInput) => { quotaId: string } | null;
-  sendReminders: (
-    ids: string[],
-    copy: ReminderCopy,
-  ) => { sent: boolean; count: number; reason?: "no-email" };
+  sendReminders: (ids: string[], copy: ReminderCopy) => SendResult;
+  escalateOverdue: (ids: string[], copy: ReminderCopy) => SendResult;
+  sendCollectionsDigest: (copy: ReminderCopy) => SendResult;
   refresh: () => void;
 }
 
@@ -76,7 +86,10 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
   const { isDemo, portfolio } = usePortfolio();
 
   const [state, setState] = useState<CollectionsState>(EMPTY_COLLECTIONS);
-  const [remindedIds, setRemindedIds] = useState<Set<string>>(() => new Set());
+  const [contactAttempts, setContactAttempts] = useState<ContactAttempt[]>(
+    () => [],
+  );
+  const [digestSentToday, setDigestSentToday] = useState(false);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
 
   const domainOwners = portfolio.owners;
@@ -87,10 +100,12 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
     setLoadedKey(loadKey);
     if (email) {
       setState(loadCollections(email, isDemo, domainOwners));
-      setRemindedIds(readRemindedIds(email));
+      setContactAttempts(readContactAttempts(email));
+      setDigestSentToday(readCollectionsDigestSentToday(email));
     } else {
       setState(EMPTY_COLLECTIONS);
-      setRemindedIds(new Set());
+      setContactAttempts([]);
+      setDigestSentToday(false);
     }
   }
 
@@ -105,10 +120,13 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(() => {
     if (!email) {
       setState(EMPTY_COLLECTIONS);
+      setContactAttempts([]);
+      setDigestSentToday(false);
       return;
     }
     setState(loadCollections(email, isDemo, domainOwners));
-    setRemindedIds(readRemindedIds(email));
+    setContactAttempts(readContactAttempts(email));
+    setDigestSentToday(readCollectionsDigestSentToday(email));
   }, [email, isDemo, domainOwners]);
 
   const ownersWithBalances = useMemo(
@@ -124,6 +142,78 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
   const overdueItems = useMemo(
     () => quotasToOverdueItems(state.quotas, portfolio),
     [state.quotas, portfolio],
+  );
+
+  const remindedIds = useMemo(
+    () => new Set(contactAttempts.map((c) => c.quotaId)),
+    [contactAttempts],
+  );
+
+  const attemptByQuotaId = useMemo(() => {
+    const map = new Map<string, ContactAttempt>();
+    for (const attempt of contactAttempts) {
+      map.set(attempt.quotaId, attempt);
+    }
+    return map;
+  }, [contactAttempts]);
+
+  const buildRecipients = useCallback(
+    (ids: string[]): ReminderRecipient[] => {
+      const idSet = new Set(ids);
+      const ownerById = new Map(portfolio.owners.map((o) => [o.id, o]));
+      const rowByOwnerId = new Map(
+        ownersWithBalances.map((o) => [o.owner.id, o]),
+      );
+      const overdueById = new Map(overdueItems.map((item) => [item.id, item]));
+
+      return state.quotas
+        .filter(
+          (q) =>
+            idSet.has(q.id) &&
+            (q.status === "overdue" || q.status === "pending"),
+        )
+        .map((q) => {
+          const owner = ownerById.get(q.ownerId);
+          const row = rowByOwnerId.get(q.ownerId);
+          const overdue = overdueById.get(q.id);
+          const dueDate = overdue?.dueDate ?? `${q.monthYear}-08`;
+          return {
+            id: q.id,
+            email:
+              owner?.contacts?.email?.trim() ||
+              overdue?.email?.trim() ||
+              "",
+            phone:
+              owner?.contacts?.phone?.trim() ||
+              overdue?.phone?.trim() ||
+              "",
+            ownerName:
+              owner?.fullName || overdue?.ownerName || row?.owner.fullName || "",
+            unit: row?.unitLabel || overdue?.unit || "",
+            property: row?.condominiumName || overdue?.property || "",
+            amount: q.amount,
+            monthYear: q.monthYear,
+            dueDate,
+          };
+        });
+    },
+    [portfolio.owners, ownersWithBalances, overdueItems, state.quotas],
+  );
+
+  const mergeAttempts = useCallback(
+    (nextAttempts: ContactAttempt[]) => {
+      if (!email || nextAttempts.length === 0) return;
+      setContactAttempts((prev) => {
+        const byId = new Map(prev.map((c) => [c.quotaId, c]));
+        for (const attempt of nextAttempts) {
+          byId.set(attempt.quotaId, attempt);
+        }
+        const merged = [...byId.values()];
+        writeContactAttempts(email, merged);
+        return merged;
+      });
+    },
+    [email],
   );
 
   const recordPayment = useCallback(
@@ -178,50 +268,76 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
   );
 
   const sendReminders = useCallback(
-    (ids: string[], copy: ReminderCopy) => {
+    (ids: string[], copy: ReminderCopy): SendResult => {
       if (!email) {
-        return { sent: false, count: 0, reason: "no-email" as const };
+        return { sent: false, count: 0, reason: "no-email" };
       }
 
-      const idSet = new Set(ids);
-      const ownerById = new Map(ownersWithBalances.map((o) => [o.owner.id, o]));
-      const recipients: ReminderRecipient[] = state.quotas
-        .filter(
-          (q) =>
-            idSet.has(q.id) &&
-            (q.status === "overdue" || q.status === "pending"),
-        )
-        .map((q) => {
-          const row = ownerById.get(q.ownerId);
-          return {
-            id: q.id,
-            email: row?.owner.contacts.email ?? "",
-            ownerName: row?.owner.fullName ?? "",
-            unit: row?.unitLabel ?? "",
-            property: row?.condominiumName ?? "",
-            amount: q.amount,
-            monthYear: q.monthYear,
-          };
-        });
-
-      const sent = openPaymentReminders(recipients, copy);
-      if (!sent) {
-        return { sent: false, count: 0, reason: "no-email" as const };
+      const candidates = buildRecipients(ids);
+      if (candidates.length === 0) {
+        return { sent: false, count: 0, reason: "empty" };
       }
 
-      setRemindedIds((prev) => {
-        const next = new Set(prev);
-        for (const id of ids) next.add(id);
-        writeRemindedIds(email, next);
-        return next;
-      });
+      const recipients = candidates.filter((r) => !attemptByQuotaId.has(r.id));
+      if (recipients.length === 0) {
+        return { sent: false, count: 0, reason: "already-contacted" };
+      }
 
-      return {
-        sent: true,
-        count: recipients.filter((r) => r.email.trim()).length,
-      };
+      const { result, attempts } = deliverPaymentReminders(
+        email,
+        recipients,
+        copy,
+      );
+      if (result.sent) mergeAttempts(attempts);
+      return result;
     },
-    [email, state.quotas, ownersWithBalances],
+    [email, buildRecipients, attemptByQuotaId, mergeAttempts],
+  );
+
+  const escalateOverdue = useCallback(
+    (ids: string[], copy: ReminderCopy): SendResult => {
+      if (!email) {
+        return { sent: false, count: 0, reason: "no-email" };
+      }
+
+      const recipients = buildRecipients(ids).filter((r) =>
+        isEscalationEligible(
+          attemptByQuotaId.get(r.id),
+          daysOverdue(r.dueDate ?? ""),
+        ),
+      );
+      const { result, attempts } = deliverPaymentEscalations(
+        email,
+        recipients,
+        copy,
+      );
+      if (result.sent) mergeAttempts(attempts);
+      return result;
+    },
+    [email, buildRecipients, attemptByQuotaId, mergeAttempts],
+  );
+
+  const sendCollectionsDigest = useCallback(
+    (copy: ReminderCopy): SendResult => {
+      if (!email) {
+        return { sent: false, count: 0, reason: "no-email" };
+      }
+      if (overdueItems.length === 0) {
+        return { sent: false, count: 0, reason: "empty" };
+      }
+
+      const recipients = buildRecipients(overdueItems.map((i) => i.id));
+      const result = deliverCollectionsDigest(email, email, recipients, {
+        subject: copy.digestSubject,
+        body: copy.digestBody,
+      });
+      if (result.sent) {
+        writeCollectionsDigestSentToday(email);
+        setDigestSentToday(true);
+      }
+      return result;
+    },
+    [email, overdueItems, buildRecipients],
   );
 
   const value = useMemo<CollectionsContextValue>(
@@ -232,8 +348,12 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       overdueItems,
       ownersWithBalances,
       remindedIds,
+      contactAttempts,
+      digestSentToday,
       recordPayment,
       sendReminders,
+      escalateOverdue,
+      sendCollectionsDigest,
       refresh,
     }),
     [
@@ -243,8 +363,12 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       overdueItems,
       ownersWithBalances,
       remindedIds,
+      contactAttempts,
+      digestSentToday,
       recordPayment,
       sendReminders,
+      escalateOverdue,
+      sendCollectionsDigest,
       refresh,
     ],
   );
