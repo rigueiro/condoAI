@@ -12,13 +12,3 @@ export function previousMonthYear(date = new Date()): string {
 export function todayKey(date = new Date()): string {
   return date.toISOString().slice(0, 10);
 }
-
-/** Whole calendar days past due (0 if due today or later). */
-export function daysOverdue(dueDate: string, now = new Date()): number {
-  const due = new Date(`${dueDate}T00:00:00`);
-  const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return Math.max(
-    0,
-    Math.round((startOfNow.getTime() - due.getTime()) / (1000 * 60 * 60 * 24)),
-  );
-}

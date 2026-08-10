@@ -17,12 +17,21 @@ import {
   type RecordPaymentInput,
   type SendResult,
 } from "@/lib/collections";
-import { daysOverdue } from "@/lib/collections/dates";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 
 export type { OverdueItem };
 
 type FormatCurrency = (amount: number) => string;
+
+function overdueDayCount(dueDate: string): number {
+  const due = new Date(`${dueDate}T00:00:00`);
+  const now = new Date();
+  const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(
+    0,
+    Math.round((startOfNow.getTime() - due.getTime()) / (1000 * 60 * 60 * 24)),
+  );
+}
 
 function channelLabel(
   channel: SendResult["channel"],
@@ -81,7 +90,7 @@ function OverdueCollections({
     .filter((item) =>
       isEscalationEligible(
         attemptById.get(item.id),
-        daysOverdue(item.dueDate),
+        overdueDayCount(item.dueDate),
       ),
     )
     .map((item) => item.id);
@@ -257,7 +266,7 @@ function OverdueCollections({
         ) : (
           <div className="space-y-3">
             {items.map((item) => {
-              const overdueDays = daysOverdue(item.dueDate);
+              const overdueDays = overdueDayCount(item.dueDate);
               const attempt = attemptById.get(item.id);
               const reminded = Boolean(attempt);
               const escalated = attempt?.stage === "escalation";

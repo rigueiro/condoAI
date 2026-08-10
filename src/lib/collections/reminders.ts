@@ -27,6 +27,16 @@ export type SendResult = {
   reason?: "no-contact" | "no-email" | "empty" | "already-contacted";
 };
 
+/** Whole calendar days past due (0 if due today or later). */
+export function daysOverdue(dueDate: string, now = new Date()): number {
+  const due = new Date(`${dueDate}T00:00:00`);
+  const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(
+    0,
+    Math.round((startOfNow.getTime() - due.getTime()) / (1000 * 60 * 60 * 24)),
+  );
+}
+
 function remindersKey(email: string): string {
   return `condoai.collections.reminded.${email.trim().toLowerCase()}`;
 }
@@ -281,9 +291,9 @@ export const ESCALATION_DAYS = 14;
 
 export function isEscalationEligible(
   attempt: ContactAttempt | undefined,
-  daysOverdue: number,
+  overdueDays: number,
 ): boolean {
   if (attempt?.stage === "escalation") return false;
   if (attempt?.stage === "reminder") return true;
-  return daysOverdue >= ESCALATION_DAYS;
+  return overdueDays >= ESCALATION_DAYS;
 }

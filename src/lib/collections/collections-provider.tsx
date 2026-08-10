@@ -13,8 +13,9 @@ import { usePortfolio } from "@/lib/portfolio";
 import type { OwnerRow } from "@/app/[locale]/owners-management/components/types";
 import type { QuotaPayment } from "@/types";
 import { OWNER_AVATARS } from "@/fixtures/views";
-import { daysOverdue, monthYearFromDate } from "./dates";
+import { monthYearFromDate } from "./dates";
 import {
+  daysOverdue,
   deliverCollectionsDigest,
   deliverPaymentEscalations,
   deliverPaymentReminders,
