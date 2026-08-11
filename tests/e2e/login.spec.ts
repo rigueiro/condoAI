@@ -1,11 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
+import { SESSION_COOKIE } from "../../src/lib/auth/constants";
 
 /**
- * E2E tests for the CondoAI login flow.
- *
- * The app uses a mocked auth provider (see src/lib/auth/auth-provider.tsx)
- * that resolves the credentials below and persists the session to
- * localStorage / sessionStorage depending on the "remember me" toggle.
+ * E2E tests for the CondoAI login flow (httpOnly cookie session).
  */
 
 const DEMO_CREDENTIALS = {
@@ -13,22 +10,8 @@ const DEMO_CREDENTIALS = {
   password: "admin123",
 };
 
-const STORAGE_KEY = "condoai.user";
-const SESSION_STORAGE_KEY = "condoai.user.session";
-
-/**
- * Clear any persisted auth state and navigate to the login page.
- * We visit "/" first so we have an origin to scope storage clearing to.
- */
 async function gotoLogin(page: Page, locale: "pt" | "en" = "pt") {
-  await page.goto("/");
-  await page.evaluate(
-    ({ local, session }) => {
-      window.localStorage.removeItem(local);
-      window.sessionStorage.removeItem(session);
-    },
-    { local: STORAGE_KEY, session: SESSION_STORAGE_KEY },
-  );
+  await page.context().clearCookies();
   await page.goto(`/${locale}/login`);
 }
 
@@ -59,9 +42,6 @@ test.describe("Login page", () => {
   });
 
   test("shows email format error for invalid email", async ({ page }) => {
-    // "abc@def" passes the browser's native type="email" check (HTML5
-    // allows single-label hosts) but fails the app's stricter regex
-    // which requires a dot in the domain.
     await page.getByLabel("Endereço de email").fill("abc@def");
     await page.getByLabel("Senha").fill("anything");
     await page.getByRole("button", { name: "Entrar" }).click();
@@ -100,21 +80,13 @@ test.describe("Login page", () => {
     await page.waitForURL(/\/pt\/dashboard/, { timeout: 15_000 });
     await expect(page).toHaveURL(/\/pt\/dashboard/);
 
-    const sessionUser = await page.evaluate(
-      (key) => window.sessionStorage.getItem(key),
-      SESSION_STORAGE_KEY,
-    );
-    expect(sessionUser).not.toBeNull();
-    expect(sessionUser).toContain(DEMO_CREDENTIALS.email);
-
-    const persistedUser = await page.evaluate(
-      (key) => window.localStorage.getItem(key),
-      STORAGE_KEY,
-    );
-    expect(persistedUser).toBeNull();
+    const cookies = await page.context().cookies();
+    const session = cookies.find((c) => c.name === SESSION_COOKIE);
+    expect(session?.value).toBeTruthy();
+    expect(session?.httpOnly).toBe(true);
   });
 
-  test('persists session to localStorage when "remember me" is checked', async ({
+  test('sets a longer-lived session cookie when "remember me" is checked', async ({
     page,
   }) => {
     await page.getByLabel("Endereço de email").fill(DEMO_CREDENTIALS.email);
@@ -124,12 +96,11 @@ test.describe("Login page", () => {
 
     await page.waitForURL(/\/pt\/dashboard/, { timeout: 15_000 });
 
-    const persistedUser = await page.evaluate(
-      (key) => window.localStorage.getItem(key),
-      STORAGE_KEY,
-    );
-    expect(persistedUser).not.toBeNull();
-    expect(persistedUser).toContain(DEMO_CREDENTIALS.email);
+    const cookies = await page.context().cookies();
+    const session = cookies.find((c) => c.name === SESSION_COOKIE);
+    expect(session?.value).toBeTruthy();
+    // Remember-me is 30 days; session-only is 1 day. Both have max-age.
+    expect(session?.expires ?? -1).toBeGreaterThan(Date.now() / 1000 + 2 * 86400);
   });
 
   test("clears inline error as user types in the field", async ({ page }) => {
@@ -138,6 +109,13 @@ test.describe("Login page", () => {
 
     await page.getByLabel("Endereço de email").fill("a");
     await expect(page.getByText("Email obrigatório")).toHaveCount(0);
+  });
+
+  test("redirects unauthenticated users away from dashboard", async ({
+    page,
+  }) => {
+    await page.goto("/pt/dashboard");
+    await expect(page).toHaveURL(/\/pt\/login/);
   });
 });
 

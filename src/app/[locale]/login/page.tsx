@@ -20,7 +20,8 @@ import {
   useAuth,
   useAuthHrefs,
 } from "@/lib/auth";
-import { needsOnboarding, readPortfolio } from "@/lib/portfolio";
+import { apiFetch } from "@/lib/api/client";
+import { needsOnboarding, type Portfolio } from "@/lib/portfolio";
 
 type Errors = {
   email?: string;
@@ -95,10 +96,19 @@ function Login() {
       const email = formData.email.trim().toLowerCase();
       if (isDemoEmail(email)) {
         router.push("/dashboard");
-      } else if (needsOnboarding(readPortfolio(email))) {
-        router.push("/onboarding");
       } else {
-        router.push("/dashboard");
+        try {
+          const data = await apiFetch<{ portfolio: Portfolio }>(
+            "/api/portfolio",
+          );
+          if (needsOnboarding(data.portfolio)) {
+            router.push("/onboarding");
+          } else {
+            router.push("/dashboard");
+          }
+        } catch {
+          router.push("/onboarding");
+        }
       }
     } catch (error) {
       const messageKey = error instanceof Error ? error.message : "loginFailed";

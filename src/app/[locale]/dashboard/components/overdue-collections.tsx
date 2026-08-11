@@ -186,8 +186,8 @@ function OverdueCollections({
     setRecordQuotaId(null);
   };
 
-  const handleRecordSubmit = (data: RecordPaymentInput) => {
-    const result = recordPayment({
+  const handleRecordSubmit = async (data: RecordPaymentInput) => {
+    const result = await recordPayment({
       ...data,
       quotaId: recordQuotaId ?? undefined,
     });

@@ -4,27 +4,9 @@ const DEMO_EMAIL = "admin@condoai.pt";
 const DEFAULT_PASSWORD = "admin123";
 const NEW_PASSWORD = "newpass99";
 
-const STORAGE_KEY = "condoai.user";
-const SESSION_STORAGE_KEY = "condoai.user.session";
-const PASSWORD_KEY = "condoai.auth.password";
-const RESET_TOKEN_KEY = "condoai.auth.reset";
-
 async function clearAuthState(page: Page) {
+  await page.context().clearCookies();
   await page.goto("/");
-  await page.evaluate(
-    ({ local, session, password, reset }) => {
-      window.localStorage.removeItem(local);
-      window.sessionStorage.removeItem(session);
-      window.localStorage.removeItem(password);
-      window.localStorage.removeItem(reset);
-    },
-    {
-      local: STORAGE_KEY,
-      session: SESSION_STORAGE_KEY,
-      password: PASSWORD_KEY,
-      reset: RESET_TOKEN_KEY,
-    },
-  );
 }
 
 test.describe("Forgot password flow", () => {
@@ -56,40 +38,34 @@ test.describe("Forgot password flow", () => {
     await expect(
       page.getByRole("heading", { name: "Verifique o seu email" }),
     ).toBeVisible();
-    // No in-UI continue CTA — that would reveal whether the account exists.
     await expect(
       page.getByRole("link", { name: "Continuar para redefinir a senha" }),
     ).toHaveCount(0);
-
-    const unknownToken = await page.evaluate(
-      (key) => window.localStorage.getItem(key),
-      RESET_TOKEN_KEY,
-    );
-    expect(unknownToken).toBeNull();
   });
 
   test("resets demo password end-to-end", async ({ page }) => {
     await page.goto("/pt/forgot-password");
+
+    const resetResponse = page.waitForResponse(
+      (res) =>
+        res.url().includes("/api/auth/forgot-password") &&
+        res.request().method() === "POST",
+    );
+
     await page.getByLabel("Endereço de email").fill(DEMO_EMAIL);
     await page
       .getByRole("button", { name: "Enviar link de recuperação" })
       .click();
 
+    const res = await resetResponse;
+    const body = (await res.json()) as { demoResetToken?: string };
+    expect(body.demoResetToken).toBeTruthy();
+
     await expect(
       page.getByRole("heading", { name: "Verifique o seu email" }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "Continuar para redefinir a senha" }),
-    ).toHaveCount(0);
 
-    const token = await page.evaluate((key) => {
-      const raw = window.localStorage.getItem(key);
-      if (!raw) return null;
-      return (JSON.parse(raw) as { token: string }).token;
-    }, RESET_TOKEN_KEY);
-    expect(token).toBeTruthy();
-
-    await page.goto(`/pt/reset-password?token=${token}`);
+    await page.goto(`/pt/reset-password?token=${body.demoResetToken}`);
     await expect(
       page.getByRole("heading", { name: "Escolha uma nova senha" }),
     ).toBeVisible();
@@ -101,12 +77,6 @@ test.describe("Forgot password flow", () => {
     await expect(
       page.getByRole("heading", { name: "Senha atualizada" }),
     ).toBeVisible();
-
-    const storedPassword = await page.evaluate(
-      (key) => window.localStorage.getItem(key),
-      PASSWORD_KEY,
-    );
-    expect(storedPassword).toBe(NEW_PASSWORD);
 
     await page.goto("/pt/login");
     await expect(
@@ -123,6 +93,18 @@ test.describe("Forgot password flow", () => {
     await page.getByLabel("Senha").fill(NEW_PASSWORD);
     await page.getByRole("button", { name: "Entrar" }).click();
     await expect(page).toHaveURL(/\/pt\/dashboard/, { timeout: 15_000 });
+
+    // Restore default demo password for other tests / local reuse.
+    await page.request.post("/api/auth/forgot-password", {
+      data: { email: DEMO_EMAIL },
+    });
+    // Use a second reset via API if we have a token — or change password while logged in.
+    await page.request.post("/api/auth/password", {
+      data: {
+        currentPassword: NEW_PASSWORD,
+        newPassword: DEFAULT_PASSWORD,
+      },
+    });
   });
 
   test("invalid reset token shows recovery options", async ({ page }) => {

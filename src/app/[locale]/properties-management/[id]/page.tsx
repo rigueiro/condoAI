@@ -388,8 +388,8 @@ function PropertyDetailPage() {
       <RecordPaymentModal
         isOpen={isRecordPaymentOpen}
         onClose={() => setIsRecordPaymentOpen(false)}
-        onSubmit={(paymentData) => {
-          recordPayment(paymentData);
+        onSubmit={async (paymentData) => {
+          await recordPayment(paymentData);
           setIsRecordPaymentOpen(false);
         }}
       />

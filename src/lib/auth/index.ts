@@ -7,5 +7,6 @@ export {
   DEFAULT_PASSWORD,
   MIN_PASSWORD_LENGTH,
   isDemoEmail,
-} from "./credentials";
+  SESSION_COOKIE,
+} from "./constants";
 export { isValidEmail, resolveAuthErrorMessage } from "./validation";

@@ -1,0 +1,20 @@
+import { resolveUser } from "@/lib/server/auth";
+import {
+  getSessionFromStore,
+  readSessionId,
+} from "@/lib/server/session";
+import { jsonError, jsonOk } from "@/lib/server/http";
+
+export async function GET() {
+  const sessionId = await readSessionId();
+  const session = getSessionFromStore(sessionId);
+  if (!session) {
+    return jsonError("unauthorized", 401);
+  }
+  try {
+    const user = resolveUser(session.email);
+    return jsonOk({ user });
+  } catch {
+    return jsonError("unauthorized", 401);
+  }
+}

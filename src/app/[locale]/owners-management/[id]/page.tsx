@@ -75,8 +75,8 @@ function OwnerDetailPage() {
     setIsEditModalOpen(false);
   };
 
-  const handleRecordPayment = (paymentData: RecordPaymentInput) => {
-    recordPayment(paymentData);
+  const handleRecordPayment = async (paymentData: RecordPaymentInput) => {
+    await recordPayment(paymentData);
     setIsRecordPaymentOpen(false);
   };
 

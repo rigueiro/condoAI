@@ -26,6 +26,9 @@
 # production
 /build
 
+# demo JSON store (thin backend)
+.data/
+
 # misc
 .DS_Store
 *.pem

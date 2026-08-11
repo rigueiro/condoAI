@@ -69,8 +69,8 @@ function PaymentTracking() {
     [isDemo, portfolio, quotas],
   );
 
-  const handleRecordPayment = (paymentData: RecordPaymentInput) => {
-    const result = recordPayment(paymentData);
+  const handleRecordPayment = async (paymentData: RecordPaymentInput) => {
+    const result = await recordPayment(paymentData);
     const ownerName =
       paymentHistory.find((p) => p.ownerId === paymentData.ownerId)
         ?.ownerName ??

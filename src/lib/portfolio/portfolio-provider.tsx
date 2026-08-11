@@ -4,34 +4,16 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import { isDemoEmail, useUser } from "@/lib/auth";
-import {
-  mockCondominiums,
-  mockDomainOwners,
-  mockUnits,
-} from "@/fixtures/domain";
+import { apiFetch } from "@/lib/api/client";
 import type { Organization } from "@/app/[locale]/account/types";
 import type { Condominium, Owner, Unit } from "@/types";
-import {
-  applyImport,
-  completeOnboarding,
-  readPortfolio,
-  removeCondominium as removeCondominiumStored,
-  removeCondominiumInMemory,
-  removeOwner as removeOwnerStored,
-  removeOwnerInMemory,
-  saveFirstCondominium,
-  saveOrganization,
-  upsertCondominium as upsertCondominiumStored,
-  upsertCondominiumInMemory,
-  upsertOwner as upsertOwnerStored,
-  upsertOwnerInMemory,
-  writePortfolio,
-} from "./storage";
 import {
   EMPTY_PORTFOLIO,
   isOnboardingComplete,
@@ -62,149 +44,156 @@ const PortfolioContext = createContext<PortfolioContextValue | undefined>(
   undefined,
 );
 
-const DEMO_PORTFOLIO: Portfolio = {
-  organization: {
-    name: "CondoAI Lda.",
-    legalName: "CondoAI Sociedade Unipessoal Lda.",
-    taxId: "PT509123456",
-    email: "billing@condoai.pt",
-    phone: "+351 21 000 0000",
-    website: "https://condoai.pt",
-    addressLine1: "Av. da Liberdade 100, 4º",
-    city: "Lisboa",
-    postalCode: "1250-145",
-    country: "PT",
-  },
-  condominiums: mockCondominiums,
-  units: mockUnits,
-  owners: mockDomainOwners,
-  onboardingStep: "complete",
-};
-
-function loadPortfolio(email: string | null): Portfolio {
-  if (!email || isDemoEmail(email)) return DEMO_PORTFOLIO;
-  return readPortfolio(email);
-}
-
 export function PortfolioProvider({ children }: { children: ReactNode }) {
   const user = useUser();
   const email = user?.email ?? null;
   const isDemo = !email || isDemoEmail(email);
 
   const [portfolio, setPortfolio] = useState<Portfolio>(EMPTY_PORTFOLIO);
-  const [loadedEmail, setLoadedEmail] = useState<string | null>(null);
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const [refreshNonce, setRefreshNonce] = useState(0);
+  const inFlightRef = useRef<string | null>(null);
 
-  // Sync stored portfolio when the signed-in email changes (render-time adjust).
-  if (email !== loadedEmail) {
-    setLoadedEmail(email);
-    setPortfolio(loadPortfolio(email));
+  if (email === null && loadedKey !== null) {
+    setLoadedKey(null);
+    setPortfolio(EMPTY_PORTFOLIO);
   }
 
+  useEffect(() => {
+    if (!email) return;
+    const key = `${email}:${refreshNonce}`;
+    if (loadedKey === key) return;
+    if (inFlightRef.current === key) return;
+    inFlightRef.current = key;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await apiFetch<{ portfolio: Portfolio }>("/api/portfolio");
+        if (cancelled) return;
+        setPortfolio(data.portfolio);
+        setLoadedKey(key);
+      } catch {
+        if (cancelled) return;
+        setPortfolio(EMPTY_PORTFOLIO);
+        setLoadedKey(key);
+      } finally {
+        if (inFlightRef.current === key) {
+          inFlightRef.current = null;
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [email, loadedKey, refreshNonce]);
+
   const refresh = useCallback(() => {
-    setPortfolio(loadPortfolio(email));
+    if (!email) {
+      setPortfolio(EMPTY_PORTFOLIO);
+      return;
+    }
+    setRefreshNonce((n) => n + 1);
   }, [email]);
 
-  const withUserWrite = useCallback(
-    (write: (userEmail: string) => Portfolio) => {
-      if (!email || isDemoEmail(email)) return;
-      setPortfolio(write(email));
+  const patchPortfolio = useCallback(
+    async (body: Record<string, unknown>) => {
+      const data = await apiFetch<{ portfolio: Portfolio }>("/api/portfolio", {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      });
+      setPortfolio(data.portfolio);
+      return data.portfolio;
     },
-    [email],
+    [],
   );
 
   const saveOrg = useCallback(
     (organization: Organization) => {
-      withUserWrite((userEmail) => saveOrganization(userEmail, organization));
+      void patchPortfolio({ action: "saveOrganization", organization });
     },
-    [withUserWrite],
+    [patchPortfolio],
   );
 
   const saveCondo = useCallback(
     (condominium: Condominium) => {
-      withUserWrite((userEmail) =>
-        saveFirstCondominium(userEmail, condominium),
+      void patchPortfolio({ action: "saveFirstCondominium", condominium });
+    },
+    [patchPortfolio],
+  );
+
+  const upsertCondo = useCallback((condominium: Condominium) => {
+    void (async () => {
+      const data = await apiFetch<{ portfolio: Portfolio }>(
+        `/api/condominiums/${condominium.id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ condominium }),
+        },
       );
-    },
-    [withUserWrite],
-  );
+      setPortfolio(data.portfolio);
+    })();
+  }, []);
 
-  const upsertCondo = useCallback(
-    (condominium: Condominium) => {
-      if (isDemo) {
-        setPortfolio((prev) => upsertCondominiumInMemory(prev, condominium));
-        return;
-      }
-      withUserWrite((userEmail) =>
-        upsertCondominiumStored(userEmail, condominium),
+  const removeCondo = useCallback((condominiumId: string) => {
+    void (async () => {
+      const data = await apiFetch<{ portfolio: Portfolio }>(
+        `/api/condominiums/${condominiumId}`,
+        { method: "DELETE" },
       );
-    },
-    [isDemo, withUserWrite],
-  );
+      setPortfolio(data.portfolio);
+    })();
+  }, []);
 
-  const removeCondo = useCallback(
-    (condominiumId: string) => {
-      if (isDemo) {
-        setPortfolio((prev) =>
-          removeCondominiumInMemory(prev, condominiumId),
-        );
-        return;
-      }
-      withUserWrite((userEmail) =>
-        removeCondominiumStored(userEmail, condominiumId),
+  const upsertOwnerFn = useCallback((owner: Owner, unit?: Unit) => {
+    void (async () => {
+      const data = await apiFetch<{ portfolio: Portfolio }>(
+        `/api/owners/${owner.id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ owner, unit }),
+        },
       );
-    },
-    [isDemo, withUserWrite],
-  );
+      setPortfolio(data.portfolio);
+    })();
+  }, []);
 
-  const upsertOwnerFn = useCallback(
-    (owner: Owner, unit?: Unit) => {
-      if (isDemo) {
-        setPortfolio((prev) => upsertOwnerInMemory(prev, owner, unit));
-        return;
-      }
-      withUserWrite((userEmail) => upsertOwnerStored(userEmail, owner, unit));
-    },
-    [isDemo, withUserWrite],
-  );
-
-  const removeOwnerFn = useCallback(
-    (ownerId: string) => {
-      if (isDemo) {
-        setPortfolio((prev) => removeOwnerInMemory(prev, ownerId));
-        return;
-      }
-      withUserWrite((userEmail) => removeOwnerStored(userEmail, ownerId));
-    },
-    [isDemo, withUserWrite],
-  );
+  const removeOwnerFn = useCallback((ownerId: string) => {
+    void (async () => {
+      const data = await apiFetch<{ portfolio: Portfolio }>(
+        `/api/owners/${ownerId}`,
+        { method: "DELETE" },
+      );
+      setPortfolio(data.portfolio);
+    })();
+  }, []);
 
   const doImport = useCallback(
     (units: Unit[], owners: Owner[]) => {
-      withUserWrite((userEmail) => applyImport(userEmail, units, owners));
+      void patchPortfolio({ action: "applyImport", units, owners });
     },
-    [withUserWrite],
+    [patchPortfolio],
   );
 
   const finishOnboarding = useCallback(() => {
-    withUserWrite((userEmail) => completeOnboarding(userEmail));
-  }, [withUserWrite]);
+    void patchPortfolio({ action: "completeOnboarding" });
+  }, [patchPortfolio]);
 
   const updateOrganization = useCallback(
     (organization: Organization) => {
-      withUserWrite((userEmail) => {
-        const next = { ...portfolio, organization };
-        writePortfolio(userEmail, next);
-        return next;
-      });
+      void patchPortfolio({ action: "updateOrganization", organization });
     },
-    [withUserWrite, portfolio],
+    [patchPortfolio],
   );
+
+  const isReady =
+    email === null || loadedKey === `${email}:${refreshNonce}`;
 
   const value = useMemo<PortfolioContextValue>(
     () => ({
       portfolio,
       isDemo,
-      isReady: true,
+      isReady,
       needsOnboarding: Boolean(email) && !isDemo && needsOnboarding(portfolio),
       isOnboardingComplete:
         !email || isDemo || isOnboardingComplete(portfolio),
@@ -223,6 +212,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     [
       portfolio,
       isDemo,
+      isReady,
       email,
       refresh,
       saveOrg,

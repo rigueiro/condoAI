@@ -18,7 +18,8 @@ export type RecordPaymentInitialValues = {
 interface RecordPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: RecordPaymentInput) => void;
+  onSubmit: (data: RecordPaymentInput) => void | Promise<void>;
+
   initialValues?: RecordPaymentInitialValues | null;
 }
 

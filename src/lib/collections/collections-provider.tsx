@@ -4,16 +4,18 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import { useUser } from "@/lib/auth";
 import { usePortfolio } from "@/lib/portfolio";
+import { apiFetch } from "@/lib/api/client";
 import type { OwnerRow } from "@/app/[locale]/owners-management/components/types";
 import type { QuotaPayment } from "@/types";
 import { OWNER_AVATARS } from "@/fixtures/views";
-import { monthYearFromDate } from "./dates";
 import {
   daysOverdue,
   deliverCollectionsDigest,
@@ -27,18 +29,10 @@ import {
   type SendResult,
 } from "./reminders";
 import {
-  appendPaidQuota,
-  findOpenQuota,
-  loadCollections,
-  markQuotaPaid,
-  writeCollections,
-} from "./storage";
-import {
   EMPTY_COLLECTIONS,
   type CollectionsState,
   type ContactAttempt,
   type OverdueItem,
-  type PaymentDetails,
   type ReminderCopy,
   type ReminderRecipient,
 } from "./types";
@@ -70,7 +64,9 @@ interface CollectionsContextValue {
   remindedIds: Set<string>;
   contactAttempts: ContactAttempt[];
   digestSentToday: boolean;
-  recordPayment: (input: RecordPaymentInput) => { quotaId: string } | null;
+  recordPayment: (
+    input: RecordPaymentInput,
+  ) => Promise<{ quotaId: string } | null>;
   sendReminders: (ids: string[], copy: ReminderCopy) => SendResult;
   escalateOverdue: (ids: string[], copy: ReminderCopy) => SendResult;
   sendCollectionsDigest: (copy: ReminderCopy) => SendResult;
@@ -84,7 +80,7 @@ const CollectionsContext = createContext<CollectionsContextValue | undefined>(
 export function CollectionsProvider({ children }: { children: ReactNode }) {
   const user = useUser();
   const email = user?.email ?? null;
-  const { isDemo, portfolio } = usePortfolio();
+  const { isDemo, portfolio, isReady: portfolioReady } = usePortfolio();
 
   const [state, setState] = useState<CollectionsState>(EMPTY_COLLECTIONS);
   const [contactAttempts, setContactAttempts] = useState<ContactAttempt[]>(
@@ -92,31 +88,60 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
   );
   const [digestSentToday, setDigestSentToday] = useState(false);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const [refreshNonce, setRefreshNonce] = useState(0);
+  const inFlightRef = useRef<string | null>(null);
 
-  const domainOwners = portfolio.owners;
-  const ownerIdsKey = domainOwners.map((o) => o.id).join(",");
-  const loadKey = `${email ?? "anon"}:${isDemo ? "demo" : "live"}:${ownerIdsKey}`;
+  const ownerIdsKey = portfolio.owners.map((o) => o.id).join(",");
+  const desiredKey =
+    email && portfolioReady
+      ? `${email}:${isDemo ? "demo" : "live"}:${ownerIdsKey}:${refreshNonce}`
+      : null;
 
-  if (loadKey !== loadedKey) {
-    setLoadedKey(loadKey);
-    if (email) {
-      setState(loadCollections(email, isDemo, domainOwners));
-      setContactAttempts(readContactAttempts(email));
-      setDigestSentToday(readCollectionsDigestSentToday(email));
-    } else {
-      setState(EMPTY_COLLECTIONS);
-      setContactAttempts([]);
-      setDigestSentToday(false);
-    }
+  if (desiredKey === null && loadedKey !== null) {
+    setLoadedKey(null);
+    setState(EMPTY_COLLECTIONS);
+    setContactAttempts([]);
+    setDigestSentToday(false);
   }
 
-  const persist = useCallback(
-    (next: CollectionsState) => {
-      setState(next);
-      if (email) writeCollections(email, next);
-    },
-    [email],
-  );
+  useEffect(() => {
+    if (!desiredKey || !email) return;
+    if (loadedKey === desiredKey) return;
+    if (inFlightRef.current === desiredKey) return;
+    inFlightRef.current = desiredKey;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await apiFetch<{
+          state?: CollectionsState;
+          quotas: QuotaPayment[];
+          details: CollectionsState["details"];
+        }>("/api/quotas");
+        if (cancelled) return;
+        setState(
+          data.state ?? {
+            quotas: data.quotas,
+            details: data.details ?? {},
+          },
+        );
+        setContactAttempts(readContactAttempts(email));
+        setDigestSentToday(readCollectionsDigestSentToday(email));
+        setLoadedKey(desiredKey);
+      } catch {
+        if (cancelled) return;
+        setState(EMPTY_COLLECTIONS);
+        setLoadedKey(desiredKey);
+      } finally {
+        if (inFlightRef.current === desiredKey) {
+          inFlightRef.current = null;
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [desiredKey, email, loadedKey]);
 
   const refresh = useCallback(() => {
     if (!email) {
@@ -125,10 +150,8 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       setDigestSentToday(false);
       return;
     }
-    setState(loadCollections(email, isDemo, domainOwners));
-    setContactAttempts(readContactAttempts(email));
-    setDigestSentToday(readCollectionsDigestSentToday(email));
-  }, [email, isDemo, domainOwners]);
+    setRefreshNonce((n) => n + 1);
+  }, [email]);
 
   const ownersWithBalances = useMemo(
     () => applyOwnerBalances(portfolio, state.quotas, OWNER_AVATARS),
@@ -218,7 +241,9 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
   );
 
   const recordPayment = useCallback(
-    (input: RecordPaymentInput): { quotaId: string } | null => {
+    async (
+      input: RecordPaymentInput,
+    ): Promise<{ quotaId: string } | null> => {
       const amount =
         typeof input.amount === "string"
           ? parseFloat(input.amount)
@@ -226,46 +251,21 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       if (!Number.isFinite(amount) || amount <= 0) return null;
       if (!input.ownerId) return null;
 
-      const owner = portfolio.owners.find((o) => o.id === input.ownerId);
-      if (!owner) return null;
-
-      const paidOn =
-        input.paymentDate ?? new Date().toISOString().slice(0, 10);
-      const details: PaymentDetails = {
-        paymentMethod: input.paymentMethod ?? "Bank Transfer",
-        receiptNumber: `RCP-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
-        notes: input.notes,
-        timestamp: new Date().toISOString(),
-      };
-
-      const existingId =
-        input.quotaId && state.quotas.some((q) => q.id === input.quotaId)
-          ? input.quotaId
-          : findOpenQuota(state.quotas, owner.id, amount)?.id;
-
-      if (existingId) {
-        persist(markQuotaPaid(state, existingId, paidOn, details));
-        return { quotaId: existingId };
+      try {
+        const data = await apiFetch<{
+          quotaId: string;
+          state: CollectionsState;
+        }>("/api/quotas/record-payment", {
+          method: "POST",
+          body: JSON.stringify(input),
+        });
+        setState(data.state);
+        return { quotaId: data.quotaId };
+      } catch {
+        return null;
       }
-
-      const newId = `pay-${crypto.randomUUID()}`;
-      persist(
-        appendPaidQuota(
-          state,
-          {
-            id: newId,
-            ownerId: owner.id,
-            monthYear: monthYearFromDate(new Date(paidOn)),
-            amount,
-            status: "paid",
-            paymentDate: paidOn,
-          },
-          details,
-        ),
-      );
-      return { quotaId: newId };
     },
-    [portfolio.owners, state, persist],
+    [],
   );
 
   const sendReminders = useCallback(
@@ -341,9 +341,11 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
     [email, overdueItems, buildRecipients],
   );
 
+  const isReady = Boolean(email) && loadedKey === desiredKey;
+
   const value = useMemo<CollectionsContextValue>(
     () => ({
-      isReady: Boolean(email),
+      isReady,
       quotas: state.quotas,
       payments,
       overdueItems,
@@ -358,7 +360,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       refresh,
     }),
     [
-      email,
+      isReady,
       state.quotas,
       payments,
       overdueItems,
