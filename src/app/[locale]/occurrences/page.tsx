@@ -7,7 +7,7 @@ import Header from "@/components/ui/header";
 import BreadcrumbNavigation from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 import { downloadCsv } from "@/lib/export-csv";
-import { mockCondominiums, mockDomainOwners, mockUnits } from "@/fixtures";
+import { usePortfolio } from "@/lib/portfolio";
 
 import NewOccurrenceModal from "./components/new-occurrence-modal";
 import OccurrenceStatistics from "./components/occurrence-statistics";
@@ -19,6 +19,7 @@ import BulkOperations from "./components/bulk-operations";
 import { mockOccurrences } from "./__fixtures__/mock-occurrences";
 import {
   formatOccurrenceDate,
+  occurrenceMatchesSearch,
   toOccurrenceRows,
   type Occurrence,
   type OccurrenceRow,
@@ -29,6 +30,8 @@ function OccurrencesPage() {
   const tState = useTranslations("occurrences.states");
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
+  const { portfolio } = usePortfolio();
+  const { condominiums, owners, units } = portfolio;
 
   const [occurrences, setOccurrences] = useState<Occurrence[]>(mockOccurrences);
   const [selectedOccurrences, setSelectedOccurrences] = useState<string[]>([]);
@@ -45,23 +48,16 @@ function OccurrencesPage() {
   });
 
   const occurrenceRows = useMemo(
-    () => toOccurrenceRows(occurrences, mockCondominiums, mockDomainOwners),
-    [occurrences],
+    () => toOccurrenceRows(occurrences, condominiums, owners),
+    [occurrences, condominiums, owners],
   );
 
   const filteredRows = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
     return occurrenceRows.filter((row) => {
-      const { occurrence, ownerName } = row;
-      const matchesSearch =
-        !q ||
-        occurrence.title.toLowerCase().includes(q) ||
-        occurrence.description.toLowerCase().includes(q) ||
-        (occurrence.unit ?? "").toLowerCase().includes(q) ||
-        (ownerName ?? "").toLowerCase().includes(q);
-
+      const { occurrence } = row;
       return (
-        matchesSearch &&
+        occurrenceMatchesSearch(row, q) &&
         (!filters.condominiumId ||
           occurrence.condominiumId === filters.condominiumId) &&
         (!filters.category || occurrence.category === filters.category) &&
@@ -205,7 +201,7 @@ function OccurrencesPage() {
               <OccurrenceFilters
                 filters={filters}
                 onFiltersChange={setFilters}
-                condominiums={mockCondominiums}
+                condominiums={condominiums}
               />
 
               {selectedOccurrences.length > 0 && (
@@ -234,9 +230,9 @@ function OccurrencesPage() {
       {isModalOpen && (
         <NewOccurrenceModal
           occurrence={editingOccurrence}
-          condominiums={mockCondominiums}
-          owners={mockDomainOwners}
-          units={mockUnits}
+          condominiums={condominiums}
+          owners={owners}
+          units={units}
           onClose={() => {
             setIsModalOpen(false);
             setEditingOccurrence(null);

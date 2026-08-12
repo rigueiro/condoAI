@@ -10,11 +10,7 @@ import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
-import {
-  mockCondominiums,
-  mockDomainOwners,
-  mockUnits,
-} from "@/fixtures";
+import { usePortfolio } from "@/lib/portfolio";
 import NewOccurrenceModal from "../components/new-occurrence-modal";
 import {
   OCCURRENCE_STATE_KEYS,
@@ -35,6 +31,8 @@ function OccurrenceDetailPage() {
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
   const { user } = useAuth();
+  const { portfolio } = usePortfolio();
+  const { condominiums, owners, units } = portfolio;
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
 
@@ -48,9 +46,9 @@ function OccurrenceDetailPage() {
   const row = useMemo(
     () =>
       occurrence
-        ? toOccurrenceRow(occurrence, mockCondominiums, mockDomainOwners)
+        ? toOccurrenceRow(occurrence, condominiums, owners)
         : null,
-    [occurrence],
+    [occurrence, condominiums, owners],
   );
 
   const dateLabel = occurrence
@@ -409,9 +407,9 @@ function OccurrenceDetailPage() {
       {isEditModalOpen && (
         <NewOccurrenceModal
           occurrence={occurrence}
-          condominiums={mockCondominiums}
-          owners={mockDomainOwners}
-          units={mockUnits}
+          condominiums={condominiums}
+          owners={owners}
+          units={units}
           onClose={() => setIsEditModalOpen(false)}
           onSave={(updated) => {
             setOccurrence(updated);

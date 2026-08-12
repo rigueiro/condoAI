@@ -95,3 +95,14 @@ export function toOccurrenceRows(
   const { condoById, ownerById } = buildLookupMaps(condominiums, owners);
   return occurrences.map((o) => joinOccurrence(o, condoById, ownerById));
 }
+
+export function occurrenceMatchesSearch(
+  row: OccurrenceRow,
+  query: string,
+): boolean {
+  if (!query) return true;
+  const { occurrence, condominiumName, ownerName } = row;
+  return `${occurrence.title} ${occurrence.description} ${condominiumName} ${occurrence.unit ?? ""} ${ownerName ?? ""}`
+    .toLowerCase()
+    .includes(query);
+}

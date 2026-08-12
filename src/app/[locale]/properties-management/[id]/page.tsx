@@ -15,7 +15,10 @@ import PropertyModal from "../components/property-modal";
 import PropertyDetailStats from "../components/property-detail-stats";
 import PropertyOwnersList from "../components/property-owners-list";
 import { mockOccurrences } from "@/app/[locale]/occurrences/__fixtures__/mock-occurrences";
-import { formatOccurrenceDate } from "@/app/[locale]/occurrences/types";
+import {
+  formatOccurrenceDate,
+  toOccurrenceRows,
+} from "@/app/[locale]/occurrences/types";
 import type { Condominium } from "@/types";
 import { useCollections } from "@/lib/collections";
 import {
@@ -71,10 +74,14 @@ function PropertyDetailPage() {
     return payments.filter((p) => p.propertyId === id);
   }, [id, payments]);
 
-  const propertyOccurrences = useMemo(() => {
-    if (!id) return [];
-    return mockOccurrences.filter((o) => o.condominiumId === id);
-  }, [id]);
+  const propertyOccurrenceRows = useMemo(() => {
+    if (!condo) return [];
+    return toOccurrenceRows(
+      mockOccurrences.filter((o) => o.condominiumId === condo.id),
+      [condo],
+      portfolio.owners,
+    );
+  }, [condo, portfolio.owners]);
 
   const collectionDataForProperty = useMemo(() => {
     if (!condo || !stats) return null;
@@ -197,7 +204,7 @@ function PropertyDetailPage() {
                   {t("occurrences")}
                 </h2>
                 <div className="bg-surface rounded-lg border border-border-light overflow-hidden">
-                  {propertyOccurrences.length === 0 ? (
+                  {propertyOccurrenceRows.length === 0 ? (
                     <div className="p-8 text-center text-text-secondary">
                       <Icon
                         name="FileText"
@@ -208,35 +215,40 @@ function PropertyDetailPage() {
                     </div>
                   ) : (
                     <ul className="divide-y divide-border-light">
-                      {propertyOccurrences.map((occ) => (
-                        <li key={occ.id}>
-                          <Link
-                            href={`/occurrences/${occ.id}`}
-                            className="block px-6 py-4 hover:bg-secondary-50 transition-smooth"
-                          >
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div>
-                                <p className="font-medium text-text-primary">
-                                  {occ.title}
-                                </p>
-                                <p className="text-sm text-text-secondary">
-                                  {tOccCategory(occ.category)} •{" "}
-                                  {t("unit", { unit: occ.unit ?? "—" })} •{" "}
-                                  {formatOccurrenceDate(occ.dateTime)}
-                                </p>
+                      {propertyOccurrenceRows.map(
+                        ({ occurrence, ownerName }) => (
+                          <li key={occurrence.id}>
+                            <Link
+                              href={`/occurrences/${occurrence.id}`}
+                              className="block px-6 py-4 hover:bg-secondary-50 transition-smooth"
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                  <p className="font-medium text-text-primary">
+                                    {occurrence.title}
+                                  </p>
+                                  <p className="text-sm text-text-secondary">
+                                    {tOccCategory(occurrence.category)} •{" "}
+                                    {t("unit", {
+                                      unit: occurrence.unit ?? "—",
+                                    })}
+                                    {ownerName ? ` • ${ownerName}` : ""} •{" "}
+                                    {formatOccurrenceDate(occurrence.dateTime)}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium text-text-secondary">
+                                    {tOccPriority(occurrence.priority)}
+                                  </span>
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-text-primary">
+                                    {tOccState(occurrence.status)}
+                                  </span>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-medium text-text-secondary">
-                                  {tOccPriority(occ.priority)}
-                                </span>
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-text-primary">
-                                  {tOccState(occ.status)}
-                                </span>
-                              </div>
-                            </div>
-                          </Link>
-                        </li>
-                      ))}
+                            </Link>
+                          </li>
+                        ),
+                      )}
                     </ul>
                   )}
                 </div>
