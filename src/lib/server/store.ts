@@ -3,6 +3,8 @@ import path from "path";
 import type { User } from "@/app/types";
 import type { Portfolio } from "@/lib/portfolio/types";
 import type { CollectionsState } from "@/lib/collections/types";
+import type { FinanceState } from "@/lib/finance/types";
+import type { ComplianceState } from "@/lib/compliance/types";
 import { DEFAULT_PASSWORD } from "@/lib/auth/constants";
 
 export interface StoredAccount {
@@ -33,6 +35,8 @@ export interface StoreDocument {
   resetTokens: Record<string, StoredResetToken>;
   portfolios: Record<string, Portfolio>;
   collections: Record<string, CollectionsState>;
+  finance: Record<string, FinanceState>;
+  compliance: Record<string, ComplianceState>;
 }
 
 const EMPTY_STORE: StoreDocument = {
@@ -42,6 +46,8 @@ const EMPTY_STORE: StoreDocument = {
   resetTokens: {},
   portfolios: {},
   collections: {},
+  finance: {},
+  compliance: {},
 };
 
 /** Process-local cache — avoids re-reading .data/store.json on every API call. */
@@ -73,6 +79,8 @@ function cloneEmpty(): StoreDocument {
     resetTokens: {},
     portfolios: {},
     collections: {},
+    finance: {},
+    compliance: {},
   };
 }
 
@@ -89,6 +97,8 @@ export function readStore(): StoreDocument {
       resetTokens: parsed.resetTokens ?? {},
       portfolios: parsed.portfolios ?? {},
       collections: parsed.collections ?? {},
+      finance: parsed.finance ?? {},
+      compliance: parsed.compliance ?? {},
     };
     return cache;
   } catch {

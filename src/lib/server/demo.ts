@@ -1,12 +1,21 @@
 import {
+  mockAnnualBudgets,
+  mockAssemblyMinutes,
+  mockBankAccounts,
+  mockCertificates,
   mockCondominiums,
   mockDomainOwners,
+  mockExpenses,
+  mockInsurancePolicies,
   mockQuotaPayments,
+  mockSummons,
   mockUnits,
 } from "@/fixtures/domain";
 import type { Organization } from "@/app/[locale]/account/types";
 import type { Portfolio } from "@/lib/portfolio/types";
 import type { CollectionsState } from "@/lib/collections/types";
+import type { FinanceState } from "@/lib/finance/types";
+import type { ComplianceState } from "@/lib/compliance/types";
 
 export const DEMO_ORGANIZATION: Organization = {
   name: "CondoAI Lda.",
@@ -39,5 +48,25 @@ export function buildDemoCollections(): CollectionsState {
   return {
     quotas: mockQuotaPayments.map((q) => ({ ...q })),
     details: {},
+  };
+}
+
+export function buildDemoFinance(): FinanceState {
+  return {
+    budgets: mockAnnualBudgets.map((b) => ({
+      ...b,
+      valuesByCategory: { ...b.valuesByCategory },
+    })),
+    expenses: mockExpenses.map((e) => ({ ...e })),
+    accounts: mockBankAccounts.map((a) => ({ ...a })),
+  };
+}
+
+export function buildDemoCompliance(): ComplianceState {
+  return {
+    policies: mockInsurancePolicies.map((p) => ({ ...p })),
+    certificates: mockCertificates.map((c) => ({ ...c })),
+    assemblies: mockAssemblyMinutes.map((a) => ({ ...a })),
+    summons: mockSummons.map((s) => ({ ...s })),
   };
 }

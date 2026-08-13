@@ -1,75 +1,10 @@
-import {
-  mockAssemblyMinutes,
-  mockCertificates,
-  mockInsurancePolicies,
-  mockSummons,
-} from "@/fixtures/domain";
 import type {
   AssemblyMinutes,
   Certificate,
   InsurancePolicy,
   Summons,
 } from "@/types";
-import { EMPTY_COMPLIANCE, type ComplianceState } from "./types";
-
-const STORAGE_PREFIX = "condoai.compliance.";
-
-const isBrowser = (): boolean => typeof window !== "undefined";
-
-function storageKey(email: string): string {
-  return `${STORAGE_PREFIX}${email.trim().toLowerCase()}`;
-}
-
-function cloneList<T>(items: T[]): T[] {
-  return items.map((item) => ({ ...item }));
-}
-
-export function defaultCompliance(isDemo: boolean): ComplianceState {
-  if (!isDemo) return { ...EMPTY_COMPLIANCE };
-  return {
-    policies: cloneList(mockInsurancePolicies),
-    certificates: cloneList(mockCertificates),
-    assemblies: cloneList(mockAssemblyMinutes),
-    summons: cloneList(mockSummons),
-  };
-}
-
-export function readCompliance(email: string): ComplianceState | null {
-  if (!isBrowser()) return null;
-  try {
-    const raw = window.localStorage.getItem(storageKey(email));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as ComplianceState;
-    return {
-      policies: Array.isArray(parsed.policies) ? parsed.policies : [],
-      certificates: Array.isArray(parsed.certificates)
-        ? parsed.certificates
-        : [],
-      assemblies: Array.isArray(parsed.assemblies) ? parsed.assemblies : [],
-      summons: Array.isArray(parsed.summons) ? parsed.summons : [],
-    };
-  } catch {
-    window.localStorage.removeItem(storageKey(email));
-    return null;
-  }
-}
-
-export function writeCompliance(email: string, state: ComplianceState): void {
-  if (!isBrowser()) return;
-  window.localStorage.setItem(storageKey(email), JSON.stringify(state));
-}
-
-export function loadCompliance(
-  email: string,
-  isDemo: boolean,
-): ComplianceState {
-  const stored = readCompliance(email);
-  if (stored) return stored;
-
-  const seeded = defaultCompliance(isDemo);
-  writeCompliance(email, seeded);
-  return seeded;
-}
+import type { ComplianceState } from "./types";
 
 function upsertById<T extends { id: string }>(items: T[], item: T): T[] {
   const index = items.findIndex((i) => i.id === item.id);

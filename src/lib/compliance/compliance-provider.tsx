@@ -4,12 +4,15 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import { useUser } from "@/lib/auth";
 import { usePortfolio } from "@/lib/portfolio";
+import { apiFetch } from "@/lib/api/client";
 import type {
   AssemblyMinutes,
   Certificate,
@@ -22,20 +25,6 @@ import {
   writeDigestSentToday,
   type DigestCopy,
 } from "./digests";
-import {
-  loadCompliance,
-  removeAssembly,
-  removeCertificate,
-  removePolicy,
-  removeSummons,
-  renewCertificate,
-  renewPolicy,
-  upsertAssembly,
-  upsertCertificate,
-  upsertPolicy,
-  upsertSummons,
-  writeCompliance,
-} from "./storage";
 import {
   EMPTY_COMPLIANCE,
   type AttentionItem,
@@ -75,35 +64,51 @@ const ComplianceContext = createContext<ComplianceContextValue | undefined>(
 export function ComplianceProvider({ children }: { children: ReactNode }) {
   const user = useUser();
   const email = user?.email ?? null;
-  const { isDemo, portfolio } = usePortfolio();
+  const { portfolio } = usePortfolio();
 
   const [state, setState] = useState<ComplianceState>(EMPTY_COMPLIANCE);
   const [digestSentToday, setDigestSentToday] = useState(false);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const [refreshNonce, setRefreshNonce] = useState(0);
+  const inFlightRef = useRef<string | null>(null);
 
-  const loadKey = `${email ?? "anon"}:${isDemo ? "demo" : "live"}`;
-
-  if (loadKey !== loadedKey) {
-    setLoadedKey(loadKey);
-    if (email) {
-      setState(loadCompliance(email, isDemo));
-      setDigestSentToday(readDigestSentToday(email));
-    } else {
-      setState(EMPTY_COMPLIANCE);
-      setDigestSentToday(false);
-    }
+  if (email === null && loadedKey !== null) {
+    setLoadedKey(null);
+    setState(EMPTY_COMPLIANCE);
+    setDigestSentToday(false);
   }
 
-  const persist = useCallback(
-    (updater: (prev: ComplianceState) => ComplianceState) => {
-      setState((prev) => {
-        const next = updater(prev);
-        if (email) writeCompliance(email, next);
-        return next;
-      });
-    },
-    [email],
-  );
+  useEffect(() => {
+    if (!email) return;
+    const key = `${email}:${refreshNonce}`;
+    if (loadedKey === key) return;
+    if (inFlightRef.current === key) return;
+    inFlightRef.current = key;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await apiFetch<{ state: ComplianceState }>(
+          "/api/compliance",
+        );
+        if (cancelled) return;
+        setState(data.state);
+        setDigestSentToday(readDigestSentToday(email));
+        setLoadedKey(key);
+      } catch {
+        if (cancelled) return;
+        setState(EMPTY_COMPLIANCE);
+        setLoadedKey(key);
+      } finally {
+        if (inFlightRef.current === key) {
+          inFlightRef.current = null;
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [email, loadedKey, refreshNonce]);
 
   const refresh = useCallback(() => {
     if (!email) {
@@ -111,13 +116,25 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
       setDigestSentToday(false);
       return;
     }
-    setState(loadCompliance(email, isDemo));
-    setDigestSentToday(readDigestSentToday(email));
-  }, [email, isDemo]);
+    setRefreshNonce((n) => n + 1);
+  }, [email]);
 
-  const attentionItems = useMemo(
-    () => buildAttentionItems(state, portfolio.condominiums),
-    [state.policies, state.certificates, portfolio.condominiums],
+  const patchCompliance = useCallback(
+    async (body: Record<string, unknown>) => {
+      try {
+        const data = await apiFetch<{ state: ComplianceState }>(
+          "/api/compliance",
+          {
+            method: "PATCH",
+            body: JSON.stringify(body),
+          },
+        );
+        setState(data.state);
+      } catch {
+        /* keep current state */
+      }
+    },
+    [],
   );
 
   const sendDeadlineDigest = useCallback(
@@ -141,92 +158,64 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
     [email],
   );
 
-  const upsertInsurance = useCallback(
-    (policy: InsurancePolicy) => persist((prev) => upsertPolicy(prev, policy)),
-    [persist],
-  );
-  const removeInsurance = useCallback(
-    (id: string) => persist((prev) => removePolicy(prev, id)),
-    [persist],
-  );
-  const markInsuranceRenewed = useCallback(
-    (id: string) => persist((prev) => renewPolicy(prev, id)),
-    [persist],
+  const attentionItems = useMemo(
+    () => buildAttentionItems(state, portfolio.condominiums),
+    [state, portfolio.condominiums],
   );
 
-  const upsertCert = useCallback(
-    (certificate: Certificate) =>
-      persist((prev) => upsertCertificate(prev, certificate)),
-    [persist],
-  );
-  const removeCert = useCallback(
-    (id: string) => persist((prev) => removeCertificate(prev, id)),
-    [persist],
-  );
-  const markCertificateRenewed = useCallback(
-    (id: string) => persist((prev) => renewCertificate(prev, id)),
-    [persist],
-  );
-
-  const upsertAssemblyMinutes = useCallback(
-    (assembly: AssemblyMinutes) =>
-      persist((prev) => upsertAssembly(prev, assembly)),
-    [persist],
-  );
-  const removeAssemblyMinutes = useCallback(
-    (id: string) => persist((prev) => removeAssembly(prev, id)),
-    [persist],
-  );
-
-  const upsertSummonsDoc = useCallback(
-    (summons: Summons) => persist((prev) => upsertSummons(prev, summons)),
-    [persist],
-  );
-  const removeSummonsDoc = useCallback(
-    (id: string) => persist((prev) => removeSummons(prev, id)),
-    [persist],
-  );
+  const isReady = email === null || loadedKey === `${email}:${refreshNonce}`;
 
   const value = useMemo<ComplianceContextValue>(
     () => ({
-      isReady: Boolean(email),
+      isReady,
       policies: state.policies,
       certificates: state.certificates,
       assemblies: state.assemblies,
       summons: state.summons,
       attentionItems,
       digestSentToday,
-      upsertInsurance,
-      removeInsurance,
-      markInsuranceRenewed,
-      upsertCert,
-      removeCert,
-      markCertificateRenewed,
-      upsertAssemblyMinutes,
-      removeAssemblyMinutes,
-      upsertSummonsDoc,
-      removeSummonsDoc,
+      upsertInsurance: (policy) => {
+        void patchCompliance({ action: "upsertPolicy", policy });
+      },
+      removeInsurance: (id) => {
+        void patchCompliance({ action: "removePolicy", id });
+      },
+      markInsuranceRenewed: (id) => {
+        void patchCompliance({ action: "renewPolicy", id });
+      },
+      upsertCert: (certificate) => {
+        void patchCompliance({ action: "upsertCertificate", certificate });
+      },
+      removeCert: (id) => {
+        void patchCompliance({ action: "removeCertificate", id });
+      },
+      markCertificateRenewed: (id) => {
+        void patchCompliance({ action: "renewCertificate", id });
+      },
+      upsertAssemblyMinutes: (assembly) => {
+        void patchCompliance({ action: "upsertAssembly", assembly });
+      },
+      removeAssemblyMinutes: (id) => {
+        void patchCompliance({ action: "removeAssembly", id });
+      },
+      upsertSummonsDoc: (summons) => {
+        void patchCompliance({ action: "upsertSummons", summons });
+      },
+      removeSummonsDoc: (id) => {
+        void patchCompliance({ action: "removeSummons", id });
+      },
       sendDeadlineDigest,
       refresh,
     }),
     [
-      email,
+      isReady,
       state.policies,
       state.certificates,
       state.assemblies,
       state.summons,
       attentionItems,
       digestSentToday,
-      upsertInsurance,
-      removeInsurance,
-      markInsuranceRenewed,
-      upsertCert,
-      removeCert,
-      markCertificateRenewed,
-      upsertAssemblyMinutes,
-      removeAssemblyMinutes,
-      upsertSummonsDoc,
-      removeSummonsDoc,
+      patchCompliance,
       sendDeadlineDigest,
       refresh,
     ],
