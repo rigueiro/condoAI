@@ -2,12 +2,12 @@
 
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { v4 as uuidv4 } from "uuid";
 import Header from "@/components/ui/header";
 import BreadcrumbNavigation from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 import { downloadCsv } from "@/lib/export-csv";
 import { usePortfolio } from "@/lib/portfolio";
+import { useOccurrences } from "@/lib/occurrences";
 
 import NewOccurrenceModal from "./components/new-occurrence-modal";
 import OccurrenceStatistics from "./components/occurrence-statistics";
@@ -16,7 +16,6 @@ import OccurrenceFilters, {
 } from "./components/occurrence-filters";
 import OccurrenceTable from "./components/occurrence-table";
 import BulkOperations from "./components/bulk-operations";
-import { mockOccurrences } from "./__fixtures__/mock-occurrences";
 import {
   formatOccurrenceDate,
   occurrenceMatchesSearch,
@@ -32,8 +31,13 @@ function OccurrencesPage() {
   const tPriority = useTranslations("occurrences.priorities");
   const { portfolio } = usePortfolio();
   const { condominiums, owners, units } = portfolio;
+  const {
+    occurrences,
+    upsertOccurrence,
+    removeOccurrences,
+    markOccurrencesResolved,
+  } = useOccurrences();
 
-  const [occurrences, setOccurrences] = useState<Occurrence[]>(mockOccurrences);
   const [selectedOccurrences, setSelectedOccurrences] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOccurrence, setEditingOccurrence] = useState<Occurrence | null>(
@@ -80,24 +84,19 @@ function OccurrencesPage() {
   const handleDeleteOccurrence = useCallback(
     (id: string) => {
       if (!window.confirm(t("confirmDelete"))) return;
-      setOccurrences((prev) => prev.filter((o) => o.id !== id));
+      removeOccurrences([id]);
       setSelectedOccurrences((prev) => prev.filter((sid) => sid !== id));
     },
-    [t],
+    [t, removeOccurrences],
   );
 
   const handleSaveOccurrence = useCallback(
     (occurrence: Occurrence) => {
-      setOccurrences((prev) => {
-        if (occurrence.id) {
-          return prev.map((o) => (o.id === occurrence.id ? occurrence : o));
-        }
-        return [{ ...occurrence, id: uuidv4() }, ...prev];
-      });
+      upsertOccurrence(occurrence);
       setIsModalOpen(false);
       setEditingOccurrence(null);
     },
-    [],
+    [upsertOccurrence],
   );
 
   const handleOccurrenceSelect = useCallback(
@@ -119,15 +118,9 @@ function OccurrencesPage() {
   );
 
   const handleBulkMarkResolved = useCallback(() => {
-    setOccurrences((prev) =>
-      prev.map((o) =>
-        selectedOccurrences.includes(o.id)
-          ? { ...o, status: "Resolved" }
-          : o,
-      ),
-    );
+    markOccurrencesResolved(selectedOccurrences);
     setSelectedOccurrences([]);
-  }, [selectedOccurrences]);
+  }, [selectedOccurrences, markOccurrencesResolved]);
 
   const handleBulkExport = useCallback(() => {
     const selected = occurrenceRows.filter((r) =>
@@ -160,11 +153,9 @@ function OccurrencesPage() {
 
   const handleBulkDelete = useCallback(() => {
     if (!window.confirm(t("confirmDeleteSelected"))) return;
-    setOccurrences((prev) =>
-      prev.filter((o) => !selectedOccurrences.includes(o.id)),
-    );
+    removeOccurrences(selectedOccurrences);
     setSelectedOccurrences([]);
-  }, [selectedOccurrences, t]);
+  }, [selectedOccurrences, t, removeOccurrences]);
 
   return (
     <div className="min-h-screen bg-background">

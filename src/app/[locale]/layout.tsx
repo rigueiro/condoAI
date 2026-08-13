@@ -10,6 +10,7 @@ import { PortfolioProvider } from "@/lib/portfolio";
 import { CollectionsProvider } from "@/lib/collections";
 import { ComplianceProvider } from "@/lib/compliance";
 import { FinanceProvider } from "@/lib/finance";
+import { OccurrencesProvider } from "@/lib/occurrences";
 import { ThemeProvider, ThemeScript } from "@/lib/theme";
 import { routing } from "@/i18n/routing";
 
@@ -69,7 +70,9 @@ export default async function LocaleLayout({
               <PortfolioProvider>
                 <CollectionsProvider>
                   <ComplianceProvider>
-                    <FinanceProvider>{children}</FinanceProvider>
+                    <FinanceProvider>
+                      <OccurrencesProvider>{children}</OccurrencesProvider>
+                    </FinanceProvider>
                   </ComplianceProvider>
                 </CollectionsProvider>
               </PortfolioProvider>

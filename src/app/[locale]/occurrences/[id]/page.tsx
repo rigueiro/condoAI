@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
+import { useOccurrences } from "@/lib/occurrences";
 import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
@@ -17,13 +17,26 @@ import {
   PRIORITY_BADGE,
   STATE_BADGE,
 } from "../components/occurrence-meta";
-import { mockOccurrences } from "../__fixtures__/mock-occurrences";
 import {
   formatOccurrenceDate,
   toOccurrenceRow,
   type Occurrence,
   type OccurrenceComment,
 } from "../types";
+
+function DetailFrame({ children }: { children?: ReactNode }) {
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="pt-20">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <Breadcrumb />
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}
 
 function OccurrenceDetailPage() {
   const t = useTranslations("occurrences.detail");
@@ -33,13 +46,14 @@ function OccurrenceDetailPage() {
   const { user } = useAuth();
   const { portfolio } = usePortfolio();
   const { condominiums, owners, units } = portfolio;
+  const { occurrences, isReady, upsertOccurrence } = useOccurrences();
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
 
-  const [occurrence, setOccurrence] = useState<Occurrence | null>(() => {
-    if (!id) return null;
-    return mockOccurrences.find((o) => o.id === id) ?? null;
-  });
+  const occurrence = useMemo(
+    () => (id ? occurrences.find((o) => o.id === id) ?? null : null),
+    [id, occurrences],
+  );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [newComment, setNewComment] = useState("");
 
@@ -76,34 +90,32 @@ function OccurrenceDetailPage() {
     return events;
   }, [occurrence, row, dateLabel, t]);
 
+  if (!isReady) {
+    return <DetailFrame />;
+  }
+
   if (!id || !occurrence || !row) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="pt-20">
-          <div className="max-w-7xl mx-auto px-6 py-8">
-            <Breadcrumb />
-            <div className="bg-surface rounded-lg border border-border-light p-8 text-center">
-              <Icon
-                name="ClipboardX"
-                size={48}
-                className="text-secondary-300 mx-auto mb-4"
-              />
-              <h2 className="text-xl font-semibold text-text-primary mb-2">
-                {t("notFound")}
-              </h2>
-              <p className="text-text-secondary mb-4">{t("notFoundDesc")}</p>
-              <Link
-                href="/occurrences"
-                className="inline-flex items-center space-x-2 text-primary hover:underline"
-              >
-                <Icon name="ArrowLeft" size={16} />
-                <span>{t("backToList")}</span>
-              </Link>
-            </div>
-          </div>
-        </main>
-      </div>
+      <DetailFrame>
+        <div className="bg-surface rounded-lg border border-border-light p-8 text-center">
+          <Icon
+            name="ClipboardX"
+            size={48}
+            className="text-secondary-300 mx-auto mb-4"
+          />
+          <h2 className="text-xl font-semibold text-text-primary mb-2">
+            {t("notFound")}
+          </h2>
+          <p className="text-text-secondary mb-4">{t("notFoundDesc")}</p>
+          <Link
+            href="/occurrences"
+            className="inline-flex items-center space-x-2 text-primary hover:underline"
+          >
+            <Icon name="ArrowLeft" size={16} />
+            <span>{t("backToList")}</span>
+          </Link>
+        </div>
+      </DetailFrame>
     );
   }
 
@@ -112,23 +124,25 @@ function OccurrenceDetailPage() {
     PRIORITY_BADGE[occurrence.priority] ?? PRIORITY_BADGE.LOW;
 
   const handleStateChange = (status: string) => {
-    setOccurrence((prev) =>
-      prev ? { ...prev, status: status as Occurrence["status"] } : prev,
-    );
+    upsertOccurrence({
+      ...occurrence,
+      status: status as Occurrence["status"],
+    });
   };
 
   const handleAddComment = () => {
     const message = newComment.trim();
     if (!message) return;
     const comment: OccurrenceComment = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       author: user?.name ?? t("you"),
       message,
       createdAt: formatOccurrenceDate(new Date()),
     };
-    setOccurrence((prev) =>
-      prev ? { ...prev, comments: [...prev.comments, comment] } : prev,
-    );
+    upsertOccurrence({
+      ...occurrence,
+      comments: [...occurrence.comments, comment],
+    });
     setNewComment("");
   };
 
@@ -412,7 +426,7 @@ function OccurrenceDetailPage() {
           units={units}
           onClose={() => setIsEditModalOpen(false)}
           onSave={(updated) => {
-            setOccurrence(updated);
+            upsertOccurrence(updated);
             setIsEditModalOpen(false);
           }}
         />

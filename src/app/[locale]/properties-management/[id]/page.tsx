@@ -14,13 +14,13 @@ import RecordPaymentModal from "@/app/[locale]/payment-tracking/components/recor
 import PropertyModal from "../components/property-modal";
 import PropertyDetailStats from "../components/property-detail-stats";
 import PropertyOwnersList from "../components/property-owners-list";
-import { mockOccurrences } from "@/app/[locale]/occurrences/__fixtures__/mock-occurrences";
 import {
   formatOccurrenceDate,
   toOccurrenceRows,
 } from "@/app/[locale]/occurrences/types";
 import type { Condominium } from "@/types";
 import { useCollections } from "@/lib/collections";
+import { useOccurrences } from "@/lib/occurrences";
 import {
   buildingTypeI18nKey,
   collectionSummaryForCondo,
@@ -45,6 +45,7 @@ function PropertyDetailPage() {
   const { portfolio, isDemo, upsertCondominium } = usePortfolio();
   const { quotas, payments, recordPayment, ownersWithBalances } =
     useCollections();
+  const { occurrences } = useOccurrences();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
@@ -77,11 +78,11 @@ function PropertyDetailPage() {
   const propertyOccurrenceRows = useMemo(() => {
     if (!condo) return [];
     return toOccurrenceRows(
-      mockOccurrences.filter((o) => o.condominiumId === condo.id),
+      occurrences.filter((o) => o.condominiumId === condo.id),
       [condo],
       portfolio.owners,
     );
-  }, [condo, portfolio.owners]);
+  }, [condo, occurrences, portfolio.owners]);
 
   const collectionDataForProperty = useMemo(() => {
     if (!condo || !stats) return null;

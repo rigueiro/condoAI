@@ -7,6 +7,7 @@ import {
   mockDomainOwners,
   mockExpenses,
   mockInsurancePolicies,
+  mockOccurrences,
   mockQuotaPayments,
   mockSummons,
   mockUnits,
@@ -16,6 +17,7 @@ import type { Portfolio } from "@/lib/portfolio/types";
 import type { CollectionsState } from "@/lib/collections/types";
 import type { FinanceState } from "@/lib/finance/types";
 import type { ComplianceState } from "@/lib/compliance/types";
+import type { OccurrencesState } from "@/lib/occurrences/types";
 
 export const DEMO_ORGANIZATION: Organization = {
   name: "CondoAI Lda.",
@@ -68,5 +70,16 @@ export function buildDemoCompliance(): ComplianceState {
     certificates: mockCertificates.map((c) => ({ ...c })),
     assemblies: mockAssemblyMinutes.map((a) => ({ ...a })),
     summons: mockSummons.map((s) => ({ ...s })),
+  };
+}
+
+export function buildDemoOccurrences(): OccurrencesState {
+  return {
+    occurrences: mockOccurrences.map((o) => ({
+      ...o,
+      photos: [...o.photos],
+      comments: o.comments.map((c) => ({ ...c })),
+      history: o.history.map((h) => ({ ...h })),
+    })),
   };
 }

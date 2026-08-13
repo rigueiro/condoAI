@@ -5,6 +5,7 @@ import type { Portfolio } from "@/lib/portfolio/types";
 import type { CollectionsState } from "@/lib/collections/types";
 import type { FinanceState } from "@/lib/finance/types";
 import type { ComplianceState } from "@/lib/compliance/types";
+import type { OccurrencesState } from "@/lib/occurrences/types";
 import { DEFAULT_PASSWORD } from "@/lib/auth/constants";
 
 export interface StoredAccount {
@@ -37,6 +38,7 @@ export interface StoreDocument {
   collections: Record<string, CollectionsState>;
   finance: Record<string, FinanceState>;
   compliance: Record<string, ComplianceState>;
+  occurrences: Record<string, OccurrencesState>;
 }
 
 const EMPTY_STORE: StoreDocument = {
@@ -48,6 +50,7 @@ const EMPTY_STORE: StoreDocument = {
   collections: {},
   finance: {},
   compliance: {},
+  occurrences: {},
 };
 
 /** Process-local cache — avoids re-reading .data/store.json on every API call. */
@@ -81,6 +84,7 @@ function cloneEmpty(): StoreDocument {
     collections: {},
     finance: {},
     compliance: {},
+    occurrences: {},
   };
 }
 
@@ -99,6 +103,7 @@ export function readStore(): StoreDocument {
       collections: parsed.collections ?? {},
       finance: parsed.finance ?? {},
       compliance: parsed.compliance ?? {},
+      occurrences: parsed.occurrences ?? {},
     };
     return cache;
   } catch {
