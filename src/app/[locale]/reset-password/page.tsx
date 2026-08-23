@@ -54,7 +54,6 @@ function ResetPasswordForm() {
   const [email, setEmail] = useState<string | null>(null);
   const [form, setForm] = useState({ newPassword: "", confirmPassword: "" });
   const [errors, setErrors] = useState<Errors>({});
-  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -210,8 +209,6 @@ function ResetPasswordForm() {
               })}
               disabled={isSubmitting}
               autoFocus
-              showPassword={showPassword}
-              onToggleVisibility={() => setShowPassword((v) => !v)}
             />
 
             <AuthPasswordField
@@ -225,7 +222,6 @@ function ResetPasswordForm() {
                 min: MIN_PASSWORD_LENGTH,
               })}
               disabled={isSubmitting}
-              showPassword={showPassword}
             />
 
             <AuthSubmitButton

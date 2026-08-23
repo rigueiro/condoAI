@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 
@@ -15,9 +15,6 @@ interface AuthPasswordFieldProps {
   autoComplete?: string;
   disabled?: boolean;
   autoFocus?: boolean;
-  /** When set, shows a visibility toggle using this controlled state. */
-  showPassword?: boolean;
-  onToggleVisibility?: () => void;
 }
 
 export function AuthPasswordField({
@@ -31,12 +28,9 @@ export function AuthPasswordField({
   autoComplete = "new-password",
   disabled = false,
   autoFocus = false,
-  showPassword = false,
-  onToggleVisibility,
 }: AuthPasswordFieldProps) {
   const t = useTranslations("auth");
-  const showToggle = typeof onToggleVisibility === "function";
-  const inputType = showPassword ? "text" : "password";
+  const [visible, setVisible] = useState(false);
 
   return (
     <div>
@@ -51,7 +45,7 @@ export function AuthPasswordField({
           <Icon name="Lock" size={20} color="var(--color-secondary)" />
         </div>
         <input
-          type={inputType}
+          type={visible ? "text" : "password"}
           id={id}
           name={name}
           value={value}
@@ -60,20 +54,23 @@ export function AuthPasswordField({
           autoFocus={autoFocus}
           autoComplete={autoComplete}
           placeholder={placeholder}
-          className={`w-full pl-10 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth disabled:opacity-60 ${
-            showToggle ? "pr-12" : "pr-4"
-          } ${error ? "border-error" : "border-border-medium"}`}
+          className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth disabled:opacity-60 ${
+            error ? "border-error" : "border-border-medium"
+          }`}
         />
-        {showToggle && (
-          <button
-            type="button"
-            onClick={onToggleVisibility}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-secondary hover:text-text-primary"
-            aria-label={showPassword ? t("hidePassword") : t("showPassword")}
-          >
-            <Icon name={showPassword ? "EyeOff" : "Eye"} size={18} />
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setVisible((current) => !current)}
+          disabled={disabled}
+          className="absolute inset-y-0 right-0 px-3 flex items-center text-text-secondary hover:text-text-primary focus-visible:outline-none focus-visible:text-text-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label={visible ? t("hidePassword") : t("showPassword")}
+        >
+          <Icon
+            name={visible ? "EyeOff" : "Eye"}
+            size={18}
+            aria-hidden="true"
+          />
+        </button>
       </div>
       {error && (
         <p className="mt-2 text-sm text-error flex items-center space-x-1">
