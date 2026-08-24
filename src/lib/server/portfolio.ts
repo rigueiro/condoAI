@@ -6,6 +6,8 @@ import {
   type OnboardingStep,
   type Portfolio,
 } from "@/lib/portfolio/types";
+import { migratePortfolioOccupancy } from "@/lib/portfolio/occupancy";
+import type { OccupancyLink } from "@/lib/portfolio/occupancy";
 import {
   removeCondominiumInMemory,
   removeOwnerInMemory,
@@ -27,13 +29,13 @@ function normalizeCondominium(condo: Condominium): Condominium {
 }
 
 function normalizePortfolio(parsed: Portfolio): Portfolio {
-  return {
+  return migratePortfolioOccupancy({
     organization: parsed.organization ?? null,
     condominiums: (parsed.condominiums ?? []).map(normalizeCondominium),
     units: parsed.units ?? [],
     owners: parsed.owners ?? [],
     onboardingStep: parsed.onboardingStep ?? 1,
-  };
+  });
 }
 
 function loadOrSeedPortfolio(email: string): {
@@ -158,10 +160,10 @@ export function removeCondominium(
 export function upsertOwner(
   email: string,
   owner: Owner,
-  unit?: Unit,
+  occupancies?: OccupancyLink[],
 ): Portfolio {
   return mutatePortfolio(email, (current) =>
-    upsertOwnerInMemory(current, owner, unit),
+    upsertOwnerInMemory(current, owner, occupancies),
   );
 }
 

@@ -42,8 +42,18 @@ export interface Unit {
     permillage: number; // Fraction of Condominium.totalPermillage (sum = 1000)
     type: 'apartment' | 'shop' | 'garage' | 'parking' | 'other';
     areaSqm: number | null;
+    /** People linked to this fraction. Tenant/representative are occupancies, not extra Owner rows. */
+    occupancies: Occupancy[];
 }
 
+export type OccupancyRole = 'owner' | 'tenant' | 'representative';
+
+export interface Occupancy {
+    ownerId: string;
+    role: OccupancyRole;
+}
+
+/** A person in the administration CRM. Links to fractions via Unit.occupancies. */
 export interface Owner {
     id: string;
     fullName: string;
@@ -53,10 +63,7 @@ export interface Owner {
         mailingAddress: string | null;
     };
     taxId: string; // NIF
-    unitId: string; // Reference to unit
-    unitPermillage: number;
-    monthlyQuota: number; // Auto-calculated
-    type: 'owner' | 'tenant' | 'representative';
+    monthlyQuota: number; // Total across owned fractions
     documents: string[]; // Array of URLs/paths for uploads (power of attorney, etc.)
     entryDate: Date | string;
     exitDate: Date | string | null;

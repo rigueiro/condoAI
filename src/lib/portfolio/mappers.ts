@@ -1,7 +1,16 @@
 import { formatPortugueseAddress } from "@/lib/address";
 import { roundCurrency } from "@/lib/quota";
-import type { OwnerRow } from "@/app/[locale]/owners-management/components/types";
-import type { Condominium, Owner, QuotaPayment, Unit } from "@/types";
+import type {
+  OwnerOccupancyView,
+  OwnerRow,
+} from "@/app/[locale]/owners-management/components/types";
+import type { Condominium, Owner, QuotaPayment } from "@/types";
+import {
+  indexOccupanciesByOwnerId,
+  occupanciesForOwner,
+  type OccupancyLink,
+  type OccupancyOnUnit,
+} from "./occupancy";
 import type { Portfolio } from "./types";
 
 export const COMMON_AREA_LABELS: Record<string, string> = {
@@ -96,14 +105,21 @@ export function labelCommonAreas(areas: string[]): string[] {
 }
 
 export function ownersByCondoId(portfolio: Portfolio): Map<string, Owner[]> {
-  const unitById = new Map(portfolio.units.map((u) => [u.id, u]));
   const map = new Map<string, Owner[]>();
-  for (const owner of portfolio.owners) {
-    const condoId = unitById.get(owner.unitId)?.condominiumId;
-    if (!condoId) continue;
-    const list = map.get(condoId) ?? [];
-    list.push(owner);
-    map.set(condoId, list);
+  const ownerById = new Map(portfolio.owners.map((owner) => [owner.id, owner]));
+  const seen = new Map<string, Set<string>>();
+  for (const unit of portfolio.units) {
+    for (const occupancy of unit.occupancies ?? []) {
+      const owner = ownerById.get(occupancy.ownerId);
+      if (!owner) continue;
+      const ids = seen.get(unit.condominiumId) ?? new Set();
+      if (ids.has(owner.id)) continue;
+      ids.add(owner.id);
+      seen.set(unit.condominiumId, ids);
+      const list = map.get(unit.condominiumId) ?? [];
+      list.push(owner);
+      map.set(unit.condominiumId, list);
+    }
   }
   return map;
 }
@@ -112,12 +128,7 @@ export function ownersForCondo(
   portfolio: Portfolio,
   condominiumId: string,
 ): Owner[] {
-  const unitIds = new Set(
-    portfolio.units
-      .filter((u) => u.condominiumId === condominiumId)
-      .map((u) => u.id),
-  );
-  return portfolio.owners.filter((o) => unitIds.has(o.unitId));
+  return ownersByCondoId(portfolio).get(condominiumId) ?? [];
 }
 
 /** Derived fee/occupancy/collection stats for a condominium. */
@@ -125,9 +136,10 @@ export function condoStatsFromOwners(
   condo: Condominium,
   owners: Owner[],
   quotas: QuotaPayment[] = [],
+  occupiedUnits = owners.length,
 ): CondoStats {
-  const monthlyQuotas = owners.map((o) => o.monthlyQuota);
-  const occupiedUnits = owners.length;
+  const billed = owners.filter((owner) => owner.monthlyQuota > 0);
+  const monthlyQuotas = billed.map((o) => o.monthlyQuota);
 
   if (monthlyQuotas.length === 0) {
     return {
@@ -168,10 +180,15 @@ export function condoStats(
   portfolio: Portfolio,
   quotas: QuotaPayment[] = [],
 ): CondoStats {
+  const occupiedUnits = portfolio.units.filter(
+    (unit) =>
+      unit.condominiumId === condo.id && (unit.occupancies ?? []).length > 0,
+  ).length;
   return condoStatsFromOwners(
     condo,
     ownersForCondo(portfolio, condo.id),
     quotas,
+    occupiedUnits,
   );
 }
 
@@ -235,40 +252,65 @@ export function buildCollectionFromPortfolio(
   portfolio: Portfolio,
   quotas: QuotaPayment[] = [],
 ): CollectionSummaryData {
-  const byCondo = ownersByCondoId(portfolio);
   return summarizeCollection(
     portfolio.condominiums.map((condo) =>
-      breakdownFromStats(
-        condo,
-        condoStatsFromOwners(condo, byCondo.get(condo.id) ?? [], quotas),
-      ),
+      breakdownFromStats(condo, condoStats(condo, portfolio, quotas)),
     ),
   );
 }
 
 export type OwnerDisplay = {
-  unit: Unit | undefined;
-  condominium: Condominium | undefined;
+  occupancies: OwnerOccupancyView[];
   unitLabel: string;
   condominiumId: string;
+  condominiumIds: string[];
   condominiumName: string;
+  unitPermillage: number;
 };
 
-/** Resolve Unit + Condominium labels for a domain owner. */
+function occupancyViews(
+  links: OccupancyOnUnit[],
+  condoById: Map<string, Condominium>,
+): OwnerOccupancyView[] {
+  return links.map(({ unit, role }) => ({
+    unitId: unit.id,
+    unitLabel: unit.label,
+    condominiumId: unit.condominiumId,
+    condominiumName: condoById.get(unit.condominiumId)?.name ?? "",
+    role,
+  }));
+}
+
+/** Resolve occupancy joins for a domain person. */
 export function ownerDisplay(
   portfolio: Portfolio,
   owner: Owner,
-  unitById = new Map(portfolio.units.map((u) => [u.id, u])),
   condoById = new Map(portfolio.condominiums.map((c) => [c.id, c])),
+  linksByOwner?: Map<string, OccupancyOnUnit[]>,
 ): OwnerDisplay {
-  const unit = unitById.get(owner.unitId);
-  const condominium = unit ? condoById.get(unit.condominiumId) : undefined;
+  const links = occupanciesForOwner(portfolio.units, owner.id, linksByOwner);
+  const occupancies = occupancyViews(links, condoById);
+  const first = occupancies[0];
+  const condominiumIds = [
+    ...new Set(occupancies.map((item) => item.condominiumId)),
+  ];
+  const names = [
+    ...new Set(
+      occupancies
+        .map((item) => item.condominiumName)
+        .filter((name) => name.length > 0),
+    ),
+  ];
+
   return {
-    unit,
-    condominium,
-    unitLabel: unit?.label ?? owner.unitId,
-    condominiumId: condominium?.id ?? unit?.condominiumId ?? "",
-    condominiumName: condominium?.name ?? "",
+    occupancies,
+    unitLabel: occupancies.map((item) => item.unitLabel).join(", ") || "—",
+    condominiumId: first?.condominiumId ?? "",
+    condominiumIds,
+    condominiumName: names.join(", "),
+    unitPermillage: links
+      .filter((item) => item.role === "owner")
+      .reduce((sum, item) => sum + item.unit.permillage, 0),
   };
 }
 
@@ -277,15 +319,13 @@ export function portfolioToOwnerRows(
   portfolio: Portfolio,
   avatars: Record<string, string> = {},
 ): OwnerRow[] {
-  const unitById = new Map(portfolio.units.map((u) => [u.id, u]));
   const condoById = new Map(portfolio.condominiums.map((c) => [c.id, c]));
+  const linksByOwner = indexOccupanciesByOwnerId(portfolio.units);
   return portfolio.owners.map((owner) => {
-    const display = ownerDisplay(portfolio, owner, unitById, condoById);
+    const display = ownerDisplay(portfolio, owner, condoById, linksByOwner);
     return {
       owner,
-      unitLabel: display.unitLabel,
-      condominiumId: display.condominiumId,
-      condominiumName: display.condominiumName,
+      ...display,
       paymentStatus: "" as const,
       currentBalance: 0,
       lastPayment: "",
@@ -294,56 +334,13 @@ export function portfolioToOwnerRows(
   });
 }
 
-/**
- * Find a unit in a condominium by label, or build a new one.
- * Used when the owner modal only collects a free-text unit label.
- */
-export function resolveOrCreateUnit(
-  portfolio: Portfolio,
-  condominiumId: string,
-  unitLabel: string,
-  existingUnitId?: string,
-): Unit {
-  const label = unitLabel.trim();
-  if (existingUnitId) {
-    const existing = portfolio.units.find((u) => u.id === existingUnitId);
-    if (existing) {
-      return {
-        ...existing,
-        condominiumId,
-        label,
-      };
-    }
-  }
-
-  const match = portfolio.units.find(
-    (u) =>
-      u.condominiumId === condominiumId &&
-      u.label.toLowerCase() === label.toLowerCase(),
-  );
-  if (match) return match;
-
-  return {
-    id: crypto.randomUUID(),
-    condominiumId,
-    label,
-    floor: null,
-    permillage: 0,
-    type: "apartment",
-    areaSqm: null,
-  };
-}
-
 export function buildEmptyOwner(input: {
   fullName: string;
   email: string;
   phone: string;
   mailingAddress?: string | null;
   taxId?: string;
-  unitId: string;
-  unitPermillage?: number;
   monthlyQuota?: number;
-  type?: Owner["type"];
 }): Owner {
   const today = new Date().toISOString().slice(0, 10);
   return {
@@ -355,45 +352,37 @@ export function buildEmptyOwner(input: {
       mailingAddress: input.mailingAddress?.trim() || null,
     },
     taxId: input.taxId?.trim() ?? "",
-    unitId: input.unitId,
-    unitPermillage: input.unitPermillage ?? 0,
     monthlyQuota: input.monthlyQuota ?? 0,
-    type: input.type ?? "owner",
     documents: [],
     entryDate: today,
     exitDate: null,
   };
 }
 
-/** Apply owner-modal form fields onto a new or existing domain Owner + Unit. */
+/** Apply owner-modal form fields onto a person and their occupancy links. */
 export function ownerFromFormSave(
-  portfolio: Portfolio,
   data: {
     fullName: string;
     email: string;
     phone: string;
-    unitLabel: string;
-    condominiumId: string;
     mailingAddress?: string;
     monthlyQuota?: string;
     taxId?: string;
+    occupancies: OccupancyLink[];
   },
   existing?: Owner,
-): { owner: Owner; unit: Unit } {
-  const unit = resolveOrCreateUnit(
-    portfolio,
-    data.condominiumId,
-    data.unitLabel,
-    existing?.unitId,
-  );
+): { owner: Owner; occupancies: OccupancyLink[] } {
   const parsedQuota = data.monthlyQuota ? parseFloat(data.monthlyQuota) : NaN;
   const monthlyQuota = Number.isFinite(parsedQuota)
     ? parsedQuota
     : (existing?.monthlyQuota ?? 0);
+  const occupancies = data.occupancies
+    .filter((row) => row.unitId)
+    .map((row) => ({ unitId: row.unitId, role: row.role }));
 
   if (existing) {
     return {
-      unit,
+      occupancies,
       owner: {
         ...existing,
         fullName: data.fullName.trim(),
@@ -403,23 +392,19 @@ export function ownerFromFormSave(
           mailingAddress: data.mailingAddress?.trim() || null,
         },
         taxId: data.taxId?.trim() ?? existing.taxId,
-        unitId: unit.id,
-        unitPermillage: unit.permillage || existing.unitPermillage,
         monthlyQuota,
       },
     };
   }
 
   return {
-    unit,
+    occupancies,
     owner: buildEmptyOwner({
       fullName: data.fullName,
       email: data.email,
       phone: data.phone,
       mailingAddress: data.mailingAddress,
       taxId: data.taxId,
-      unitId: unit.id,
-      unitPermillage: unit.permillage,
       monthlyQuota,
     }),
   };

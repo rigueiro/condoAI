@@ -65,7 +65,6 @@ function deriveBalances(
 function portfolioLookup(portfolio: Portfolio) {
   return {
     ownerById: new Map(portfolio.owners.map((o) => [o.id, o])),
-    unitById: new Map(portfolio.units.map((u) => [u.id, u])),
     condoById: new Map(portfolio.condominiums.map((c) => [c.id, c])),
   };
 }
@@ -75,12 +74,12 @@ export function quotasToPaymentRows(
   portfolio: Portfolio,
   details: Record<string, PaymentDetails>,
 ): PaymentRow[] {
-  const { ownerById, unitById, condoById } = portfolioLookup(portfolio);
+  const { ownerById, condoById } = portfolioLookup(portfolio);
 
   return quotas.map((quota, index) => {
     const owner = ownerById.get(quota.ownerId);
     const display = owner
-      ? ownerDisplay(portfolio, owner, unitById, condoById)
+      ? ownerDisplay(portfolio, owner, condoById)
       : undefined;
     const date =
       quota.paymentDate != null
@@ -114,14 +113,14 @@ export function quotasToOverdueItems(
   quotas: QuotaPayment[],
   portfolio: Portfolio,
 ): OverdueItem[] {
-  const { ownerById, unitById, condoById } = portfolioLookup(portfolio);
+  const { ownerById, condoById } = portfolioLookup(portfolio);
 
   return quotas
     .filter((q) => q.status === "overdue")
     .map((q) => {
       const owner = ownerById.get(q.ownerId);
       const display = owner
-        ? ownerDisplay(portfolio, owner, unitById, condoById)
+        ? ownerDisplay(portfolio, owner, condoById)
         : undefined;
       return {
         id: q.id,

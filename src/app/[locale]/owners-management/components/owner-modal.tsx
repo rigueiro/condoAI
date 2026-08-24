@@ -1,43 +1,64 @@
 "use client";
 
-import React, { useState, ChangeEvent, SyntheticEvent } from "react";
+import React, { useMemo, useState, ChangeEvent, SyntheticEvent } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
+import type { OccupancyRole, Unit } from "@/types";
+import { OCCUPANCY_ROLES, type OccupancyLink } from "@/lib/portfolio";
 import type { OwnerRow } from "./types";
 
 export type OwnerFormSave = {
   fullName: string;
   email: string;
   phone: string;
-  unitLabel: string;
-  condominiumId: string;
   mailingAddress?: string;
   monthlyQuota?: string;
   taxId?: string;
+  occupancies: OccupancyLink[];
 };
 
 interface Props {
   owner: OwnerRow | null;
   properties: { id: string; name: string }[];
+  units: Unit[];
   onClose: () => void;
   onSave: (ownerData: OwnerFormSave) => void;
 }
+
+type OccupancyRow = {
+  key: string;
+  condominiumId: string;
+  unitId: string;
+  role: OccupancyRole;
+};
 
 type Errors = {
   [key: string]: string;
 };
 
-function OwnerModal({ owner, properties, onClose, onSave }: Props) {
+function newOccupancyRow(
+  condominiumId = "",
+  unitId = "",
+  role: OccupancyRole = "owner",
+): OccupancyRow {
+  return {
+    key: crypto.randomUUID(),
+    condominiumId,
+    unitId,
+    role,
+  };
+}
+
+function OwnerModal({ owner, properties, units, onClose, onSave }: Props) {
   const t = useTranslations("ownersManagement.modal");
+  const tRole = useTranslations("ownersManagement.roles");
   const { currencySymbol } = useFormatCurrency();
   const [formData, setFormData] = useState(() => ({
     fullName: owner?.owner.fullName || "",
     email: owner?.owner.contacts.email || "",
     phone: owner?.owner.contacts.phone || "",
-    unitLabel: owner?.unitLabel || "",
-    condominiumId: owner?.condominiumId || "",
     mailingAddress: owner?.owner.contacts.mailingAddress || "",
     monthlyQuota:
       owner?.owner.monthlyQuota != null
@@ -45,8 +66,30 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
         : "",
     taxId: owner?.owner.taxId || "",
   }));
+  const [occupancies, setOccupancies] = useState<OccupancyRow[]>(() =>
+    owner?.occupancies.length
+      ? owner.occupancies.map((item) =>
+          newOccupancyRow(item.condominiumId, item.unitId, item.role),
+        )
+      : [newOccupancyRow()],
+  );
 
   const [errors, setErrors] = useState<Errors>({});
+
+  const unitsByCondoId = useMemo(() => {
+    const map = new Map<string, Unit[]>();
+    for (const unit of units) {
+      const list = map.get(unit.condominiumId) ?? [];
+      list.push(unit);
+      map.set(unit.condominiumId, list);
+    }
+    return map;
+  }, [units]);
+
+  const selectedUnitIds = useMemo(
+    () => new Set(occupancies.map((row) => row.unitId).filter(Boolean)),
+    [occupancies],
+  );
 
   const validateForm = () => {
     const newErrors: Errors = {};
@@ -65,12 +108,34 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
       newErrors.phone = t("validation.phoneRequired");
     }
 
-    if (!formData.unitLabel.trim()) {
-      newErrors.unitLabel = t("validation.unitRequired");
+    const filled = occupancies.filter((row) => row.unitId);
+    if (filled.length === 0) {
+      newErrors.occupancies = t("validation.occupancyRequired");
     }
 
-    if (!formData.condominiumId) {
-      newErrors.condominiumId = t("validation.propertyRequired");
+    occupancies.forEach((row, index) => {
+      if (!row.condominiumId && !row.unitId) return;
+      if (!row.condominiumId) {
+        newErrors[`occupancy-${index}-property`] = t(
+          "validation.propertyRequired",
+        );
+      }
+      if (!row.unitId) {
+        const condoUnits = unitsByCondoId.get(row.condominiumId) ?? [];
+        newErrors[`occupancy-${index}-unit`] =
+          row.condominiumId && condoUnits.length === 0
+            ? t("validation.registerFractionsFirst")
+            : t("validation.unitRequired");
+      }
+    });
+
+    const seen = new Set<string>();
+    for (const row of filled) {
+      if (seen.has(row.unitId)) {
+        newErrors.occupancies = t("validation.duplicateUnit");
+        break;
+      }
+      seen.add(row.unitId);
     }
 
     setErrors(newErrors);
@@ -80,7 +145,15 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
   const handleSubmit = (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
-      onSave(formData);
+      onSave({
+        ...formData,
+        occupancies: occupancies
+          .filter((row) => row.unitId)
+          .map((row) => ({
+            unitId: row.unitId,
+            role: row.role,
+          })),
+      });
     }
   };
 
@@ -96,6 +169,42 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
         [field]: "",
       }));
     }
+  };
+
+  const handleOccupancyChange = (
+    index: number,
+    field: keyof OccupancyRow,
+    value: string,
+  ) => {
+    setOccupancies((prev) =>
+      prev.map((row, i) => {
+        if (i !== index) return row;
+        if (field === "condominiumId") {
+          return { ...row, condominiumId: value, unitId: "" };
+        }
+        if (field === "role") {
+          return { ...row, role: value as OccupancyRole };
+        }
+        return { ...row, [field]: value };
+      }),
+    );
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.occupancies;
+      delete next[`occupancy-${index}-property`];
+      delete next[`occupancy-${index}-unit`];
+      return next;
+    });
+  };
+
+  const addOccupancy = () => {
+    setOccupancies((prev) => [...prev, newOccupancyRow()]);
+  };
+
+  const removeOccupancy = (index: number) => {
+    setOccupancies((prev) =>
+      prev.length <= 1 ? [newOccupancyRow()] : prev.filter((_, i) => i !== index),
+    );
   };
 
   const handleBackdropClick = (e: SyntheticEvent) => {
@@ -196,55 +305,18 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
                   placeholder={t("placeholderEmergency")}
                 />
               </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-medium text-text-primary mb-4">
-              {t("propertyInfo")}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  {t("property")}
-                </label>
-                <Select
-                  value={formData.condominiumId}
-                  onChange={(e) =>
-                    handleChange("condominiumId", e.target.value)
-                  }
-                  invalid={Boolean(errors.condominiumId)}
-                >
-                  <option value="">{t("selectProperty")}</option>
-                  {properties.map((property) => (
-                    <option key={property.id} value={property.id}>
-                      {property.name}
-                    </option>
-                  ))}
-                </Select>
-                {errors.condominiumId && (
-                  <p className="mt-1 text-sm text-error">
-                    {errors.condominiumId}
-                  </p>
-                )}
-              </div>
 
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-2">
-                  {t("unitNumber")}
+                  {t("taxId")}
                 </label>
                 <input
                   type="text"
-                  value={formData.unitLabel}
-                  onChange={(e) => handleChange("unitLabel", e.target.value)}
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth ${
-                    errors.unitLabel ? "border-error" : "border-border-light"
-                  }`}
-                  placeholder={t("placeholderUnit")}
+                  value={formData.taxId}
+                  onChange={(e) => handleChange("taxId", e.target.value)}
+                  className="w-full px-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth"
+                  placeholder={t("placeholderTaxId")}
                 />
-                {errors.unitLabel && (
-                  <p className="mt-1 text-sm text-error">{errors.unitLabel}</p>
-                )}
               </div>
 
               <div>
@@ -268,6 +340,137 @@ function OwnerModal({ owner, properties, onClose, onSave }: Props) {
                   />
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-text-primary">
+                {t("occupancyInfo")}
+              </h3>
+              <button
+                type="button"
+                onClick={addOccupancy}
+                className="inline-flex items-center space-x-1 text-sm font-medium text-primary hover:text-primary-700 transition-smooth"
+              >
+                <Icon name="Plus" size={16} />
+                <span>{t("addFraction")}</span>
+              </button>
+            </div>
+            {errors.occupancies && (
+              <p className="mb-3 text-sm text-error">{errors.occupancies}</p>
+            )}
+            <div className="space-y-4">
+              {occupancies.map((row, index) => {
+                const condoUnits = unitsByCondoId.get(row.condominiumId) ?? [];
+                return (
+                  <div
+                    key={row.key}
+                    className="rounded-lg border border-border-light p-4 space-y-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-text-primary">
+                        {t("fractionRow", { index: index + 1 })}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => removeOccupancy(index)}
+                        className="p-1 text-text-secondary hover:text-error transition-smooth"
+                        title={t("removeFraction")}
+                      >
+                        <Icon name="Trash2" size={16} />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-text-primary mb-2">
+                          {t("property")}
+                        </label>
+                        <Select
+                          value={row.condominiumId}
+                          onChange={(e) =>
+                            handleOccupancyChange(
+                              index,
+                              "condominiumId",
+                              e.target.value,
+                            )
+                          }
+                          invalid={Boolean(
+                            errors[`occupancy-${index}-property`],
+                          )}
+                        >
+                          <option value="">{t("selectProperty")}</option>
+                          {properties.map((property) => (
+                            <option key={property.id} value={property.id}>
+                              {property.name}
+                            </option>
+                          ))}
+                        </Select>
+                        {errors[`occupancy-${index}-property`] && (
+                          <p className="mt-1 text-sm text-error">
+                            {errors[`occupancy-${index}-property`]}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-text-primary mb-2">
+                          {t("unitNumber")}
+                        </label>
+                        <Select
+                          value={row.unitId}
+                          onChange={(e) =>
+                            handleOccupancyChange(
+                              index,
+                              "unitId",
+                              e.target.value,
+                            )
+                          }
+                          invalid={Boolean(errors[`occupancy-${index}-unit`])}
+                          disabled={!row.condominiumId}
+                        >
+                          <option value="">{t("selectUnit")}</option>
+                          {condoUnits.map((unit) => (
+                            <option
+                              key={unit.id}
+                              value={unit.id}
+                              disabled={
+                                selectedUnitIds.has(unit.id) &&
+                                unit.id !== row.unitId
+                              }
+                            >
+                              {unit.label}
+                            </option>
+                          ))}
+                        </Select>
+                        {errors[`occupancy-${index}-unit`] && (
+                          <p className="mt-1 text-sm text-error">
+                            {errors[`occupancy-${index}-unit`]}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-text-primary mb-2">
+                          {t("role")}
+                        </label>
+                        <Select
+                          value={row.role}
+                          onChange={(e) =>
+                            handleOccupancyChange(index, "role", e.target.value)
+                          }
+                        >
+                          {OCCUPANCY_ROLES.map((role) => (
+                            <option key={role} value={role}>
+                              {tRole(role)}
+                            </option>
+                          ))}
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

@@ -147,6 +147,7 @@ export function validateOwnersFractionsCsv(
   const preview: ImportRowPreview[] = [];
   const units: Unit[] = [];
   const owners: Owner[] = [];
+  const ownerByTaxId = new Map<string, Owner>();
   let permillageSum = 0;
   const today = new Date().toISOString().slice(0, 10);
 
@@ -217,8 +218,28 @@ export function validateOwnersFractionsCsv(
     if (!rowOk) continue;
 
     const unitId = crypto.randomUUID();
-    const ownerId = crypto.randomUUID();
     const unitType = parseUnitType(typeRaw);
+    const taxKey = ownerTaxId.replace(/\s/g, "");
+    let owner = ownerByTaxId.get(taxKey);
+    if (!owner) {
+      owner = {
+        id: crypto.randomUUID(),
+        fullName: ownerName,
+        contacts: {
+          phone: phone || "",
+          email,
+          mailingAddress: null,
+        },
+        taxId: ownerTaxId,
+        monthlyQuota: 0,
+        documents: [],
+        entryDate: today,
+        exitDate: null,
+      };
+      ownerByTaxId.set(taxKey, owner);
+      owners.push(owner);
+    }
+    owner.monthlyQuota += monthlyQuota;
 
     units.push({
       id: unitId,
@@ -228,24 +249,7 @@ export function validateOwnersFractionsCsv(
       permillage,
       type: unitType,
       areaSqm,
-    });
-
-    owners.push({
-      id: ownerId,
-      fullName: ownerName,
-      contacts: {
-        phone: phone || "",
-        email,
-        mailingAddress: null,
-      },
-      taxId: ownerTaxId,
-      unitId,
-      unitPermillage: permillage,
-      monthlyQuota,
-      type: "owner",
-      documents: [],
-      entryDate: today,
-      exitDate: null,
+      occupancies: [{ ownerId: owner.id, role: "owner" }],
     });
 
     preview.push({

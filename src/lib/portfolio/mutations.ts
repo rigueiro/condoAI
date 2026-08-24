@@ -1,6 +1,11 @@
 import type { Condominium, Owner, Unit } from "@/types";
 import type { Portfolio } from "./types";
 import {
+  applyOwnerOccupancies,
+  stripOwnerOccupancies,
+  type OccupancyLink,
+} from "./occupancy";
+import {
   PERMILLAGE_TOLERANCE,
   TOTAL_PERMILLAGE,
   isUnitType,
@@ -29,32 +34,39 @@ export function removeCondominiumInMemory(
   portfolio: Portfolio,
   condominiumId: string,
 ): Portfolio {
-  const unitIds = new Set(
-    portfolio.units
-      .filter((u) => u.condominiumId === condominiumId)
-      .map((u) => u.id),
+  const units = portfolio.units.filter((u) => u.condominiumId !== condominiumId);
+  const remainingOwnerIds = new Set(
+    units.flatMap((unit) =>
+      (unit.occupancies ?? []).map((item) => item.ownerId),
+    ),
   );
   return {
     ...portfolio,
     condominiums: portfolio.condominiums.filter((c) => c.id !== condominiumId),
-    units: portfolio.units.filter((u) => u.condominiumId !== condominiumId),
-    owners: portfolio.owners.filter((o) => !unitIds.has(o.unitId)),
+    units,
+    owners: portfolio.owners.filter((owner) => remainingOwnerIds.has(owner.id)),
   };
 }
 
-/** Upsert owner and optionally its unit (create/update by id). */
+/** Upsert a person and optionally replace their fraction occupancies. */
 export function upsertOwnerInMemory(
   portfolio: Portfolio,
   owner: Owner,
-  unit?: Unit,
+  occupancies?: OccupancyLink[],
 ): Portfolio {
-  let units = portfolio.units;
-  if (unit) {
-    const unitExists = units.some((u) => u.id === unit.id);
-    units = unitExists
-      ? units.map((u) => (u.id === unit.id ? unit : u))
-      : [...units, unit];
+  const unitById = new Map(portfolio.units.map((unit) => [unit.id, unit]));
+  if (occupancies) {
+    for (const link of occupancies) {
+      if (!unitById.has(link.unitId)) {
+        throw new Error("unitNotFound");
+      }
+    }
   }
+
+  const units =
+    occupancies != null
+      ? applyOwnerOccupancies(portfolio.units, owner.id, occupancies)
+      : portfolio.units;
 
   const ownerExists = portfolio.owners.some((o) => o.id === owner.id);
   const owners = ownerExists
@@ -64,13 +76,14 @@ export function upsertOwnerInMemory(
   return { ...portfolio, units, owners };
 }
 
-/** Remove owner; leave the unit in place (may be reassigned later). */
+/** Remove a person and drop their occupancies from every fraction. */
 export function removeOwnerInMemory(
   portfolio: Portfolio,
   ownerId: string,
 ): Portfolio {
   return {
     ...portfolio,
+    units: stripOwnerOccupancies(portfolio.units, ownerId),
     owners: portfolio.owners.filter((o) => o.id !== ownerId),
   };
 }
@@ -110,32 +123,26 @@ function assertUnitWritable(portfolio: Portfolio, unit: Unit): void {
   }
 }
 
-/** Upsert a fraction and keep linked owners' unitPermillage in sync. */
+/** Upsert a fraction. Occupancies default to the previous record when omitted. */
 export function upsertUnitInMemory(
   portfolio: Portfolio,
   unit: Unit,
 ): Portfolio {
-  const nextUnit = normalizeUnit(unit);
+  const previous = portfolio.units.find((u) => u.id === unit.id);
+  const nextUnit = normalizeUnit({
+    ...unit,
+    occupancies: unit.occupancies ?? previous?.occupancies ?? [],
+  });
   assertUnitWritable(portfolio, nextUnit);
 
-  const previous = portfolio.units.find((u) => u.id === nextUnit.id);
   const units = previous
     ? portfolio.units.map((u) => (u.id === nextUnit.id ? nextUnit : u))
     : [...portfolio.units, nextUnit];
 
-  const owners =
-    previous?.permillage === nextUnit.permillage
-      ? portfolio.owners
-      : portfolio.owners.map((owner) =>
-          owner.unitId === nextUnit.id
-            ? { ...owner, unitPermillage: nextUnit.permillage }
-            : owner,
-        );
-
-  return { ...portfolio, units, owners };
+  return { ...portfolio, units };
 }
 
-/** Remove a fraction. Blocked while any owner still references it. */
+/** Remove a fraction. Blocked while anyone still occupies it. */
 export function removeUnitInMemory(
   portfolio: Portfolio,
   unitId: string,
@@ -144,8 +151,7 @@ export function removeUnitInMemory(
   if (!unit) {
     throw new Error("unitNotFound");
   }
-  const linked = portfolio.owners.some((owner) => owner.unitId === unitId);
-  if (linked) {
+  if ((unit.occupancies ?? []).length > 0) {
     throw new Error("unitHasOwners");
   }
   return {

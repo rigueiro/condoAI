@@ -1,9 +1,10 @@
-import type { Condominium, Owner, QuotaPayment } from "@/types";
+import type { Condominium, QuotaPayment } from "@/types";
 import { roundCurrency, sumBudgetCategories } from "@/lib/quota";
 import type { Portfolio } from "@/lib/portfolio/types";
 import {
   breakdownFromStats,
-  condoStatsFromOwners,
+  condoStats,
+  ownerDisplay,
   summarizeCollection,
   type CondoStats,
   type CollectionSummaryData,
@@ -40,23 +41,13 @@ export const OWNER_AVATARS: Record<string, string> = {
   "4": "https://randomuser.me/api/portraits/men/52.jpg",
   "5": "https://randomuser.me/api/portraits/women/35.jpg",
   "6": "https://randomuser.me/api/portraits/men/41.jpg",
+  "7": "https://randomuser.me/api/portraits/men/33.jpg",
 };
 
-const unitById = new Map(mockUnits.map((u) => [u.id, u]));
-const condoById = new Map(mockCondominiums.map((c) => [c.id, c]));
 const ownerById = new Map(mockDomainOwners.map((o) => [o.id, o]));
 const budgetByCondoId = new Map(
   approvedBudgetsForYear().map((b) => [b.condominiumId, b]),
 );
-
-const ownersByCondoId = mockDomainOwners.reduce((map, owner) => {
-  const condoId = unitById.get(owner.unitId)?.condominiumId;
-  if (!condoId) return map;
-  const list = map.get(condoId) ?? [];
-  list.push(owner);
-  map.set(condoId, list);
-  return map;
-}, new Map<string, Owner[]>());
 
 /** Demo portfolio assembled from domain fixtures. */
 export const mockPortfolio: Portfolio = {
@@ -74,10 +65,9 @@ function feeRange(min: number, max: number): string {
 /** Demo-enriched condo stats (uses budgets when no owners yet). */
 export function mockCondoStats(condo: Condominium): CondoStats {
   const estimatedOccupied = Math.round((condo.numberOfUnits ?? 0) * 0.92);
-  const owners = ownersByCondoId.get(condo.id) ?? [];
-  const quotas = owners.map((o) => o.monthlyQuota);
+  const base = condoStats(condo, mockPortfolio, mockQuotaPayments);
 
-  if (quotas.length === 0) {
+  if (base.averageFee === 0 && base.occupiedUnits === 0) {
     const budget = budgetByCondoId.get(condo.id);
     const average =
       budget != null
@@ -95,7 +85,6 @@ export function mockCondoStats(condo: Condominium): CondoStats {
     };
   }
 
-  const base = condoStatsFromOwners(condo, owners, mockQuotaPayments);
   return {
     ...base,
     occupiedUnits: Math.max(base.occupiedUnits, estimatedOccupied),
@@ -117,8 +106,7 @@ export function toPaymentView(
   index: number,
 ): PaymentView {
   const owner = ownerById.get(quota.ownerId);
-  const unit = owner ? unitById.get(owner.unitId) : undefined;
-  const condo = unit ? condoById.get(unit.condominiumId) : undefined;
+  const display = owner ? ownerDisplay(mockPortfolio, owner) : undefined;
   const date =
     quota.paymentDate != null
       ? String(quota.paymentDate).slice(0, 10)
@@ -129,9 +117,9 @@ export function toPaymentView(
     date,
     ownerId: quota.ownerId,
     ownerName: owner?.fullName ?? "",
-    property: condo?.name ?? "",
-    propertyId: condo?.id,
-    unit: unit?.label ?? "",
+    property: display?.condominiumName ?? "",
+    propertyId: display?.condominiumId,
+    unit: display?.unitLabel ?? "",
     amount: quota.amount,
     paymentMethod: "Transferência bancária",
     status: QUOTA_TO_PAYMENT_STATUS[quota.status],

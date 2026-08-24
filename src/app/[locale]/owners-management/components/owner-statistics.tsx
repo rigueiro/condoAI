@@ -13,7 +13,9 @@ function OwnerStatistics({ owners }: { owners: OwnerRow[] }) {
   const { formatCurrency } = useFormatCurrency();
 
   const totalOwners = owners.length;
-  const unitsOccupied = owners.length;
+  const unitsOccupied = new Set(
+    owners.flatMap((row) => row.occupancies.map((item) => item.unitId)),
+  ).size;
   const currentPayments = owners.filter(
     (row) => row.paymentStatus === "current",
   ).length;

@@ -239,7 +239,7 @@
       "type": "Type",
       "area": "Area",
       "permillage": "Permillage",
-      "owner": "Owner",
+      "owner": "Occupants",
       "actions": "Actions"
     }
   },

@@ -155,6 +155,20 @@ export const mockUnits: Unit[] = [
     permillage: 28,
     type: "apartment",
     areaSqm: 95,
+    occupancies: [
+      { ownerId: "1", role: "owner" },
+      { ownerId: "7", role: "tenant" },
+    ],
+  },
+  {
+    id: "u1g",
+    condominiumId: "1",
+    label: "G-01",
+    floor: "-1",
+    permillage: 8,
+    type: "garage",
+    areaSqm: 18,
+    occupancies: [{ ownerId: "1", role: "owner" }],
   },
   {
     id: "u3",
@@ -164,6 +178,7 @@ export const mockUnits: Unit[] = [
     permillage: 22,
     type: "apartment",
     areaSqm: 78,
+    occupancies: [{ ownerId: "3", role: "owner" }],
   },
   {
     id: "u6",
@@ -173,6 +188,7 @@ export const mockUnits: Unit[] = [
     permillage: 25,
     type: "apartment",
     areaSqm: 88,
+    occupancies: [{ ownerId: "6", role: "owner" }],
   },
   // Condo 2 — Torre do Tejo
   {
@@ -183,6 +199,7 @@ export const mockUnits: Unit[] = [
     permillage: 18,
     type: "apartment",
     areaSqm: 110,
+    occupancies: [{ ownerId: "2", role: "owner" }],
   },
   {
     id: "u5",
@@ -192,6 +209,7 @@ export const mockUnits: Unit[] = [
     permillage: 20,
     type: "apartment",
     areaSqm: 120,
+    occupancies: [{ ownerId: "5", role: "owner" }],
   },
   // Condo 3 — Vale Verde
   {
@@ -202,6 +220,7 @@ export const mockUnits: Unit[] = [
     permillage: 45,
     type: "apartment",
     areaSqm: 130,
+    occupancies: [],
   },
   // Condo 4 — Metropolitan Avenida
   {
@@ -212,6 +231,7 @@ export const mockUnits: Unit[] = [
     permillage: 12,
     type: "apartment",
     areaSqm: 145,
+    occupancies: [{ ownerId: "4", role: "owner" }],
   },
 ];
 
@@ -327,8 +347,6 @@ const annualTotalByCondoId = new Map(
   ]),
 );
 
-const unitById = new Map(mockUnits.map((u) => [u.id, u]));
-
 function monthlyQuotaForUnit(unit: Unit): number {
   return calculateMonthlyQuota(
     annualTotalByCondoId.get(unit.condominiumId) ?? 0,
@@ -336,9 +354,7 @@ function monthlyQuotaForUnit(unit: Unit): number {
   );
 }
 
-type OwnerSeed = Omit<Owner, "unitPermillage" | "monthlyQuota"> & {
-  unitId: string;
-};
+type OwnerSeed = Omit<Owner, "monthlyQuota">;
 
 const ownerSeeds: OwnerSeed[] = [
   {
@@ -350,8 +366,6 @@ const ownerSeeds: OwnerSeed[] = [
       mailingAddress: null,
     },
     taxId: "234567890",
-    unitId: "u1",
-    type: "owner",
     documents: [],
     entryDate: "2023-03-15",
     exitDate: null,
@@ -365,8 +379,6 @@ const ownerSeeds: OwnerSeed[] = [
       mailingAddress: null,
     },
     taxId: "198765432",
-    unitId: "u2",
-    type: "owner",
     documents: [],
     entryDate: "2022-08-20",
     exitDate: null,
@@ -380,8 +392,6 @@ const ownerSeeds: OwnerSeed[] = [
       mailingAddress: "Av. da República 100, 1050-191 Lisboa",
     },
     taxId: "267891234",
-    unitId: "u3",
-    type: "owner",
     documents: [],
     entryDate: "2023-11-10",
     exitDate: null,
@@ -395,8 +405,6 @@ const ownerSeeds: OwnerSeed[] = [
       mailingAddress: null,
     },
     taxId: "145678901",
-    unitId: "u4",
-    type: "owner",
     documents: [],
     entryDate: "2022-05-12",
     exitDate: null,
@@ -410,8 +418,6 @@ const ownerSeeds: OwnerSeed[] = [
       mailingAddress: null,
     },
     taxId: "278901234",
-    unitId: "u5",
-    type: "owner",
     documents: [],
     entryDate: "2023-07-08",
     exitDate: null,
@@ -425,25 +431,39 @@ const ownerSeeds: OwnerSeed[] = [
       mailingAddress: null,
     },
     taxId: "156789012",
-    unitId: "u6",
-    type: "owner",
     documents: [],
     entryDate: "2022-12-01",
     exitDate: null,
   },
+  {
+    id: "7",
+    fullName: "Pedro Nuno Lopes",
+    contacts: {
+      phone: "+351 918 234 567",
+      email: "pedro.lopes@email.pt",
+      mailingAddress: null,
+    },
+    taxId: "289012345",
+    documents: [],
+    entryDate: "2025-09-01",
+    exitDate: null,
+  },
 ];
 
-export const mockDomainOwners: Owner[] = ownerSeeds.map((seed) => {
-  const unit = unitById.get(seed.unitId);
-  if (!unit) {
-    throw new Error(`Missing unit ${seed.unitId} for owner ${seed.id}`);
-  }
-  return {
-    ...seed,
-    unitPermillage: unit.permillage,
-    monthlyQuota: monthlyQuotaForUnit(unit),
-  };
-});
+function monthlyQuotaForOwner(ownerId: string): number {
+  return mockUnits
+    .filter((unit) =>
+      (unit.occupancies ?? []).some(
+        (item) => item.ownerId === ownerId && item.role === "owner",
+      ),
+    )
+    .reduce((sum, unit) => sum + monthlyQuotaForUnit(unit), 0);
+}
+
+export const mockDomainOwners: Owner[] = ownerSeeds.map((seed) => ({
+  ...seed,
+  monthlyQuota: monthlyQuotaForOwner(seed.id),
+}));
 
 export const mockQuotaPayments: QuotaPayment[] = [
   {

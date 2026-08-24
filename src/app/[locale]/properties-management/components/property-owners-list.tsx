@@ -7,17 +7,40 @@ import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import Image from "@/components/image";
 import type {
+  OwnerOccupancyView,
   OwnerRow,
   PaymentStatus,
 } from "@/app/[locale]/owners-management/components/types";
+import type { OccupancyRole } from "@/types";
+
+function occupancyLabels(
+  occupancies: OwnerOccupancyView[],
+  fallback: string,
+  roleLabel: (role: OccupancyRole) => string,
+  condominiumId?: string,
+): string {
+  const items = condominiumId
+    ? occupancies.filter((item) => item.condominiumId === condominiumId)
+    : occupancies;
+  if (items.length === 0) return fallback;
+  return items
+    .map((item) =>
+      item.role === "owner"
+        ? item.unitLabel
+        : `${item.unitLabel} (${roleLabel(item.role)})`,
+    )
+    .join(", ");
+}
 
 interface Props {
   owners: OwnerRow[];
+  condominiumId?: string;
 }
 
-function PropertyOwnersList({ owners }: Props) {
+function PropertyOwnersList({ owners, condominiumId }: Props) {
   const t = useTranslations("propertiesManagement.detail");
   const tStatus = useTranslations("ownersManagement.status");
+  const tRole = useTranslations("ownersManagement.roles");
   const { formatCurrency } = useFormatCurrency();
 
   const getPaymentStatusBadge = (status: PaymentStatus) => {
@@ -86,8 +109,15 @@ function PropertyOwnersList({ owners }: Props) {
                     {row.owner.fullName}
                   </Link>
                   <p className="text-sm text-text-secondary truncate">
-                    {t("ownerUnit", { unit: row.unitLabel })} •{" "}
-                    {row.owner.contacts.email}
+                    {t("ownerUnit", {
+                      unit: occupancyLabels(
+                        row.occupancies,
+                        row.unitLabel,
+                        tRole,
+                        condominiumId,
+                      ),
+                    })}{" "}
+                    • {row.owner.contacts.email}
                   </p>
                 </div>
               </div>

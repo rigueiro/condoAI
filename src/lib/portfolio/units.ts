@@ -1,4 +1,5 @@
-import type { Owner, Unit } from "@/types";
+import type { Unit } from "@/types";
+import { normalizeOccupancies } from "./occupancy";
 
 export const UNIT_TYPES: Unit["type"][] = [
   "apartment",
@@ -86,16 +87,6 @@ export function compareUnits(a: Unit, b: Unit): number {
   });
 }
 
-export function indexOwnersByUnitId(owners: Owner[]): Map<string, Owner[]> {
-  const map = new Map<string, Owner[]>();
-  for (const owner of owners) {
-    const list = map.get(owner.unitId);
-    if (list) list.push(owner);
-    else map.set(owner.unitId, [owner]);
-  }
-  return map;
-}
-
 export function buildEmptyUnit(condominiumId: string): Unit {
   return {
     id: crypto.randomUUID(),
@@ -105,6 +96,7 @@ export function buildEmptyUnit(condominiumId: string): Unit {
     permillage: 0,
     type: "apartment",
     areaSqm: null,
+    occupancies: [],
   };
 }
 
@@ -118,5 +110,6 @@ export function normalizeUnit(unit: Unit): Unit {
     permillage: Number.isFinite(permillage) ? permillage : 0,
     type: isUnitType(unit.type) ? unit.type : "apartment",
     areaSqm: areaSqm == null || !Number.isFinite(areaSqm) ? null : areaSqm,
+    occupancies: normalizeOccupancies(unit.occupancies),
   };
 }

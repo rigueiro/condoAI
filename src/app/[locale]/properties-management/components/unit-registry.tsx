@@ -9,7 +9,7 @@ import type { Condominium, Owner, Unit } from "@/types";
 import {
   compareUnits,
   formatPermillage,
-  indexOwnersByUnitId,
+  indexOccupantsByUnitId,
   permillageSummary,
 } from "@/lib/portfolio";
 import UnitModal from "./unit-modal";
@@ -33,6 +33,7 @@ function UnitRegistry({
 }: UnitRegistryProps) {
   const t = useTranslations("propertiesManagement.units");
   const tModal = useTranslations("propertiesManagement.unitModal");
+  const tRole = useTranslations("ownersManagement.roles");
   const locale = useLocale();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
@@ -57,9 +58,9 @@ function UnitRegistry({
     [units, condominium.totalPermillage],
   );
 
-  const ownersByUnitId = useMemo(
-    () => indexOwnersByUnitId(owners),
-    [owners],
+  const occupantsByUnitId = useMemo(
+    () => indexOccupantsByUnitId(units, owners),
+    [units, owners],
   );
 
   const allocatedPercent = Math.min(
@@ -108,7 +109,7 @@ function UnitRegistry({
   };
 
   const handleDelete = async (unit: Unit) => {
-    const linked = ownersByUnitId.get(unit.id) ?? [];
+    const linked = occupantsByUnitId.get(unit.id) ?? [];
     if (linked.length > 0) {
       setFlash({
         message: t("cannotDeleteLinked", { count: linked.length }),
@@ -238,8 +239,7 @@ function UnitRegistry({
               </thead>
               <tbody className="divide-y divide-border-light">
                 {sortedUnits.map((unit) => {
-                  const linked = ownersByUnitId.get(unit.id) ?? [];
-                  const owner = linked[0];
+                  const occupants = occupantsByUnitId.get(unit.id) ?? [];
                   return (
                     <tr
                       key={unit.id}
@@ -269,13 +269,21 @@ function UnitRegistry({
                         {formatPermillage(unit.permillage, locale)}
                       </td>
                       <td className="px-4 py-3 text-text-secondary">
-                        {owner ? (
-                          <Link
-                            href={`/owners-management/${owner.id}`}
-                            className="text-text-primary hover:text-primary transition-smooth"
-                          >
-                            {owner.fullName}
-                          </Link>
+                        {occupants.length > 0 ? (
+                          <div className="flex flex-col gap-1">
+                            {occupants.map((occupant) => (
+                              <Link
+                                key={occupant.owner.id}
+                                href={`/owners-management/${occupant.owner.id}`}
+                                className="text-text-primary hover:text-primary transition-smooth"
+                              >
+                                {occupant.owner.fullName}
+                                {occupant.role !== "owner"
+                                  ? ` (${tRole(occupant.role)})`
+                                  : ""}
+                              </Link>
+                            ))}
+                          </div>
                         ) : (
                           t("unassigned")
                         )}

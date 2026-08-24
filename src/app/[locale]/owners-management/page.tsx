@@ -55,7 +55,8 @@ function OwnersManagement() {
           .includes(filters.search.toLowerCase());
 
       const matchesProperty =
-        !filters.property || row.condominiumName === filters.property;
+        !filters.property ||
+        row.occupancies.some((item) => item.condominiumName === filters.property);
 
       const matchesPaymentStatus =
         !filters.paymentStatus || row.paymentStatus === filters.paymentStatus;
@@ -106,12 +107,8 @@ function OwnersManagement() {
   };
 
   const handleSaveOwner = (data: OwnerFormSave) => {
-    const { owner, unit } = ownerFromFormSave(
-      portfolio,
-      data,
-      editingOwner?.owner,
-    );
-    upsertOwner(owner, unit);
+    const { owner, occupancies } = ownerFromFormSave(data, editingOwner?.owner);
+    upsertOwner(owner, occupancies);
     setIsOwnerModalOpen(false);
     setEditingOwner(null);
   };
@@ -194,6 +191,7 @@ function OwnersManagement() {
         <OwnerModal
           owner={editingOwner}
           properties={portfolioProperties}
+          units={portfolio.units}
           onClose={() => setIsOwnerModalOpen(false)}
           onSave={handleSaveOwner}
         />

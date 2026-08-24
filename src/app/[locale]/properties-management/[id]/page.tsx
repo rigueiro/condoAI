@@ -73,7 +73,7 @@ function PropertyDetailPage() {
 
   const propertyOwners = useMemo(() => {
     if (!id) return [];
-    return ownersWithBalances.filter((o) => o.condominiumId === id);
+    return ownersWithBalances.filter((o) => o.condominiumIds.includes(id));
   }, [id, ownersWithBalances]);
 
   const propertyPayments = useMemo(() => {
@@ -201,7 +201,10 @@ function PropertyDetailPage() {
                 openAddSignal={addUnitSignal}
               />
 
-              <PropertyOwnersList owners={propertyOwners} />
+              <PropertyOwnersList
+                owners={propertyOwners}
+                condominiumId={condo.id}
+              />
 
               <section>
                 <h2 className="text-xl font-semibold text-text-primary mb-4">

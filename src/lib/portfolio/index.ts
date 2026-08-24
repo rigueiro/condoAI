@@ -21,7 +21,6 @@ export {
   ownerDisplay,
   ownerFromFormSave,
   portfolioToOwnerRows,
-  resolveOrCreateUnit,
   summarizeCollection,
   labelCommonAreas,
   formatPortugueseAddress,
@@ -42,7 +41,6 @@ export {
   buildEmptyUnit,
   compareUnits,
   formatPermillage,
-  indexOwnersByUnitId,
   parseDecimal,
   permillageSummary,
   roundPermillage,
@@ -50,6 +48,12 @@ export {
   unitsForCondominium,
   type PermillageSummary,
 } from "./units";
+export {
+  OCCUPANCY_ROLES,
+  indexOccupantsByUnitId,
+  type OccupancyLink,
+  type Occupant,
+} from "./occupancy";
 export {
   buildImportTemplateCsv,
   validateOwnersFractionsCsv,

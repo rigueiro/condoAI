@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import type { Owner, Unit } from "@/types";
+import type { Owner } from "@/types";
 import {
   getOwner,
   removeOwner,
   upsertOwner,
 } from "@/lib/server/portfolio";
+import type { OccupancyLink } from "@/lib/portfolio/occupancy";
 import { requireSessionEmail } from "@/lib/server/session";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
 
@@ -30,12 +31,12 @@ export async function PUT(request: Request, context: Ctx) {
     const { id } = await context.params;
     const body = (await request.json()) as {
       owner?: Owner;
-      unit?: Unit;
+      occupancies?: OccupancyLink[];
     };
     if (!body.owner || body.owner.id !== id) {
       return NextResponse.json({ error: "badRequest" }, { status: 400 });
     }
-    const portfolio = upsertOwner(email, body.owner, body.unit);
+    const portfolio = upsertOwner(email, body.owner, body.occupancies);
     return jsonOk({ portfolio, owner: body.owner });
   } catch (err) {
     return handleRouteError(err);

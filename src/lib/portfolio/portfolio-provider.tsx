@@ -14,6 +14,7 @@ import { isDemoEmail, useUser } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import type { Organization } from "@/app/[locale]/account/types";
 import type { Condominium, Owner, Unit } from "@/types";
+import type { OccupancyLink } from "./occupancy";
 import {
   EMPTY_PORTFOLIO,
   isOnboardingComplete,
@@ -33,7 +34,7 @@ interface PortfolioContextValue {
   saveFirstCondominium: (condominium: Condominium) => void;
   upsertCondominium: (condominium: Condominium) => void;
   removeCondominium: (condominiumId: string) => void;
-  upsertOwner: (owner: Owner, unit?: Unit) => void;
+  upsertOwner: (owner: Owner, occupancies?: OccupancyLink[]) => void;
   removeOwner: (ownerId: string) => void;
   upsertUnit: (unit: Unit) => Promise<void>;
   removeUnit: (unitId: string) => Promise<void>;
@@ -147,18 +148,21 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  const upsertOwnerFn = useCallback((owner: Owner, unit?: Unit) => {
-    void (async () => {
-      const data = await apiFetch<{ portfolio: Portfolio }>(
-        `/api/owners/${owner.id}`,
-        {
-          method: "PUT",
-          body: JSON.stringify({ owner, unit }),
-        },
-      );
-      setPortfolio(data.portfolio);
-    })();
-  }, []);
+  const upsertOwnerFn = useCallback(
+    (owner: Owner, occupancies?: OccupancyLink[]) => {
+      void (async () => {
+        const data = await apiFetch<{ portfolio: Portfolio }>(
+          `/api/owners/${owner.id}`,
+          {
+            method: "PUT",
+            body: JSON.stringify({ owner, occupancies }),
+          },
+        );
+        setPortfolio(data.portfolio);
+      })();
+    },
+    [],
+  );
 
   const removeOwnerFn = useCallback((ownerId: string) => {
     void (async () => {

@@ -24,7 +24,6 @@ export const handlers = [
           id: o.id,
           fullName: o.fullName,
           email: o.contacts.email,
-          unitId: o.unitId,
         })),
       ),
     );

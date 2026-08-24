@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
 import type { Condominium, Owner, Unit } from "@/types";
+import { indexOccupanciesByOwnerId } from "@/lib/portfolio/occupancy";
 import {
   formatOccurrenceDate,
   type Occurrence,
@@ -68,20 +69,9 @@ function NewOccurrenceModal({
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
 
-  const unitById = useMemo(
-    () => new Map(units.map((u) => [u.id, u])),
+  const linksByOwner = useMemo(
+    () => indexOccupanciesByOwnerId(units),
     [units],
-  );
-
-  const ownersWithCondo = useMemo(
-    () =>
-      owners.map((owner) => ({
-        id: owner.id,
-        fullName: owner.fullName,
-        unitId: owner.unitId,
-        condominiumId: unitById.get(owner.unitId)?.condominiumId ?? "",
-      })),
-    [owners, unitById],
   );
 
   const [formData, setFormData] = useState<FormState>(() =>
@@ -101,15 +91,14 @@ function NewOccurrenceModal({
   );
   const [errors, setErrors] = useState<Errors>({});
 
-  const condoOwners = useMemo(
-    () =>
-      formData.condominiumId
-        ? ownersWithCondo.filter(
-            (o) => o.condominiumId === formData.condominiumId,
-          )
-        : ownersWithCondo,
-    [ownersWithCondo, formData.condominiumId],
-  );
+  const condoOwners = useMemo(() => {
+    if (!formData.condominiumId) return owners;
+    return owners.filter((owner) =>
+      (linksByOwner.get(owner.id) ?? []).some(
+        (link) => link.unit.condominiumId === formData.condominiumId,
+      ),
+    );
+  }, [owners, linksByOwner, formData.condominiumId]);
 
   const validateForm = () => {
     const newErrors: Errors = {};
@@ -164,17 +153,22 @@ function NewOccurrenceModal({
     setFormData((prev) => {
       const next = { ...prev, [field]: value };
       if (field === "condominiumId") {
-        const ownerStillValid = ownersWithCondo.some(
-          (o) => o.id === prev.ownerId && o.condominiumId === value,
+        const ownerStillValid = (linksByOwner.get(prev.ownerId) ?? []).some(
+          (link) => link.unit.condominiumId === value,
         );
-        if (!ownerStillValid) next.ownerId = "";
+        if (prev.ownerId && !ownerStillValid) next.ownerId = "";
       }
       if (field === "ownerId" && value) {
-        const owner = ownersWithCondo.find((o) => o.id === value);
-        const unit = owner ? unitById.get(owner.unitId) : undefined;
-        if (unit) {
-          next.unit = unit.label;
-          if (!next.condominiumId) next.condominiumId = unit.condominiumId;
+        const links = linksByOwner.get(value) ?? [];
+        const match =
+          links.find(
+            (link) =>
+              !next.condominiumId ||
+              link.unit.condominiumId === next.condominiumId,
+          ) ?? links[0];
+        if (match) {
+          next.unit = match.unit.label;
+          if (!next.condominiumId) next.condominiumId = match.unit.condominiumId;
         }
       }
       return next;

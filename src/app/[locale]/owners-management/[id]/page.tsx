@@ -19,6 +19,7 @@ import { useCollections, type RecordPaymentInput } from "@/lib/collections";
 function OwnerDetailPage() {
   const t = useTranslations("ownersManagement.detail");
   const tStatus = useTranslations("ownersManagement.status");
+  const tRole = useTranslations("ownersManagement.roles");
   const { formatCurrency } = useFormatCurrency();
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
@@ -70,8 +71,8 @@ function OwnerDetailPage() {
 
   const handleSaveOwner = (data: OwnerFormSave) => {
     if (!row) return;
-    const { owner, unit } = ownerFromFormSave(portfolio, data, row.owner);
-    upsertOwner(owner, unit);
+    const { owner, occupancies } = ownerFromFormSave(data, row.owner);
+    upsertOwner(owner, occupancies);
     setIsEditModalOpen(false);
   };
 
@@ -140,10 +141,12 @@ function OwnerDetailPage() {
                   {getPaymentStatusBadge(row.paymentStatus)}
                 </div>
                 <p className="text-text-secondary">
-                  {t("unitProperty", {
-                    unit: row.unitLabel,
-                    property: row.condominiumName,
-                  })}
+                  {row.occupancies.length > 0
+                    ? t("unitProperty", {
+                        unit: row.unitLabel,
+                        property: row.condominiumName,
+                      })
+                    : t("noFractions")}
                 </p>
                 <p className="text-sm text-text-secondary mt-1">
                   {owner.contacts.email}
@@ -244,31 +247,39 @@ function OwnerDetailPage() {
                       </dd>
                     </div>
                   )}
-                  <div>
-                    <dt className="text-text-secondary">{t("unit")}</dt>
-                    <dd className="font-medium text-text-primary">
-                      {row.unitLabel}
-                    </dd>
-                  </div>
-                  {owner.unitPermillage != null && (
+                  {row.occupancies.length > 0 ? (
+                    row.occupancies.map((item) => (
+                      <div key={`${item.unitId}-${item.role}`}>
+                        <dt className="text-text-secondary">
+                          {item.unitLabel}
+                          {item.role !== "owner"
+                            ? ` · ${tRole(item.role)}`
+                            : ""}
+                        </dt>
+                        <dd>
+                          <Link
+                            href={`/properties-management/${item.condominiumId}`}
+                            className="font-medium text-primary hover:underline"
+                          >
+                            {item.condominiumName}
+                          </Link>
+                        </dd>
+                      </div>
+                    ))
+                  ) : (
+                    <div>
+                      <dt className="text-text-secondary">{t("unit")}</dt>
+                      <dd className="font-medium text-text-primary">—</dd>
+                    </div>
+                  )}
+                  {row.unitPermillage > 0 && (
                     <div>
                       <dt className="text-text-secondary">{t("permillage")}</dt>
                       <dd className="font-medium text-text-primary">
-                        {owner.unitPermillage}‰
+                        {row.unitPermillage}‰
                       </dd>
                     </div>
                   )}
-                  <div>
-                    <dt className="text-text-secondary">{t("property")}</dt>
-                    <dd>
-                      <Link
-                        href={`/properties-management/${row.condominiumId}`}
-                        className="font-medium text-primary hover:underline"
-                      >
-                        {row.condominiumName}
-                      </Link>
-                    </dd>
-                  </div>
                   <div>
                     <dt className="text-text-secondary">{t("joinDate")}</dt>
                     <dd className="font-medium text-text-primary">
@@ -343,6 +354,7 @@ function OwnerDetailPage() {
         <OwnerModal
           owner={row}
           properties={properties}
+          units={portfolio.units}
           onClose={() => setIsEditModalOpen(false)}
           onSave={handleSaveOwner}
         />

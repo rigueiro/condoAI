@@ -10,7 +10,11 @@ import {
   removeOwnerInMemory,
   upsertUnitInMemory,
   removeUnitInMemory,
+  removeCondominiumInMemory,
+  upsertCondominiumInMemory,
 } from "./mutations";
+import { migratePortfolioOccupancy } from "./occupancy";
+import type { OccupancyLink } from "./occupancy";
 
 export {
   upsertCondominiumInMemory,
@@ -44,13 +48,13 @@ export function readPortfolio(email: string): Portfolio {
     const raw = window.localStorage.getItem(storageKey(email));
     if (!raw) return { ...EMPTY_PORTFOLIO };
     const parsed = JSON.parse(raw) as Portfolio;
-    return {
+    return migratePortfolioOccupancy({
       organization: parsed.organization ?? null,
       condominiums: (parsed.condominiums ?? []).map(normalizeCondominium),
       units: parsed.units ?? [],
       owners: parsed.owners ?? [],
       onboardingStep: parsed.onboardingStep ?? 1,
-    };
+    });
   } catch {
     window.localStorage.removeItem(storageKey(email));
     return { ...EMPTY_PORTFOLIO };
@@ -146,13 +150,7 @@ export function upsertCondominium(
   condominium: Condominium,
 ): Portfolio {
   const current = readPortfolio(email);
-  const exists = current.condominiums.some((c) => c.id === condominium.id);
-  const condominiums = exists
-    ? current.condominiums.map((c) =>
-        c.id === condominium.id ? condominium : c,
-      )
-    : [...current.condominiums, condominium];
-  const next: Portfolio = { ...current, condominiums };
+  const next = upsertCondominiumInMemory(current, condominium);
   writePortfolio(email, next);
   return next;
 }
@@ -162,17 +160,7 @@ export function removeCondominium(
   condominiumId: string,
 ): Portfolio {
   const current = readPortfolio(email);
-  const unitIds = new Set(
-    current.units
-      .filter((u) => u.condominiumId === condominiumId)
-      .map((u) => u.id),
-  );
-  const next: Portfolio = {
-    ...current,
-    condominiums: current.condominiums.filter((c) => c.id !== condominiumId),
-    units: current.units.filter((u) => u.condominiumId !== condominiumId),
-    owners: current.owners.filter((o) => !unitIds.has(o.unitId)),
-  };
+  const next = removeCondominiumInMemory(current, condominiumId);
   writePortfolio(email, next);
   return next;
 }
@@ -180,10 +168,10 @@ export function removeCondominium(
 export function upsertOwner(
   email: string,
   owner: Owner,
-  unit?: Unit,
+  occupancies?: OccupancyLink[],
 ): Portfolio {
   const current = readPortfolio(email);
-  const next = upsertOwnerInMemory(current, owner, unit);
+  const next = upsertOwnerInMemory(current, owner, occupancies);
   writePortfolio(email, next);
   return next;
 }
