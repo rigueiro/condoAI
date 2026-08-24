@@ -35,6 +35,8 @@ interface PortfolioContextValue {
   removeCondominium: (condominiumId: string) => void;
   upsertOwner: (owner: Owner, unit?: Unit) => void;
   removeOwner: (ownerId: string) => void;
+  upsertUnit: (unit: Unit) => Promise<void>;
+  removeUnit: (unitId: string) => Promise<void>;
   applyImport: (units: Unit[], owners: Owner[]) => void;
   completeOnboarding: () => void;
   updateOrganization: (organization: Organization) => void;
@@ -168,6 +170,25 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
+  const upsertUnitFn = useCallback(async (unit: Unit) => {
+    const data = await apiFetch<{ portfolio: Portfolio }>(
+      `/api/units/${unit.id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ unit }),
+      },
+    );
+    setPortfolio(data.portfolio);
+  }, []);
+
+  const removeUnitFn = useCallback(async (unitId: string) => {
+    const data = await apiFetch<{ portfolio: Portfolio }>(
+      `/api/units/${unitId}`,
+      { method: "DELETE" },
+    );
+    setPortfolio(data.portfolio);
+  }, []);
+
   const doImport = useCallback(
     (units: Unit[], owners: Owner[]) => {
       void patchPortfolio({ action: "applyImport", units, owners });
@@ -205,6 +226,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       removeCondominium: removeCondo,
       upsertOwner: upsertOwnerFn,
       removeOwner: removeOwnerFn,
+      upsertUnit: upsertUnitFn,
+      removeUnit: removeUnitFn,
       applyImport: doImport,
       completeOnboarding: finishOnboarding,
       updateOrganization,
@@ -221,6 +244,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       removeCondo,
       upsertOwnerFn,
       removeOwnerFn,
+      upsertUnitFn,
+      removeUnitFn,
       doImport,
       finishOnboarding,
       updateOrganization,

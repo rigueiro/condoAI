@@ -9,8 +9,10 @@ import {
 import {
   removeCondominiumInMemory,
   removeOwnerInMemory,
+  removeUnitInMemory,
   upsertCondominiumInMemory,
   upsertOwnerInMemory,
+  upsertUnitInMemory,
 } from "@/lib/portfolio/mutations";
 import { readStore, writeStore } from "./store";
 import { buildDemoPortfolio } from "./demo";
@@ -178,4 +180,18 @@ export function getCondominium(
 
 export function getOwner(email: string, id: string): Owner | null {
   return getPortfolio(email).owners.find((o) => o.id === id) ?? null;
+}
+
+export function getUnit(email: string, id: string): Unit | null {
+  return getPortfolio(email).units.find((u) => u.id === id) ?? null;
+}
+
+export function upsertUnit(email: string, unit: Unit): Portfolio {
+  return mutatePortfolio(email, (current) => upsertUnitInMemory(current, unit));
+}
+
+export function removeUnit(email: string, unitId: string): Portfolio {
+  return mutatePortfolio(email, (current) =>
+    removeUnitInMemory(current, unitId),
+  );
 }

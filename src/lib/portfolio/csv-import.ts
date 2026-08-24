@@ -1,5 +1,5 @@
 import type { Owner, Unit } from "@/types";
-import { parseUnitType } from "./mappers";
+import { parseUnitType } from "./units";
 
 export const IMPORT_CSV_HEADERS = [
   "unitLabel",

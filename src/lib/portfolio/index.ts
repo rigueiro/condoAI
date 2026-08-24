@@ -36,6 +36,21 @@ export {
   type OwnerDisplay,
 } from "./mappers";
 export {
+  UNIT_TYPES,
+  TOTAL_PERMILLAGE,
+  PERMILLAGE_TOLERANCE,
+  buildEmptyUnit,
+  compareUnits,
+  formatPermillage,
+  indexOwnersByUnitId,
+  parseDecimal,
+  permillageSummary,
+  roundPermillage,
+  sumPermillage,
+  unitsForCondominium,
+  type PermillageSummary,
+} from "./units";
+export {
   buildImportTemplateCsv,
   validateOwnersFractionsCsv,
   IMPORT_CSV_HEADERS,

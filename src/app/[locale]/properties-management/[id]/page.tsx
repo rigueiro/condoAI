@@ -14,6 +14,7 @@ import RecordPaymentModal from "@/app/[locale]/payment-tracking/components/recor
 import PropertyModal from "../components/property-modal";
 import PropertyDetailStats from "../components/property-detail-stats";
 import PropertyOwnersList from "../components/property-owners-list";
+import UnitRegistry from "../components/unit-registry";
 import {
   formatOccurrenceDate,
   toOccurrenceRows,
@@ -26,8 +27,11 @@ import {
   collectionSummaryForCondo,
   condominiumStatusI18nKey,
   condoStats,
+  formatPermillage,
   formatPortugueseAddress,
   labelCommonAreas,
+  permillageSummary,
+  unitsForCondominium,
   usePortfolio,
 } from "@/lib/portfolio";
 import { mockCondoStats } from "@/fixtures/views";
@@ -42,13 +46,15 @@ function PropertyDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
 
-  const { portfolio, isDemo, upsertCondominium } = usePortfolio();
+  const { portfolio, isDemo, upsertCondominium, upsertUnit, removeUnit } =
+    usePortfolio();
   const { quotas, payments, recordPayment, ownersWithBalances } =
     useCollections();
   const { occurrences } = useOccurrences();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
+  const [addUnitSignal, setAddUnitSignal] = useState(0);
 
   const condo = useMemo(
     () =>
@@ -83,6 +89,19 @@ function PropertyDetailPage() {
       portfolio.owners,
     );
   }, [condo, occurrences, portfolio.owners]);
+
+  const propertyUnits = useMemo(() => {
+    if (!id) return [];
+    return unitsForCondominium(portfolio.units, id);
+  }, [id, portfolio.units]);
+
+  const propertyPermillage = useMemo(() => {
+    if (!condo) return null;
+    return permillageSummary(
+      propertyUnits,
+      condo.totalPermillage,
+    );
+  }, [condo, propertyUnits]);
 
   const collectionDataForProperty = useMemo(() => {
     if (!condo || !stats) return null;
@@ -171,6 +190,15 @@ function PropertyDetailPage() {
                 condo={condo}
                 stats={stats}
                 owners={propertyOwners}
+              />
+
+              <UnitRegistry
+                condominium={condo}
+                units={propertyUnits}
+                owners={portfolio.owners}
+                onUpsert={upsertUnit}
+                onRemove={removeUnit}
+                openAddSignal={addUnitSignal}
               />
 
               <PropertyOwnersList owners={propertyOwners} />
@@ -275,7 +303,9 @@ function PropertyDetailPage() {
                   <div>
                     <dt className="text-text-secondary">{t("permillage")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {condo.totalPermillage}‰
+                      {propertyPermillage
+                        ? `${formatPermillage(propertyPermillage.allocated)} / ${formatPermillage(propertyPermillage.total)}`
+                        : `${condo.totalPermillage}‰`}
                     </dd>
                   </div>
                   <div>
@@ -356,6 +386,13 @@ function PropertyDetailPage() {
                     <Icon name="UserPlus" size={16} className="mr-2 shrink-0" />
                     {t("addOwner")}
                   </Link>
+                  <button
+                    onClick={() => setAddUnitSignal((n) => n + 1)}
+                    className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
+                  >
+                    <Icon name="LayoutGrid" size={16} className="mr-2 shrink-0" />
+                    {t("addFraction")}
+                  </button>
                   <button
                     onClick={() => setIsRecordPaymentOpen(true)}
                     className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"

@@ -8,6 +8,8 @@ import {
 import {
   upsertOwnerInMemory,
   removeOwnerInMemory,
+  upsertUnitInMemory,
+  removeUnitInMemory,
 } from "./mutations";
 
 export {
@@ -15,6 +17,8 @@ export {
   removeCondominiumInMemory,
   upsertOwnerInMemory,
   removeOwnerInMemory,
+  upsertUnitInMemory,
+  removeUnitInMemory,
 } from "./mutations";
 
 const STORAGE_PREFIX = "condoai.portfolio.";
@@ -187,6 +191,20 @@ export function upsertOwner(
 export function removeOwner(email: string, ownerId: string): Portfolio {
   const current = readPortfolio(email);
   const next = removeOwnerInMemory(current, ownerId);
+  writePortfolio(email, next);
+  return next;
+}
+
+export function upsertUnit(email: string, unit: Unit): Portfolio {
+  const current = readPortfolio(email);
+  const next = upsertUnitInMemory(current, unit);
+  writePortfolio(email, next);
+  return next;
+}
+
+export function removeUnit(email: string, unitId: string): Portfolio {
+  const current = readPortfolio(email);
+  const next = removeUnitInMemory(current, unitId);
   writePortfolio(email, next);
   return next;
 }

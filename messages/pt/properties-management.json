@@ -202,6 +202,80 @@
     "status": "Estado",
     "lastUpdated": "Última actualização",
     "amenities": "Comodidades",
-    "unit": "Fração {unit}"
+    "unit": "Fração {unit}",
+    "addFraction": "Adicionar fração"
+  },
+  "units": {
+    "title": "Frações",
+    "count": "{count, plural, one {# fração registada} other {# frações registadas}}",
+    "add": "Adicionar fração",
+    "edit": "Editar fração",
+    "delete": "Eliminar fração",
+    "created": "Fração guardada.",
+    "updated": "Fração actualizada.",
+    "deleted": "Fração removida.",
+    "emptyTitle": "Ainda sem frações",
+    "emptyHint": "Registe apartamentos, lojas e garagens até a permilagem somar 1000‰.",
+    "unassigned": "Sem proprietário",
+    "confirmDelete": "Eliminar a fração {label}? Esta acção não pode ser anulada.",
+    "cannotDeleteLinked": "{count, plural, one {Esta fração tem um proprietário e não pode ser eliminada.} other {Esta fração tem # proprietários e não pode ser eliminada.}}",
+    "permillageAllocated": "{allocated} de {total} atribuídos",
+    "permillageRemaining": "{remaining} em falta",
+    "permillageComplete": "Equilibrada em 1000‰",
+    "permillageUnder": "Incompleta",
+    "permillageOver": "Acima de 1000‰",
+    "permillageOverHint": "{amount} acima de 1000‰",
+    "areaValue": "{area} m²",
+    "types": {
+      "apartment": "Apartamento",
+      "shop": "Loja",
+      "garage": "Garagem",
+      "parking": "Estacionamento",
+      "other": "Outro"
+    },
+    "columns": {
+      "label": "Fração",
+      "floor": "Andar",
+      "type": "Tipo",
+      "area": "Área",
+      "permillage": "Permilagem",
+      "owner": "Proprietário",
+      "actions": "Acções"
+    }
+  },
+  "unitModal": {
+    "addTitle": "Adicionar fração",
+    "editTitle": "Editar fração",
+    "remainingHint": "{remaining} disponíveis de {total}",
+    "label": "Identificação da fração",
+    "labelPlaceholder": "ex.: A-101, Loja 1, G-12",
+    "type": "Tipo",
+    "floor": "Andar",
+    "floorPlaceholder": "ex.: 1, R/C, cave",
+    "permillage": "Permilagem (‰)",
+    "permillagePlaceholder": "0,000",
+    "area": "Área (m²)",
+    "areaPlaceholder": "Opcional",
+    "cancel": "Cancelar",
+    "add": "Adicionar fração",
+    "update": "Guardar alterações",
+    "saving": "A guardar…",
+    "validation": {
+      "labelRequired": "A identificação da fração é obrigatória",
+      "permillageRequired": "A permilagem deve ser superior a 0",
+      "permillageExceeds": "Isto ultrapassaria 1000‰. Restam no máximo {remaining}.",
+      "areaInvalid": "Introduza uma área válida"
+    },
+    "errors": {
+      "duplicateLabel": "Já existe uma fração com esta identificação neste condomínio.",
+      "permillageExceedsTotal": "A permilagem não pode ultrapassar 1000‰ neste condomínio.",
+      "invalidPermillage": "A permilagem deve ser superior a 0.",
+      "labelRequired": "A identificação da fração é obrigatória.",
+      "invalidType": "Escolha um tipo de fração válido.",
+      "condominiumNotFound": "Este condomínio não foi encontrado.",
+      "unitHasOwners": "Desassocie os proprietários desta fração antes de a eliminar.",
+      "unitNotFound": "Esta fração não foi encontrada.",
+      "requestFailed": "Não foi possível guardar a fração. Tente novamente."
+    }
   }
 }

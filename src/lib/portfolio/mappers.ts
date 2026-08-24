@@ -468,18 +468,4 @@ export function buildEmptyCondominium(input: {
 
 export { formatPortugueseAddress };
 
-export const UNIT_TYPES: Unit["type"][] = [
-  "apartment",
-  "shop",
-  "garage",
-  "parking",
-  "other",
-];
-
-export function parseUnitType(value: string): Unit["type"] {
-  const normalized = value.trim().toLowerCase();
-  if ((UNIT_TYPES as string[]).includes(normalized)) {
-    return normalized as Unit["type"];
-  }
-  return "apartment";
-}
+export { UNIT_TYPES, parseUnitType } from "./units";

@@ -202,6 +202,80 @@
     "status": "Status",
     "lastUpdated": "Last updated",
     "amenities": "Amenities",
-    "unit": "Unit {unit}"
+    "unit": "Unit {unit}",
+    "addFraction": "Add fraction"
+  },
+  "units": {
+    "title": "Fractions",
+    "count": "{count, plural, one {# fraction registered} other {# fractions registered}}",
+    "add": "Add fraction",
+    "edit": "Edit fraction",
+    "delete": "Delete fraction",
+    "created": "Fraction saved.",
+    "updated": "Fraction updated.",
+    "deleted": "Fraction removed.",
+    "emptyTitle": "No fractions yet",
+    "emptyHint": "Register apartments, shops, and garages so permillage adds up to 1000‰.",
+    "unassigned": "Unassigned",
+    "confirmDelete": "Delete fraction {label}? This cannot be undone.",
+    "cannotDeleteLinked": "{count, plural, one {This fraction has an owner and cannot be deleted.} other {This fraction has # owners and cannot be deleted.}}",
+    "permillageAllocated": "{allocated} of {total} allocated",
+    "permillageRemaining": "{remaining} remaining",
+    "permillageComplete": "Balanced at 1000‰",
+    "permillageUnder": "Incomplete",
+    "permillageOver": "Over allocated",
+    "permillageOverHint": "{amount} over 1000‰",
+    "areaValue": "{area} m²",
+    "types": {
+      "apartment": "Apartment",
+      "shop": "Shop",
+      "garage": "Garage",
+      "parking": "Parking",
+      "other": "Other"
+    },
+    "columns": {
+      "label": "Fraction",
+      "floor": "Floor",
+      "type": "Type",
+      "area": "Area",
+      "permillage": "Permillage",
+      "owner": "Owner",
+      "actions": "Actions"
+    }
+  },
+  "unitModal": {
+    "addTitle": "Add fraction",
+    "editTitle": "Edit fraction",
+    "remainingHint": "{remaining} available of {total}",
+    "label": "Fraction label",
+    "labelPlaceholder": "e.g. A-101, Loja 1, G-12",
+    "type": "Type",
+    "floor": "Floor",
+    "floorPlaceholder": "e.g. 1, R/C, cave",
+    "permillage": "Permillage (‰)",
+    "permillagePlaceholder": "0.000",
+    "area": "Area (m²)",
+    "areaPlaceholder": "Optional",
+    "cancel": "Cancel",
+    "add": "Add fraction",
+    "update": "Save changes",
+    "saving": "Saving…",
+    "validation": {
+      "labelRequired": "Fraction label is required",
+      "permillageRequired": "Permillage must be greater than 0",
+      "permillageExceeds": "This would exceed 1000‰. At most {remaining} left.",
+      "areaInvalid": "Enter a valid area"
+    },
+    "errors": {
+      "duplicateLabel": "A fraction with this label already exists in this condominium.",
+      "permillageExceedsTotal": "Permillage cannot exceed 1000‰ for this condominium.",
+      "invalidPermillage": "Permillage must be greater than 0.",
+      "labelRequired": "Fraction label is required.",
+      "invalidType": "Choose a valid fraction type.",
+      "condominiumNotFound": "This condominium was not found.",
+      "unitHasOwners": "Unlink owners from this fraction before deleting it.",
+      "unitNotFound": "This fraction was not found.",
+      "requestFailed": "Could not save the fraction. Try again."
+    }
   }
 }
