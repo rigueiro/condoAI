@@ -22,6 +22,12 @@ function CondominiumSwitcher() {
   const { activeId } = useActiveCondominium();
   const router = useRouter();
   const condominiums = portfolio.condominiums;
+  const allLabel = t("all");
+  const widestLabel = condominiums.reduce(
+    (widest, condo) =>
+      condo.name.length > widest.length ? condo.name : widest,
+    allLabel,
+  );
 
   const onChange = useCallback(
     (nextId: string | null) => {
@@ -44,26 +50,34 @@ function CondominiumSwitcher() {
 
   return (
     <div className="border-t border-border-light bg-surface px-4 py-2 sm:px-6">
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         <Icon name="Building2" size={16} className="shrink-0 text-text-secondary" />
         <span className="hidden shrink-0 text-sm font-medium text-text-secondary sm:inline">
           {t("label")}
         </span>
-        <Select
-          aria-label={t("label")}
-          selectSize="sm"
-          value={activeId ?? ""}
-          onChange={(event) => onChange(event.target.value || null)}
-          containerClassName="min-w-0 w-full max-w-md"
-          className="truncate"
-        >
-          <option value="">{t("all")}</option>
-          {condominiums.map((condo) => (
-            <option key={condo.id} value={condo.id}>
-              {condo.name}
-            </option>
-          ))}
-        </Select>
+        <div className="inline-grid min-w-0 max-w-full">
+          <Select
+            aria-label={t("label")}
+            selectSize="sm"
+            value={activeId ?? ""}
+            onChange={(event) => onChange(event.target.value || null)}
+            containerClassName="col-start-1 row-start-1 min-w-0 w-full"
+            className="min-w-0 truncate"
+          >
+            <option value="">{allLabel}</option>
+            {condominiums.map((condo) => (
+              <option key={condo.id} value={condo.id}>
+                {condo.name}
+              </option>
+            ))}
+          </Select>
+          <span
+            aria-hidden
+            className="invisible col-start-1 row-start-1 whitespace-nowrap py-1 pl-2 pr-7 text-xs"
+          >
+            {widestLabel}
+          </span>
+        </div>
       </div>
     </div>
   );
