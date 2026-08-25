@@ -21,12 +21,9 @@ import {
 } from "@/lib/collections";
 import {
   buildCollectionFromPortfolio,
-  collectionSummaryForCondo,
-  condoStats,
-  useActiveCondominium,
   usePortfolio,
 } from "@/lib/portfolio";
-import { buildMockCollectionSummary, mockCondoStats } from "@/fixtures/views";
+import { buildMockCollectionSummary } from "@/fixtures/views";
 import ReceiptModal from "@/app/[locale]/owners-management/components/receipt-modal";
 
 interface Filters {
@@ -42,7 +39,6 @@ function PaymentTracking() {
   const tDash = useTranslations("dashboard.upcomingPayments");
   const tReceipt = useTranslations("currentAccount.receipt");
   const { portfolio, isDemo } = usePortfolio();
-  const { activeId } = useActiveCondominium();
   const reminderCopy = useReminderCopy();
   const {
     payments: paymentHistory,
@@ -86,19 +82,10 @@ function PaymentTracking() {
   }, [viewingReceipt, paymentHistory, portfolio.owners]);
 
   const collectionData = useMemo(() => {
-    if (activeId) {
-      const condo = portfolio.condominiums.find((c) => c.id === activeId);
-      if (condo) {
-        const stats = isDemo
-          ? mockCondoStats(condo)
-          : condoStats(condo, portfolio, quotas);
-        return collectionSummaryForCondo(condo, stats);
-      }
-    }
     return isDemo
       ? buildMockCollectionSummary()
       : buildCollectionFromPortfolio(portfolio, quotas);
-  }, [activeId, isDemo, portfolio, quotas]);
+  }, [isDemo, portfolio, quotas]);
 
   const handleRecordPayment = async (paymentData: RecordPaymentInput) => {
     const result = await recordPayment(paymentData);
@@ -159,8 +146,6 @@ function PaymentTracking() {
   };
 
   const filteredPayments = paymentHistory.filter((payment) => {
-    const matchesActive =
-      !activeId || payment.propertyId === activeId;
     const matchesProperty =
       !filters.property ||
       payment.property.toLowerCase().includes(filters.property.toLowerCase());
@@ -181,7 +166,6 @@ function PaymentTracking() {
         payment.amount <= parseFloat(filters.amountRange.max));
 
     return (
-      matchesActive &&
       matchesProperty &&
       matchesStatus &&
       matchesSearch &&

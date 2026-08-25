@@ -2,12 +2,11 @@
 
 import { useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import Select from "@/components/ui/select";
 import Icon from "@/components/icon";
 import {
   buildingWorkspaceHref,
-  isBuildingWorkspacePath,
   useActiveCondominium,
   usePortfolio,
 } from "@/lib/portfolio";
@@ -20,32 +19,25 @@ function currentWorkspaceTab(): string | null {
 function CondominiumSwitcher() {
   const t = useTranslations("common.switcher");
   const { portfolio } = usePortfolio();
-  const { activeId, setActiveId } = useActiveCondominium();
-  const pathname = usePathname();
+  const { activeId } = useActiveCondominium();
   const router = useRouter();
   const condominiums = portfolio.condominiums;
 
   const onChange = useCallback(
     (nextId: string | null) => {
-      setActiveId(nextId);
       if (!nextId) {
-        if (isBuildingWorkspacePath(pathname)) {
-          router.push("/properties-management");
-        }
+        if (activeId) router.push("/properties-management");
         return;
       }
-      const onWorkspace = isBuildingWorkspacePath(pathname);
-      if (onWorkspace && pathname === `/properties-management/${nextId}`) {
-        return;
-      }
+      if (activeId === nextId) return;
       router.push(
         buildingWorkspaceHref(
           nextId,
-          onWorkspace ? currentWorkspaceTab() : null,
+          activeId ? currentWorkspaceTab() : null,
         ),
       );
     },
-    [pathname, router, setActiveId],
+    [activeId, router],
   );
 
   if (condominiums.length === 0) return null;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useMemo, useState } from "react";
+import React, { Suspense, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useParams, useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -36,7 +36,6 @@ import {
   labelCommonAreas,
   permillageSummary,
   unitsForCondominium,
-  useActiveCondominium,
   usePortfolio,
   type BuildingWorkspaceTab,
 } from "@/lib/portfolio";
@@ -69,7 +68,6 @@ function PropertyDetailContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { setActiveId } = useActiveCondominium();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
 
   const { portfolio, isDemo, upsertCondominium, upsertUnit, removeUnit } =
@@ -102,10 +100,6 @@ function PropertyDetailContent() {
         : undefined,
     [id, portfolio.condominiums],
   );
-
-  useEffect(() => {
-    if (condo) setActiveId(condo.id);
-  }, [condo, setActiveId]);
 
   const stats = useMemo(() => {
     if (!condo) return null;

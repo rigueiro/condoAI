@@ -18,7 +18,6 @@ import {
   type SendResult,
 } from "@/lib/collections";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
-import { useActiveCondominium } from "@/lib/portfolio";
 
 export type { OverdueItem };
 
@@ -62,13 +61,6 @@ function OverdueCollections({
     escalateOverdue,
     sendCollectionsDigest,
   } = useCollections();
-  const { activeId } = useActiveCondominium();
-
-  const scopedItems = useMemo(
-    () =>
-      activeId ? items.filter((item) => item.propertyId === activeId) : items,
-    [activeId, items],
-  );
 
   const attemptById = useMemo(() => {
     const map = new Map<string, ContactAttempt>();
@@ -90,11 +82,11 @@ function OverdueCollections({
 
   const dismissFlash = useCallback(() => setFlash(null), []);
 
-  const pendingReminderIds = scopedItems
+  const pendingReminderIds = items
     .filter((item) => !remindedIds.has(item.id))
     .map((item) => item.id);
 
-  const pendingEscalationIds = scopedItems
+  const pendingEscalationIds = items
     .filter((item) =>
       isEscalationEligible(
         attemptById.get(item.id),
@@ -103,7 +95,7 @@ function OverdueCollections({
     )
     .map((item) => item.id);
 
-  const totalOutstanding = scopedItems.reduce((sum, item) => sum + item.amount, 0);
+  const totalOutstanding = items.reduce((sum, item) => sum + item.amount, 0);
   const isSending = sendingIds.size > 0;
 
   const flashForResult = (
@@ -241,7 +233,7 @@ function OverdueCollections({
           </Link>
         </div>
 
-        {scopedItems.length > 0 && (
+        {items.length > 0 && (
           <div className="mb-5 flex flex-wrap items-center gap-4 text-sm">
             <span className="inline-flex items-center gap-1.5 text-warning font-medium">
               <Icon
@@ -249,7 +241,7 @@ function OverdueCollections({
                 size={14}
                 color="var(--color-warning)"
               />
-              {t("summaryCount", { count: scopedItems.length })}
+              {t("summaryCount", { count: items.length })}
             </span>
             <span className="text-text-secondary">
               {formatCurrency(totalOutstanding)}
@@ -257,7 +249,7 @@ function OverdueCollections({
           </div>
         )}
 
-        {scopedItems.length === 0 ? (
+        {items.length === 0 ? (
           <div className="py-8 text-center">
             <div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-success-50 flex items-center justify-center">
               <Icon
@@ -273,7 +265,7 @@ function OverdueCollections({
           </div>
         ) : (
           <div className="space-y-3">
-            {scopedItems.map((item) => {
+            {items.map((item) => {
               const overdueDays = overdueDayCount(item.dueDate);
               const attempt = attemptById.get(item.id);
               const reminded = Boolean(attempt);
@@ -430,7 +422,7 @@ function OverdueCollections({
                 <Icon name="Bell" size={16} />
               )}
               <span>
-                {pendingReminderIds.length === 0 && scopedItems.length > 0
+                {pendingReminderIds.length === 0 && items.length > 0
                   ? t("allReminded")
                   : t("sendReminders")}
               </span>
@@ -444,7 +436,7 @@ function OverdueCollections({
             >
               <Icon name="AlertTriangle" size={16} />
               <span>
-                {pendingEscalationIds.length === 0 && scopedItems.length > 0
+                {pendingEscalationIds.length === 0 && items.length > 0
                   ? t("allEscalated")
                   : t("escalateOverdue")}
               </span>

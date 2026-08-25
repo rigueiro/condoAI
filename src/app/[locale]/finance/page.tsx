@@ -7,7 +7,7 @@ import Breadcrumb from "@/components/ui/breadcrumb";
 import Button from "@/components/ui/button";
 import Icon from "@/components/icon";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
-import { useActiveCondominium, usePortfolio } from "@/lib/portfolio";
+import { usePortfolio } from "@/lib/portfolio";
 import {
   summarizeBudget,
   useFinance,
@@ -23,34 +23,23 @@ import FinanceModal, {
 } from "./components/finance-modal";
 import RecordsTable from "./components/records-table";
 
-function filterByCondoAndSearch<T extends { condominiumId: string }>(
+function filterBySearch<T>(
   items: T[],
-  condoFilter: string,
   searchLower: string,
   textFor: (item: T) => string,
 ): T[] {
-  return items.filter((item) => {
-    if (condoFilter && item.condominiumId !== condoFilter) return false;
-    if (!searchLower) return true;
-    return textFor(item).toLowerCase().includes(searchLower);
-  });
-}
-
-function byCondo<T extends { condominiumId: string }>(
-  items: T[],
-  condoFilter: string,
-): T[] {
-  return condoFilter
-    ? items.filter((i) => i.condominiumId === condoFilter)
-    : items;
+  if (!searchLower) return items;
+  return items.filter((item) =>
+    textFor(item).toLowerCase().includes(searchLower),
+  );
 }
 
 function FinancePage() {
   const t = useTranslations("finance");
   const { formatCurrency } = useFormatCurrency();
   const { portfolio } = usePortfolio();
-  const { activeId, preferredId } = useActiveCondominium();
   const condominiums = portfolio.condominiums;
+  const preferredId = condominiums[0]?.id ?? "";
 
   const {
     budgets,
@@ -99,66 +88,52 @@ function FinancePage() {
 
   const nameOf = (id: string) => condoNameById.get(id) ?? id;
   const searchLower = search.trim().toLowerCase();
-  const condoFilter = activeId ?? "";
 
   const totalBankBalance = useMemo(
-    () =>
-      byCondo(accounts, condoFilter).reduce(
-        (sum, a) => sum + a.currentBalance,
-        0,
-      ),
-    [accounts, condoFilter],
+    () => accounts.reduce((sum, a) => sum + a.currentBalance, 0),
+    [accounts],
   );
 
-  // Condo-only counts for inactive tabs; full search only on the active tab.
-  const filteredDrafts = useMemo(
-    () => byCondo(draftItems, condoFilter),
-    [draftItems, condoFilter],
-  );
-
+  // Search only on the active tab; other tabs keep full counts.
   const filteredBudgets = useMemo(() => {
-    if (tab !== "budget") return byCondo(budgets, condoFilter);
-    return filterByCondoAndSearch(
+    if (tab !== "budget") return budgets;
+    return filterBySearch(
       budgets,
-      condoFilter,
       searchLower,
       (b) =>
         `${b.year} ${b.status} ${nameOf(b.condominiumId)} ${Object.keys(b.valuesByCategory).join(" ")}`,
     );
-  }, [budgets, condoFilter, searchLower, tab, condoNameById]);
+  }, [budgets, searchLower, tab, condoNameById]);
 
   const filteredExpenses = useMemo(() => {
-    if (tab !== "expense") return byCondo(expenses, condoFilter);
-    return filterByCondoAndSearch(
+    if (tab !== "expense") return expenses;
+    return filterBySearch(
       expenses,
-      condoFilter,
       searchLower,
       (e) => `${e.category} ${e.supplier} ${nameOf(e.condominiumId)}`,
     );
-  }, [expenses, condoFilter, searchLower, tab, condoNameById]);
+  }, [expenses, searchLower, tab, condoNameById]);
 
   const filteredAccounts = useMemo(() => {
-    if (tab !== "bank") return byCondo(accounts, condoFilter);
-    return filterByCondoAndSearch(
+    if (tab !== "bank") return accounts;
+    return filterBySearch(
       accounts,
-      condoFilter,
       searchLower,
       (a) => `${a.bank} ${a.iban} ${nameOf(a.condominiumId)}`,
     );
-  }, [accounts, condoFilter, searchLower, tab, condoNameById]);
+  }, [accounts, searchLower, tab, condoNameById]);
 
   const filteredExtras = useMemo(() => {
-    if (tab !== "extraordinary") return byCondo(extraordinaryQuotas, condoFilter);
-    return filterByCondoAndSearch(
+    if (tab !== "extraordinary") return extraordinaryQuotas;
+    return filterBySearch(
       extraordinaryQuotas,
-      condoFilter,
       searchLower,
       (item) => `${item.description} ${nameOf(item.condominiumId)}`,
     );
-  }, [extraordinaryQuotas, condoFilter, searchLower, tab, condoNameById]);
+  }, [extraordinaryQuotas, searchLower, tab, condoNameById]);
 
   const tabs: { key: FinanceTab; count: number }[] = [
-    { key: "attention", count: filteredDrafts.length },
+    { key: "attention", count: draftItems.length },
     { key: "budget", count: filteredBudgets.length },
     { key: "extraordinary", count: filteredExtras.length },
     { key: "expense", count: filteredExpenses.length },
@@ -285,17 +260,17 @@ function FinancePage() {
             {[
               {
                 label: t("stats.drafts"),
-                value: String(filteredDrafts.length),
+                value: String(draftItems.length),
                 icon: "FilePen",
               },
               {
                 label: t("stats.budgets"),
-                value: String(byCondo(budgets, condoFilter).length),
+                value: String(budgets.length),
                 icon: "Wallet",
               },
               {
                 label: t("stats.expenses"),
-                value: String(byCondo(expenses, condoFilter).length),
+                value: String(expenses.length),
                 icon: "Receipt",
               },
               {
@@ -359,7 +334,7 @@ function FinancePage() {
           </div>
 
           {tab === "attention" && (
-            <DraftsPanel items={filteredDrafts} onApprove={handleApprove} />
+            <DraftsPanel items={draftItems} onApprove={handleApprove} />
           )}
 
           {tab === "budget" && (

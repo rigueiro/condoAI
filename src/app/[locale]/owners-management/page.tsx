@@ -14,7 +14,6 @@ import BulkOperations from "./components/bulk-operations";
 import { type OwnerRow, type PaymentStatus } from "./components/types";
 import {
   ownerFromFormSave,
-  useActiveCondominium,
   usePortfolio,
 } from "@/lib/portfolio";
 import { useCollections } from "@/lib/collections";
@@ -29,7 +28,7 @@ interface Filters {
 function OwnersManagement() {
   const t = useTranslations("ownersManagement");
   const { portfolio, upsertOwner, removeOwner } = usePortfolio();
-  const { activeId, preferredId } = useActiveCondominium();
+  const preferredId = portfolio.condominiums[0]?.id ?? "";
   const { ownersWithBalances } = useCollections();
   const portfolioProperties = portfolio.condominiums.map((c) => ({
     id: c.id,
@@ -45,18 +44,8 @@ function OwnersManagement() {
     balanceRange: "",
   });
 
-  const scopedOwners = useMemo(
-    () =>
-      activeId
-        ? ownersWithBalances.filter((row) =>
-            row.condominiumIds.includes(activeId),
-          )
-        : ownersWithBalances,
-    [activeId, ownersWithBalances],
-  );
-
   const filteredOwners = useMemo(() => {
-    return scopedOwners.filter((row) => {
+    return ownersWithBalances.filter((row) => {
       const { owner } = row;
       const matchesSearch =
         !filters.search ||
@@ -99,7 +88,7 @@ function OwnersManagement() {
         matchesBalanceRange
       );
     });
-  }, [filters, scopedOwners]);
+  }, [filters, ownersWithBalances]);
 
   const handleAddOwner = () => {
     setEditingOwner(null);
@@ -168,7 +157,7 @@ function OwnersManagement() {
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="lg:col-span-1">
-              <OwnerStatistics owners={scopedOwners} />
+              <OwnerStatistics owners={ownersWithBalances} />
             </div>
 
             <div className="lg:col-span-3 space-y-6">

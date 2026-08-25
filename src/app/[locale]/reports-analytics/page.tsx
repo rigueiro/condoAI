@@ -2,7 +2,7 @@
 
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Header from "@/components/ui/header";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import ControlPanel from "./components/control-panel";
 import ReportTemplates from "./components/report-templates";
@@ -12,11 +12,9 @@ import GenerateReportSection from "./components/generate-report-section";
 import type { Filters } from "./components/control-panel";
 import { mockCondominiums } from "@/fixtures/domain";
 import { mockCondoStats } from "@/fixtures/views";
-import { useActiveCondominium } from "@/lib/portfolio";
 
 function ReportsAnalytics() {
   const t = useTranslations("reportsAnalytics");
-  const { activeId } = useActiveCondominium();
 
   const [filters, setFilters] = useState<Filters>(() => ({
     dateRange: {
@@ -63,16 +61,6 @@ function ReportsAnalytics() {
       { method: "Cash", count: 12, amount: 29400, percentage: 3.1 },
     ],
   });
-
-  const visibleReportData = useMemo(() => {
-    if (!activeId) return reportData;
-    return {
-      ...reportData,
-      propertyPerformance: reportData.propertyPerformance.filter(
-        (row) => row.propertyId === activeId,
-      ),
-    };
-  }, [activeId, reportData]);
 
   const handleFilterChange = (newFilters: Partial<Filters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -121,11 +109,11 @@ function ReportsAnalytics() {
             {/* Main Content Area */}
             <div className="lg:col-span-9 space-y-8">
               {/* Charts Section */}
-              <ChartsSection reportData={visibleReportData} filters={filters} />
+              <ChartsSection reportData={reportData} filters={filters} />
 
               {/* Data Tables */}
               <DataTables
-                reportData={visibleReportData}
+                reportData={reportData}
                 onExport={handleExportData}
               />
 

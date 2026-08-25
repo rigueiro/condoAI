@@ -6,7 +6,7 @@ import Header from "@/components/ui/header";
 import BreadcrumbNavigation from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 import { downloadCsv } from "@/lib/export-csv";
-import { useActiveCondominium, usePortfolio } from "@/lib/portfolio";
+import { usePortfolio } from "@/lib/portfolio";
 import { useOccurrences } from "@/lib/occurrences";
 
 import NewOccurrenceModal from "./components/new-occurrence-modal";
@@ -30,8 +30,8 @@ function OccurrencesPage() {
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
   const { portfolio } = usePortfolio();
-  const { activeId, preferredId } = useActiveCondominium();
   const { condominiums, owners, units } = portfolio;
+  const preferredId = condominiums[0]?.id ?? "";
   const {
     occurrences,
     upsertOccurrence,
@@ -57,19 +57,9 @@ function OccurrencesPage() {
     [occurrences, condominiums, owners],
   );
 
-  const scopedRows = useMemo(
-    () =>
-      activeId
-        ? occurrenceRows.filter(
-            (row) => row.occurrence.condominiumId === activeId,
-          )
-        : occurrenceRows,
-    [activeId, occurrenceRows],
-  );
-
   const filteredRows = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
-    return scopedRows.filter((row) => {
+    return occurrenceRows.filter((row) => {
       const { occurrence } = row;
       return (
         occurrenceMatchesSearch(row, q) &&
@@ -78,7 +68,7 @@ function OccurrencesPage() {
         (!filters.priority || occurrence.priority === filters.priority)
       );
     });
-  }, [scopedRows, filters]);
+  }, [occurrenceRows, filters]);
 
   const handleAddOccurrence = useCallback(() => {
     setEditingOccurrence(null);
@@ -193,7 +183,7 @@ function OccurrencesPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="lg:col-span-1">
-              <OccurrenceStatistics rows={scopedRows} />
+              <OccurrenceStatistics rows={occurrenceRows} />
             </div>
 
             <div className="lg:col-span-3 space-y-6">

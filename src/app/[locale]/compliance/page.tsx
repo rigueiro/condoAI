@@ -8,7 +8,7 @@ import Button from "@/components/ui/button";
 import Icon from "@/components/icon";
 import Toast from "@/components/ui/toast";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
-import { useActiveCondominium, usePortfolio } from "@/lib/portfolio";
+import { usePortfolio } from "@/lib/portfolio";
 import {
   useCompliance,
   useDigestCopy,
@@ -23,25 +23,23 @@ import ComplianceModal, {
 import DocumentCell from "./components/document-cell";
 import RecordsTable from "./components/records-table";
 
-function filterByCondoAndSearch<T extends { condominiumId: string }>(
+function filterBySearch<T>(
   items: T[],
-  condoFilter: string,
   searchLower: string,
   textFor: (item: T) => string,
 ): T[] {
-  return items.filter((item) => {
-    if (condoFilter && item.condominiumId !== condoFilter) return false;
-    if (!searchLower) return true;
-    return textFor(item).toLowerCase().includes(searchLower);
-  });
+  if (!searchLower) return items;
+  return items.filter((item) =>
+    textFor(item).toLowerCase().includes(searchLower),
+  );
 }
 
 function CompliancePage() {
   const t = useTranslations("compliance");
   const { formatCurrency } = useFormatCurrency();
   const { portfolio } = usePortfolio();
-  const { activeId, preferredId } = useActiveCondominium();
   const condominiums = portfolio.condominiums;
+  const preferredId = condominiums[0]?.id ?? "";
 
   const {
     policies,
@@ -87,59 +85,49 @@ function CompliancePage() {
 
   const nameOf = (id: string) => condoNameById.get(id) ?? id;
   const searchLower = search.trim().toLowerCase();
-  const condoFilter = activeId ?? "";
-
-  const filteredAttention = useMemo(() => {
-    if (!condoFilter) return attentionItems;
-    return attentionItems.filter((i) => i.condominiumId === condoFilter);
-  }, [attentionItems, condoFilter]);
 
   const filteredPolicies = useMemo(
     () =>
-      filterByCondoAndSearch(
+      filterBySearch(
         policies,
-        condoFilter,
         searchLower,
         (p) => `${p.insurer} ${p.number} ${nameOf(p.condominiumId)}`,
       ),
-    [policies, condoFilter, searchLower, condoNameById],
+    [policies, searchLower, condoNameById],
   );
 
   const filteredCertificates = useMemo(
     () =>
-      filterByCondoAndSearch(
+      filterBySearch(
         certificates,
-        condoFilter,
         searchLower,
         (c) => `${c.type} ${nameOf(c.condominiumId)}`,
       ),
-    [certificates, condoFilter, searchLower, condoNameById],
+    [certificates, searchLower, condoNameById],
   );
 
   const filteredAssemblies = useMemo(
     () =>
-      filterByCondoAndSearch(
+      filterBySearch(
         assemblies,
-        condoFilter,
         searchLower,
         (a) => `${a.type} ${nameOf(a.condominiumId)}`,
       ),
-    [assemblies, condoFilter, searchLower, condoNameById],
+    [assemblies, searchLower, condoNameById],
   );
 
   const filteredSummons = useMemo(
     () =>
-      filterByCondoAndSearch(
+      filterBySearch(
         summons,
-        condoFilter,
         searchLower,
         (s) => `${s.title} ${s.content} ${nameOf(s.condominiumId)}`,
       ),
-    [summons, condoFilter, searchLower, condoNameById],
+    [summons, searchLower, condoNameById],
   );
 
   const tabs: { key: ComplianceTab; count: number }[] = [
-    { key: "attention", count: filteredAttention.length },
+    { key: "attention", count: attentionItems.length },
     { key: "insurance", count: filteredPolicies.length },
     { key: "certificate", count: filteredCertificates.length },
     { key: "assembly", count: filteredAssemblies.length },
@@ -189,7 +177,7 @@ function CompliancePage() {
   };
 
   const handleSendDigest = () => {
-    const result = sendDeadlineDigest(filteredAttention, digestCopy);
+    const result = sendDeadlineDigest(attentionItems, digestCopy);
     if (!result.sent) {
       setFlash({
         message:
@@ -256,7 +244,7 @@ function CompliancePage() {
             {[
               {
                 label: t("stats.attention"),
-                value: filteredAttention.length,
+                value: attentionItems.length,
                 icon: "AlertTriangle",
               },
               {
@@ -331,7 +319,7 @@ function CompliancePage() {
 
           {tab === "attention" && (
             <AttentionPanel
-              items={filteredAttention}
+              items={attentionItems}
               digestSentToday={digestSentToday}
               onRenew={handleRenew}
               onSendDigest={handleSendDigest}
