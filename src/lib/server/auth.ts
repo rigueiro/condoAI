@@ -1,4 +1,5 @@
 import type { User } from "@/app/types";
+import { UserRole } from "@/app/types";
 import {
   DEMO_EMAIL,
   DEFAULT_PASSWORD,
@@ -11,6 +12,11 @@ import {
   updateStore,
   type StoredAccount,
 } from "./store";
+import {
+  ensurePortalDemoAccounts,
+  PORTAL_DEMO_BOARD_EMAIL,
+  PORTAL_DEMO_OWNER_EMAIL,
+} from "./demo";
 
 const RESET_TTL_MS = 60 * 60 * 1000;
 
@@ -19,11 +25,24 @@ const DEMO_USER: User = {
   email: DEMO_EMAIL,
   name: "Rafael Rigueiro",
   role: "Property Manager",
+  roleCode: UserRole.PropertyManager,
   avatar: null,
 };
 
+const PORTAL_DEMO_EMAILS = new Set([
+  PORTAL_DEMO_BOARD_EMAIL,
+  PORTAL_DEMO_OWNER_EMAIL,
+]);
+
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
+}
+
+function ensurePortalSeedIfNeeded(email: string): void {
+  const key = normalizeEmail(email);
+  if (PORTAL_DEMO_EMAILS.has(key)) {
+    ensurePortalDemoAccounts();
+  }
 }
 
 export function assertPasswordLength(password: string): void {
@@ -34,6 +53,7 @@ export function assertPasswordLength(password: string): void {
 
 export function resolveUser(email: string): User {
   const key = normalizeEmail(email);
+  ensurePortalSeedIfNeeded(key);
   if (isDemoEmail(key)) {
     return { ...DEMO_USER, email: key };
   }
@@ -46,12 +66,14 @@ export function resolveUser(email: string): User {
 
 export function isKnownAccount(email: string): boolean {
   const key = normalizeEmail(email);
+  ensurePortalSeedIfNeeded(key);
   if (isDemoEmail(key)) return true;
   return Boolean(readStore().accounts[key]);
 }
 
 export function verifyCredentials(email: string, password: string): boolean {
   const key = normalizeEmail(email);
+  ensurePortalSeedIfNeeded(key);
   const store = readStore();
   if (isDemoEmail(key)) {
     return password === (store.demoPassword || DEFAULT_PASSWORD);
@@ -90,6 +112,7 @@ export function registerAccount(
     name: name.trim(),
     password,
     role: "Property Manager",
+    roleCode: UserRole.PropertyManager,
     avatar: null,
     phone: null,
   };

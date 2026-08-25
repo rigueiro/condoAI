@@ -211,7 +211,48 @@
       "owners": "Owners",
       "finance": "Finance",
       "assemblies": "Assemblies",
-      "occurrences": "Occurrences"
+      "occurrences": "Occurrences",
+      "access": "Access"
+    }
+  },
+  "access": {
+    "title": "Condo access",
+    "subtitle": "Invite board members, owners, and staff with access limited to this condominium.",
+    "inviteTitle": "Invite someone",
+    "invite": "Send invite",
+    "inviting": "Saving…",
+    "listTitle": "People with access",
+    "loading": "Loading…",
+    "empty": "No invites yet. Add a board member or owner to open the portal.",
+    "loadError": "Could not load access list.",
+    "revoke": "Revoke",
+    "confirmRevoke": "Revoke access for {name}?",
+    "linkedOwner": "Linked to {name}",
+    "fields": {
+      "name": "Full name",
+      "email": "Email",
+      "role": "Role",
+      "owner": "Link to owner account",
+      "ownerOptional": "No link (documents only)"
+    },
+    "columns": {
+      "person": "Person",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "invited": "Invited",
+      "inactive": "Inactive"
+    },
+    "errors": {
+      "inviteFailed": "Could not save the invite.",
+      "revokeFailed": "Could not revoke access.",
+      "membershipExists": "This email already has access to this condominium.",
+      "badRequest": "Check the form and try again.",
+      "condominiumNotFound": "Condominium not found.",
+      "notFound": "Owner or membership not found."
     }
   },
   "units": {

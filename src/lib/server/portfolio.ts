@@ -17,7 +17,7 @@ import {
   upsertUnitInMemory,
 } from "@/lib/portfolio/mutations";
 import { readStore, writeStore } from "./store";
-import { buildDemoPortfolio } from "./demo";
+import { restoreDemoWorkspace, ensurePortalDemoAccounts } from "./demo";
 
 function normalizeCondominium(condo: Condominium): Condominium {
   return {
@@ -38,32 +38,27 @@ function normalizePortfolio(parsed: Portfolio): Portfolio {
   });
 }
 
-function loadOrSeedPortfolio(email: string): {
-  key: string;
-  portfolio: Portfolio;
-  seeded: boolean;
-} {
+function loadPortfolio(email: string): { key: string; portfolio: Portfolio } {
   const key = email.trim().toLowerCase();
-  const store = readStore();
-  const existing = store.portfolios[key];
-  if (existing) {
-    return { key, portfolio: normalizePortfolio(existing), seeded: false };
-  }
+  const existing = readStore().portfolios[key];
+
   if (isDemoEmail(key)) {
-    return { key, portfolio: buildDemoPortfolio(), seeded: true };
+    if (!existing?.condominiums?.length) {
+      return { key, portfolio: restoreDemoWorkspace() };
+    }
+    ensurePortalDemoAccounts();
+    return { key, portfolio: normalizePortfolio(existing) };
   }
-  return { key, portfolio: { ...EMPTY_PORTFOLIO }, seeded: false };
+
+  if (existing) {
+    return { key, portfolio: normalizePortfolio(existing) };
+  }
+  return { key, portfolio: { ...EMPTY_PORTFOLIO } };
 }
 
-/** Load portfolio for email; auto-seed demo fixtures when missing. */
+/** Load portfolio for email; restores demo fixtures when admin has no buildings. */
 export function getPortfolio(email: string): Portfolio {
-  const { key, portfolio, seeded } = loadOrSeedPortfolio(email);
-  if (seeded) {
-    const store = readStore();
-    store.portfolios[key] = portfolio;
-    writeStore(store);
-  }
-  return portfolio;
+  return loadPortfolio(email).portfolio;
 }
 
 /** Single read→mutate→write for portfolio updates. */
@@ -71,7 +66,7 @@ function mutatePortfolio(
   email: string,
   mutator: (current: Portfolio) => Portfolio,
 ): Portfolio {
-  const { key, portfolio } = loadOrSeedPortfolio(email);
+  const { key, portfolio } = loadPortfolio(email);
   const next = normalizePortfolio(mutator(portfolio));
   const store = readStore();
   store.portfolios[key] = next;

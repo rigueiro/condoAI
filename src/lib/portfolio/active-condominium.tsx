@@ -11,6 +11,7 @@ export const BUILDING_WORKSPACE_TABS = [
   "finance",
   "assemblies",
   "occurrences",
+  "access",
 ] as const;
 
 export type BuildingWorkspaceTab = (typeof BUILDING_WORKSPACE_TABS)[number];

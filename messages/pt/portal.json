@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "home": "Início",
+    "extract": "Extrato de conta",
+    "documents": "Documentos",
+    "portal": "O meu condomínio"
+  },
+  "roles": {
+    "boardMember": "Membro da administração",
+    "resident": "Proprietário / residente",
+    "tenant": "Inquilino",
+    "staff": "Pessoal do edifício"
+  },
+  "condoPicker": "Condomínio",
+  "loading": "A carregar…",
+  "loadError": "Não foi possível carregar esta página.",
+  "noAccess": "Ainda não tem acesso a nenhum condomínio. Peça um convite ao administrador.",
+  "home": {
+    "title": "Portal de proprietários e administração",
+    "subtitle": "Consulte o extrato e os documentos do edifício sem contactar o escritório.",
+    "extractCard": "Conta corrente",
+    "extractHint": "Extrato de {name}",
+    "extractUnavailable": "Ainda não há conta de proprietário ligada ao seu acesso.",
+    "documentsCard": "Documentos",
+    "documentsHint": "Regulamento, certificados, seguros e atas deste edifício.",
+    "role": "A sua função",
+    "units": "Frações",
+    "linkedOwner": "Proprietário ligado"
+  },
+  "extract": {
+    "title": "Extrato de conta corrente",
+    "subtitle": "Encargos, quotas e recibos com saldo acumulado.",
+    "unavailable": "O extrato não está disponível para a sua função, ou não há conta de proprietário ligada."
+  },
+  "documents": {
+    "title": "Documentos do edifício",
+    "subtitle": "Arquivo só de leitura deste condomínio.",
+    "empty": "Ainda não há documentos listados para este condomínio.",
+    "open": "Abrir",
+    "noFile": "Ficheiro não carregado",
+    "kinds": {
+      "constitutive-title": "Título constitutivo",
+      "internal-regulations": "Regulamento interno",
+      "insurance": "Seguro",
+      "certificate": "Certificado",
+      "assembly-minutes": "Ata de assembleia"
+    }
+  }
+}

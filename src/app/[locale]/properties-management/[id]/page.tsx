@@ -17,6 +17,7 @@ import PropertyDetailStats from "../components/property-detail-stats";
 import PropertyOwnersList from "../components/property-owners-list";
 import UnitRegistry from "../components/unit-registry";
 import WorkspaceTabs from "../components/workspace-tabs";
+import AccessSection from "../components/access-section";
 import {
   formatOccurrenceDate,
   toOccurrenceRows,
@@ -551,6 +552,13 @@ function PropertyDetailContent() {
                 )}
               </div>
             </section>
+          )}
+
+          {tab === "access" && (
+            <AccessSection
+              condominiumId={condo.id}
+              owners={propertyOwners.map((row) => row.owner)}
+            />
           )}
         </div>
       </main>

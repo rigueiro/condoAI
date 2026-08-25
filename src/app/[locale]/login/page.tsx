@@ -22,6 +22,7 @@ import {
 } from "@/lib/auth";
 import { apiFetch } from "@/lib/api/client";
 import { needsOnboarding, type Portfolio } from "@/lib/portfolio";
+import type { PortalContext } from "@/lib/memberships";
 
 type Errors = {
   email?: string;
@@ -94,6 +95,15 @@ function Login() {
         rememberMe: formData.rememberMe,
       });
       const email = formData.email.trim().toLowerCase();
+      try {
+        const portal = await apiFetch<PortalContext>("/api/portal/context");
+        if (portal.mode === "portal") {
+          router.push("/portal");
+          return;
+        }
+      } catch {
+        // fall through to manager routing
+      }
       if (isDemoEmail(email)) {
         router.push("/dashboard");
       } else {

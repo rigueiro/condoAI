@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "home": "Home",
+    "extract": "Account extract",
+    "documents": "Documents",
+    "portal": "My condo"
+  },
+  "roles": {
+    "boardMember": "Board member",
+    "resident": "Owner / resident",
+    "tenant": "Tenant",
+    "staff": "Building staff"
+  },
+  "condoPicker": "Condominium",
+  "loading": "Loading…",
+  "loadError": "Could not load this page.",
+  "noAccess": "You do not have access to any condominium yet. Ask your administrator for an invite.",
+  "home": {
+    "title": "Owner & board portal",
+    "subtitle": "View your extract and building documents without calling the office.",
+    "extractCard": "Current account",
+    "extractHint": "Extract for {name}",
+    "extractUnavailable": "No owner account is linked to your access yet.",
+    "documentsCard": "Documents",
+    "documentsHint": "Regulations, certificates, insurance, and minutes for this building.",
+    "role": "Your role",
+    "units": "Fractions",
+    "linkedOwner": "Linked owner"
+  },
+  "extract": {
+    "title": "Current account extract",
+    "subtitle": "Charges, quotas, and receipts with running balance.",
+    "unavailable": "An extract is not available for your role, or no owner account is linked."
+  },
+  "documents": {
+    "title": "Building documents",
+    "subtitle": "Read-only archive for this condominium.",
+    "empty": "No documents listed for this condominium yet.",
+    "open": "Open",
+    "noFile": "File not uploaded",
+    "kinds": {
+      "constitutive-title": "Constitutive title",
+      "internal-regulations": "Internal regulations",
+      "insurance": "Insurance",
+      "certificate": "Certificate",
+      "assembly-minutes": "Assembly minutes"
+    }
+  }
+}

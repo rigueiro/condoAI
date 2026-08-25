@@ -8,77 +8,61 @@ import MobileNavigationDrawer from "./mobile-navigation-drawer";
 import CondominiumSwitcher from "./condominium-switcher";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
+import { useMemberships } from "@/lib/memberships";
+
+type NavItem = { label: string; path: string; icon: string };
 
 function Header() {
   const t = useTranslations("common");
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { mode, isReady } = useMemberships();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navigationItems = useMemo(
-    () => [
-      {
-        label: t("nav.dashboard"),
-        path: "/dashboard",
-        icon: "LayoutDashboard",
-      },
+  const isPortal = isReady && mode === "portal";
+
+  const navigationItems = useMemo<NavItem[]>(() => {
+    if (isPortal) {
+      return [
+        { label: t("nav.portal"), path: "/portal", icon: "Home" },
+        { label: t("nav.extract"), path: "/portal/extract", icon: "Receipt" },
+        {
+          label: t("nav.documents"),
+          path: "/portal/documents",
+          icon: "FolderOpen",
+        },
+      ];
+    }
+    return [
+      { label: t("nav.dashboard"), path: "/dashboard", icon: "LayoutDashboard" },
       {
         label: t("nav.properties"),
         path: "/properties-management",
         icon: "Building2",
       },
-      {
-        label: t("nav.owners"),
-        path: "/owners-management",
-        icon: "Users",
-      },
-      {
-        label: t("nav.payments"),
-        path: "/payment-tracking",
-        icon: "CreditCard",
-      },
-      {
-        label: t("nav.finance"),
-        path: "/finance",
-        icon: "Wallet",
-      },
-      {
-        label: t("nav.assemblies"),
-        path: "/assemblies",
-        icon: "Gavel",
-      },
+      { label: t("nav.owners"), path: "/owners-management", icon: "Users" },
+      { label: t("nav.payments"), path: "/payment-tracking", icon: "CreditCard" },
+      { label: t("nav.finance"), path: "/finance", icon: "Wallet" },
+      { label: t("nav.assemblies"), path: "/assemblies", icon: "Gavel" },
       {
         label: t("nav.occurrences"),
         path: "/occurrences",
         icon: "ClipboardList",
       },
-      {
-        label: t("nav.compliance"),
-        path: "/compliance",
-        icon: "ScrollText",
-      },
-      {
-        label: t("nav.reports"),
-        path: "/reports-analytics",
-        icon: "BarChart3",
-      },
-    ],
-    [t],
+      { label: t("nav.compliance"), path: "/compliance", icon: "ScrollText" },
+      { label: t("nav.reports"), path: "/reports-analytics", icon: "BarChart3" },
+    ];
+  }, [isPortal, t]);
+
+  const isActivePath = useCallback(
+    (path: string) => {
+      if (pathname === path) return true;
+      if (path === "/portal" || path === "/dashboard") return false;
+      return pathname.startsWith(`${path}/`);
+    },
+    [pathname],
   );
-
-  const isActivePath = useCallback((path: string) => {
-    if (pathname === path) return true;
-    return path !== "/dashboard" && pathname.startsWith(`${path}/`);
-  }, [pathname]);
-
-  const handleMobileMenuToggle = useCallback(() => {
-    setIsMobileMenuOpen((prev) => !prev);
-  }, []);
-
-  const handleMobileMenuClose = useCallback(() => {
-    setIsMobileMenuOpen(false);
-  }, []);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -88,13 +72,15 @@ function Header() {
     }
   }, [logout, router]);
 
+  const brandHref = isPortal ? "/portal" : "/dashboard";
+
   return (
     <>
       <header className="sticky top-0 z-1000 border-b border-border-light bg-surface bg-secondary-50">
         <div className="px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex min-w-0 items-center justify-between gap-3">
             <Link
-              href="/dashboard"
+              href={brandHref}
               className="flex shrink-0 items-center gap-2 transition-smooth hover:opacity-80 sm:gap-3"
             >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
@@ -143,7 +129,7 @@ function Header() {
 
               <button
                 type="button"
-                onClick={handleMobileMenuToggle}
+                onClick={() => setIsMobileMenuOpen((open) => !open)}
                 className="rounded-lg p-2 text-text-secondary transition-smooth hover:bg-secondary-50 hover:text-text-primary lg:hidden"
                 aria-label={t("nav.toggleMobileMenu")}
                 aria-expanded={isMobileMenuOpen}
@@ -153,12 +139,12 @@ function Header() {
             </div>
           </div>
         </div>
-        <CondominiumSwitcher />
+        {!isPortal && <CondominiumSwitcher />}
       </header>
 
       <MobileNavigationDrawer
         isOpen={isMobileMenuOpen}
-        onClose={handleMobileMenuClose}
+        onClose={() => setIsMobileMenuOpen(false)}
         navigationItems={navigationItems}
         currentPath={pathname}
       />

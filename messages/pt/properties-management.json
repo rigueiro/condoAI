@@ -211,7 +211,48 @@
       "owners": "Condóminos",
       "finance": "Finanças",
       "assemblies": "Assembleias",
-      "occurrences": "Ocorrências"
+      "occurrences": "Ocorrências",
+      "access": "Acessos"
+    }
+  },
+  "access": {
+    "title": "Acessos ao condomínio",
+    "subtitle": "Convide a administração, proprietários e pessoal com acesso limitado a este condomínio.",
+    "inviteTitle": "Convidar alguém",
+    "invite": "Enviar convite",
+    "inviting": "A guardar…",
+    "listTitle": "Pessoas com acesso",
+    "loading": "A carregar…",
+    "empty": "Ainda sem convites. Adicione um membro da administração ou proprietário para abrir o portal.",
+    "loadError": "Não foi possível carregar a lista de acessos.",
+    "revoke": "Revogar",
+    "confirmRevoke": "Revogar o acesso de {name}?",
+    "linkedOwner": "Ligado a {name}",
+    "fields": {
+      "name": "Nome completo",
+      "email": "Email",
+      "role": "Função",
+      "owner": "Ligar à conta de proprietário",
+      "ownerOptional": "Sem ligação (só documentos)"
+    },
+    "columns": {
+      "person": "Pessoa",
+      "role": "Função",
+      "status": "Estado",
+      "actions": "Acções"
+    },
+    "status": {
+      "active": "Activo",
+      "invited": "Convidado",
+      "inactive": "Inactivo"
+    },
+    "errors": {
+      "inviteFailed": "Não foi possível guardar o convite.",
+      "revokeFailed": "Não foi possível revogar o acesso.",
+      "membershipExists": "Este email já tem acesso a este condomínio.",
+      "badRequest": "Verifique o formulário e tente novamente.",
+      "condominiumNotFound": "Condomínio não encontrado.",
+      "notFound": "Proprietário ou acesso não encontrado."
     }
   },
   "units": {

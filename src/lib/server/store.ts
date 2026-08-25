@@ -1,12 +1,13 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "fs";
 import path from "path";
-import type { User } from "@/app/types";
+import type { User, UserRole } from "@/app/types";
 import type { Portfolio } from "@/lib/portfolio/types";
 import type { CollectionsState } from "@/lib/collections/types";
 import type { FinanceState } from "@/lib/finance/types";
 import type { ComplianceState } from "@/lib/compliance/types";
 import type { OccurrencesState } from "@/lib/occurrences/types";
 import type { AssembliesState } from "@/lib/assemblies/types";
+import type { CondoMembership } from "@/lib/memberships/types";
 import { DEFAULT_PASSWORD } from "@/lib/auth/constants";
 
 export interface StoredAccount {
@@ -15,6 +16,7 @@ export interface StoredAccount {
   name: string;
   password: string;
   role: string;
+  roleCode?: UserRole;
   avatar?: string | null;
   phone?: string | null;
 }
@@ -41,6 +43,8 @@ export interface StoreDocument {
   compliance: Record<string, ComplianceState>;
   occurrences: Record<string, OccurrencesState>;
   assemblies: Record<string, AssembliesState>;
+  /** Per-host invite list: manager email → condo memberships. */
+  membershipsByHost: Record<string, CondoMembership[]>;
 }
 
 const EMPTY_STORE: StoreDocument = {
@@ -54,6 +58,7 @@ const EMPTY_STORE: StoreDocument = {
   compliance: {},
   occurrences: {},
   assemblies: {},
+  membershipsByHost: {},
 };
 
 /** Process-local cache — avoids re-reading .data/store.json on every API call. */
@@ -89,6 +94,7 @@ function cloneEmpty(): StoreDocument {
     compliance: {},
     occurrences: {},
     assemblies: {},
+    membershipsByHost: {},
   };
 }
 
@@ -109,6 +115,7 @@ export function readStore(): StoreDocument {
       compliance: parsed.compliance ?? {},
       occurrences: parsed.occurrences ?? {},
       assemblies: parsed.assemblies ?? {},
+      membershipsByHost: parsed.membershipsByHost ?? {},
     };
     return cache;
   } catch {
@@ -140,6 +147,7 @@ export function accountToUser(account: StoredAccount): User {
     email: account.email,
     name: account.name,
     role: account.role,
+    roleCode: account.roleCode,
     avatar: account.avatar ?? null,
     phone: account.phone ?? null,
   };

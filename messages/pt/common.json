@@ -14,6 +14,9 @@
     "assemblies": "Assembleias",
     "compliance": "Conformidade",
     "reports": "Relatórios",
+    "portal": "O meu condomínio",
+    "extract": "Extrato",
+    "documents": "Documentos",
     "toggleMobileMenu": "Abrir menu móvel",
     "closeMenu": "Fechar menu",
     "version": "Versão 1.0.0"
@@ -37,6 +40,9 @@
     "assemblyDetail": "Assembleia",
     "compliance": "Conformidade",
     "reports": "Relatórios",
+    "portal": "O meu condomínio",
+    "extract": "Extrato",
+    "documents": "Documentos",
     "profile": "Perfil",
     "account": "Definições da conta",
     "help": "Ajuda e suporte"

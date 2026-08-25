@@ -11,6 +11,7 @@ import {
   mockUnits,
 } from "@/fixtures/domain";
 import type { Organization } from "@/app/[locale]/account/types";
+import { UserRole } from "@/app/types";
 import type { Portfolio } from "@/lib/portfolio/types";
 import { emptyLedgerFields, normalizeLedger } from "@/lib/collections/ledger";
 import type { CollectionsState } from "@/lib/collections/types";
@@ -18,7 +19,10 @@ import type { FinanceState } from "@/lib/finance/types";
 import type { ComplianceState } from "@/lib/compliance/types";
 import type { OccurrencesState } from "@/lib/occurrences/types";
 import type { AssembliesState } from "@/lib/assemblies/types";
+import type { CondoMembership } from "@/lib/memberships/types";
 import { mockAssemblies } from "@/fixtures/assemblies";
+import { DEMO_EMAIL, DEFAULT_PASSWORD } from "@/lib/auth/constants";
+import { updateStore, type StoredAccount } from "./store";
 
 export const DEMO_ORGANIZATION: Organization = {
   name: "CondoAI Lda.",
@@ -33,11 +37,17 @@ export const DEMO_ORGANIZATION: Organization = {
   country: "PT",
 };
 
+export const PORTAL_DEMO_BOARD_EMAIL = "board@condoai.pt";
+export const PORTAL_DEMO_OWNER_EMAIL = "owner@condoai.pt";
+
 export function buildDemoPortfolio(): Portfolio {
   return {
     organization: { ...DEMO_ORGANIZATION },
     condominiums: mockCondominiums.map((c) => ({ ...c })),
-    units: mockUnits.map((u) => ({ ...u })),
+    units: mockUnits.map((u) => ({
+      ...u,
+      occupancies: u.occupancies.map((o) => ({ ...o })),
+    })),
     owners: mockDomainOwners.map((o) => ({
       ...o,
       contacts: { ...o.contacts },
@@ -100,4 +110,101 @@ export function buildDemoAssemblies(): AssembliesState {
       resolutions: assembly.resolutions.map((row) => ({ ...row })),
     })),
   };
+}
+
+function portalDemoAccounts(password: string): StoredAccount[] {
+  return [
+    {
+      id: "portal-board",
+      email: PORTAL_DEMO_BOARD_EMAIL,
+      name: "Carlos Mendes",
+      password,
+      role: "Board Member",
+      roleCode: UserRole.BoardMember,
+      avatar: null,
+      phone: "+351 910 000 001",
+    },
+    {
+      id: "portal-owner",
+      email: PORTAL_DEMO_OWNER_EMAIL,
+      name: "Ana Sofia Martins",
+      password,
+      role: "Resident",
+      roleCode: UserRole.Resident,
+      avatar: null,
+      phone: "+351 912 345 678",
+    },
+  ];
+}
+
+function portalDemoMemberships(now: string): CondoMembership[] {
+  return [
+    {
+      id: "mem-board-1",
+      hostEmail: DEMO_EMAIL,
+      memberEmail: PORTAL_DEMO_BOARD_EMAIL,
+      condominiumId: "1",
+      role: UserRole.BoardMember,
+      ownerId: null,
+      displayName: "Carlos Mendes",
+      status: "active",
+      invitedAt: now,
+      activatedAt: now,
+    },
+    {
+      id: "mem-owner-1",
+      hostEmail: DEMO_EMAIL,
+      memberEmail: PORTAL_DEMO_OWNER_EMAIL,
+      condominiumId: "1",
+      role: UserRole.Resident,
+      ownerId: "1",
+      displayName: "Ana Sofia Martins",
+      status: "active",
+      invitedAt: now,
+      activatedAt: now,
+    },
+  ];
+}
+
+/** Seeds board/owner demo logins + memberships (idempotent). */
+export function ensurePortalDemoAccounts(): void {
+  updateStore((store) => {
+    const password = store.demoPassword || DEFAULT_PASSWORD;
+    for (const account of portalDemoAccounts(password)) {
+      store.accounts[account.email] ??= account;
+    }
+    if ((store.membershipsByHost[DEMO_EMAIL] ?? []).length === 0) {
+      store.membershipsByHost[DEMO_EMAIL] = portalDemoMemberships(
+        new Date().toISOString(),
+      );
+    }
+  });
+}
+
+/**
+ * Force-reload fixture workspace for the demo manager only.
+ * Leaves other accounts untouched; re-ensures portal demo logins.
+ */
+export function restoreDemoWorkspace(): Portfolio {
+  const portfolio = buildDemoPortfolio();
+  updateStore((store) => {
+    const key = DEMO_EMAIL;
+    store.portfolios[key] = portfolio;
+    store.collections[key] = buildDemoCollections();
+    store.finance[key] = buildDemoFinance();
+    store.compliance[key] = buildDemoCompliance();
+    store.occurrences[key] = buildDemoOccurrences();
+    store.assemblies[key] = buildDemoAssemblies();
+
+    const password = store.demoPassword || DEFAULT_PASSWORD;
+    for (const account of portalDemoAccounts(password)) {
+      store.accounts[account.email] ??= account;
+    }
+    if ((store.membershipsByHost[key] ?? []).length === 0) {
+      store.membershipsByHost[key] = portalDemoMemberships(
+        new Date().toISOString(),
+      );
+    }
+  });
+  return portfolio;
 }

@@ -9,14 +9,14 @@ export enum UserRole {
 
 /**
  * Canonical user shape used everywhere in the app.
- * The `role` is a display-friendly label (e.g. "Property Manager"); when we
- * adopt a real auth backend we should also expose `roleCode: UserRole`.
+ * `role` is display-friendly; `roleCode` is the enum used for access checks.
  */
 export type User = {
   id: string;
   name: string;
   email: string;
   role: string;
+  roleCode?: UserRole;
   avatar?: string | null;
   phone?: string | null;
 };

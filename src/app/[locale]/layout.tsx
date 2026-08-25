@@ -12,6 +12,7 @@ import { ComplianceProvider } from "@/lib/compliance";
 import { FinanceProvider } from "@/lib/finance";
 import { OccurrencesProvider } from "@/lib/occurrences";
 import { AssembliesProvider } from "@/lib/assemblies";
+import { MembershipsProvider } from "@/lib/memberships";
 import { ThemeProvider, ThemeScript } from "@/lib/theme";
 import { routing } from "@/i18n/routing";
 
@@ -68,17 +69,19 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
             <AuthProvider>
-              <PortfolioProvider>
-                <CollectionsProvider>
-                  <ComplianceProvider>
-                    <FinanceProvider>
-                      <OccurrencesProvider>
-                        <AssembliesProvider>{children}</AssembliesProvider>
-                      </OccurrencesProvider>
-                    </FinanceProvider>
-                  </ComplianceProvider>
-                </CollectionsProvider>
-              </PortfolioProvider>
+              <MembershipsProvider>
+                <PortfolioProvider>
+                  <CollectionsProvider>
+                    <ComplianceProvider>
+                      <FinanceProvider>
+                        <OccurrencesProvider>
+                          <AssembliesProvider>{children}</AssembliesProvider>
+                        </OccurrencesProvider>
+                      </FinanceProvider>
+                    </ComplianceProvider>
+                  </CollectionsProvider>
+                </PortfolioProvider>
+              </MembershipsProvider>
             </AuthProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

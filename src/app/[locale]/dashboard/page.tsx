@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import { useUser } from "@/lib/auth";
 import { usePortfolio } from "@/lib/portfolio";
+import { useMemberships } from "@/lib/memberships";
 import { Link, useRouter } from "@/i18n/navigation";
 
 import Header from "@/components/ui/header";
@@ -38,10 +39,17 @@ function Dashboard() {
     isReady,
     needsOnboarding: mustOnboard,
   } = usePortfolio();
+  const { mode: accessMode, isReady: accessReady } = useMemberships();
   const condominiums = portfolio.condominiums;
   const { overdueItems, ownersWithBalances } = useCollections();
 
   const [now] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (accessReady && accessMode === "portal") {
+      router.replace("/portal");
+    }
+  }, [accessReady, accessMode, router]);
 
   useEffect(() => {
     if (isReady && mustOnboard) {
