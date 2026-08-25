@@ -56,7 +56,12 @@ function normalizeFinance(parsed: FinanceState): FinanceState {
     budgets: Array.isArray(parsed.budgets)
       ? parsed.budgets.map(normalizeAnnualBudget)
       : [],
-    expenses: Array.isArray(parsed.expenses) ? parsed.expenses : [],
+    expenses: Array.isArray(parsed.expenses)
+      ? parsed.expenses.map((expense) => ({
+          ...expense,
+          vendorId: expense.vendorId ?? null,
+        }))
+      : [],
     accounts: Array.isArray(parsed.accounts) ? parsed.accounts : [],
     extraordinaryQuotas: Array.isArray(parsed.extraordinaryQuotas)
       ? parsed.extraordinaryQuotas.map(normalizeExtraordinary)

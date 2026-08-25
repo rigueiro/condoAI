@@ -132,7 +132,7 @@ export function OperationsProvider({ children }: { children: ReactNode }) {
           await patchOperations({ action: "removeVendor", id });
           return true;
         } catch (err) {
-          if (err instanceof ApiError && err.message === "vendorHasContracts") {
+          if (err instanceof ApiError && err.message === "vendorInUse") {
             return false;
           }
           return false;

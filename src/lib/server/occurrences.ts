@@ -17,6 +17,7 @@ function normalizeOccurrence(occurrence: Occurrence): Occurrence {
     ...occurrence,
     ownerId: occurrence.ownerId ?? null,
     unit: occurrence.unit ?? null,
+    vendorId: occurrence.vendorId ?? null,
     assignedTo: occurrence.assignedTo ?? null,
     photos: Array.isArray(occurrence.photos) ? occurrence.photos : [],
     comments: Array.isArray(occurrence.comments) ? occurrence.comments : [],

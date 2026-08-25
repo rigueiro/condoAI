@@ -67,11 +67,21 @@ export function putVendor(email: string, vendor: Vendor): OperationsState {
   return mutateOperations(email, (current) => upsertVendor(current, vendor));
 }
 
-/** Throws `vendorHasContracts` when the vendor still has contracts. */
+/** Throws `vendorInUse` when linked contracts, expenses, or occurrences exist. */
 export function deleteVendor(email: string, id: string): OperationsState {
+  const key = email.trim().toLowerCase();
+  const store = readStore();
+  const { state } = loadOrSeedOperations(email);
+  const inUse =
+    state.contracts.some((c) => c.vendorId === id) ||
+    store.finance[key]?.expenses.some((e) => e.vendorId === id) ||
+    store.occurrences[key]?.occurrences.some((o) => o.vendorId === id);
+
+  if (inUse) throw new Error("vendorInUse");
+
   return mutateOperations(email, (current) => {
     const next = removeVendor(current, id);
-    if (!next) throw new Error("vendorHasContracts");
+    if (!next) throw new Error("vendorInUse");
     return next;
   });
 }

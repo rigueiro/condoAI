@@ -13,8 +13,45 @@ function daysUntil(dueDate: string, now: Date): number {
   return Math.round((due.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+export function vendorsForCondominium(
+  vendors: Vendor[],
+  condominiumId: string,
+): Vendor[] {
+  return vendors.filter((v) => v.condominiumId === condominiumId);
+}
+
 export function vendorNameById(vendors: Vendor[]): Map<string, string> {
   return new Map(vendors.map((v) => [v.id, v.name]));
+}
+
+/** Prefer linked vendor name; fall back to legacy free-text field. */
+export function resolveVendorLabel(
+  vendorId: string | null | undefined,
+  names: Map<string, string>,
+  fallback?: string | null,
+): string {
+  if (vendorId) {
+    const linked = names.get(vendorId);
+    if (linked) return linked;
+  }
+  return fallback?.trim() ?? "";
+}
+
+/** Count references per vendor across contracts, expenses, and occurrences. */
+export function buildVendorReferenceCounts(
+  contracts: { vendorId: string }[],
+  expenses: { vendorId: string | null }[],
+  occurrences: { vendorId: string | null }[],
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  const bump = (vendorId: string | null | undefined) => {
+    if (!vendorId) return;
+    counts.set(vendorId, (counts.get(vendorId) ?? 0) + 1);
+  };
+  for (const c of contracts) bump(c.vendorId);
+  for (const e of expenses) bump(e.vendorId);
+  for (const o of occurrences) bump(o.vendorId);
+  return counts;
 }
 
 export function buildContractAttentionItems(

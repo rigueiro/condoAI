@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import { downloadCsv } from "@/lib/export-csv";
 import { formatOccurrenceDate, type OccurrenceRow } from "../types";
+import { useResolveVendorLabel } from "@/lib/operations";
 import {
   PRIORITY_BADGE,
   isOpenState,
@@ -16,6 +17,7 @@ function OccurrenceStatistics({ rows }: { rows: OccurrenceRow[] }) {
   const tState = useTranslations("occurrences.states");
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
+  const resolveVendorLabel = useResolveVendorLabel();
 
   const total = rows.length;
   const openCount = rows.filter((r) =>
@@ -93,7 +95,7 @@ function OccurrenceStatistics({ rows }: { rows: OccurrenceRow[] }) {
       tState(occurrence.status),
       ownerName ?? "",
       formatOccurrenceDate(occurrence.dateTime),
-      occurrence.assignedTo ?? "",
+      resolveVendorLabel(occurrence.vendorId, occurrence.assignedTo),
     ]);
 
     downloadCsv(headers, csvRows, "occurrences-export.csv");

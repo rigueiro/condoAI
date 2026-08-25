@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
 import { useOccurrences } from "@/lib/occurrences";
+import { useResolveVendorLabel } from "@/lib/operations";
 import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
@@ -47,6 +48,7 @@ function OccurrenceDetailPage() {
   const { portfolio } = usePortfolio();
   const { condominiums, owners, units } = portfolio;
   const { occurrences, isReady, upsertOccurrence } = useOccurrences();
+  const resolveVendorLabel = useResolveVendorLabel();
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
 
@@ -64,6 +66,11 @@ function OccurrenceDetailPage() {
         : null,
     [occurrence, condominiums, owners],
   );
+
+  const assigneeLabel = occurrence
+    ? resolveVendorLabel(occurrence.vendorId, occurrence.assignedTo) ||
+      t("unassigned")
+    : t("unassigned");
 
   const dateLabel = occurrence
     ? formatOccurrenceDate(occurrence.dateTime)
@@ -340,7 +347,7 @@ function OccurrenceDetailPage() {
                   <div>
                     <dt className="text-text-secondary">{t("assignedTo")}</dt>
                     <dd className="font-medium text-text-primary">
-                      {occurrence.assignedTo || t("unassigned")}
+                      {assigneeLabel}
                     </dd>
                   </div>
                 </dl>

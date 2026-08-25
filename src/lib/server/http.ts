@@ -36,7 +36,7 @@ const ERROR_STATUS: Record<string, number> = {
   notInSession: 409,
   quorumRequired: 409,
   minutesRequired: 400,
-  vendorHasContracts: 409,
+  vendorInUse: 409,
 };
 
 export function handleRouteError(err: unknown): NextResponse {

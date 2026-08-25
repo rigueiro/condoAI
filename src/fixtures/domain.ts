@@ -685,6 +685,7 @@ export const mockExpenses: Expense[] = [
     amount: 1_450,
     category: "cleaning",
     supplier: "Limpeza Amoreira Lda.",
+    vendorId: "vendor-2",
     invoice: null,
   },
   {
@@ -694,6 +695,7 @@ export const mockExpenses: Expense[] = [
     amount: 890,
     category: "electricity",
     supplier: "EDP Comercial",
+    vendorId: null,
     invoice: null,
   },
   {
@@ -703,6 +705,7 @@ export const mockExpenses: Expense[] = [
     amount: 2_400,
     category: "maintenance",
     supplier: "Elevadores Lisboa",
+    vendorId: "vendor-1",
     invoice: null,
   },
   {
@@ -712,6 +715,7 @@ export const mockExpenses: Expense[] = [
     amount: 2_100,
     category: "cleaning",
     supplier: "CleanPro Belém",
+    vendorId: "vendor-3",
     invoice: null,
   },
   {
@@ -721,6 +725,7 @@ export const mockExpenses: Expense[] = [
     amount: 1_800,
     category: "concierge",
     supplier: "Segurança Torre",
+    vendorId: null,
     invoice: null,
   },
   {
@@ -730,6 +735,7 @@ export const mockExpenses: Expense[] = [
     amount: 620,
     category: "garden",
     supplier: "Jardins Cascais",
+    vendorId: null,
     invoice: null,
   },
   {
@@ -739,6 +745,7 @@ export const mockExpenses: Expense[] = [
     amount: 3_200,
     category: "maintenance",
     supplier: "Fachadas Norte",
+    vendorId: null,
     invoice: null,
   },
   {
@@ -748,6 +755,7 @@ export const mockExpenses: Expense[] = [
     amount: 480,
     category: "insurance",
     supplier: "Zurich",
+    vendorId: null,
     invoice: null,
   },
 ];
@@ -765,6 +773,7 @@ export const mockOccurrences: Occurrence[] = [
     dateTime: "2025-09-12",
     status: "InProgress",
     priority: "HIGH",
+    vendorId: null,
     assignedTo: "Plumbing Co.",
     photos: [],
     comments: [
@@ -798,6 +807,7 @@ export const mockOccurrences: Occurrence[] = [
     dateTime: "2025-09-20",
     status: "Open",
     priority: "URGENT",
+    vendorId: null,
     assignedTo: null,
     photos: [],
     comments: [],
@@ -817,6 +827,7 @@ export const mockOccurrences: Occurrence[] = [
     dateTime: "2025-09-18",
     status: "Acknowledged",
     priority: "MEDIUM",
+    vendorId: null,
     assignedTo: "Building Staff",
     photos: [],
     comments: [],
@@ -836,6 +847,7 @@ export const mockOccurrences: Occurrence[] = [
     dateTime: "2025-09-15",
     status: "WaitingForResident",
     priority: "LOW",
+    vendorId: null,
     assignedTo: "Security",
     photos: [],
     comments: [],
@@ -855,6 +867,7 @@ export const mockOccurrences: Occurrence[] = [
     dateTime: "2025-09-10",
     status: "Scheduled",
     priority: "MEDIUM",
+    vendorId: null,
     assignedTo: "Electrician",
     photos: [],
     comments: [],
@@ -872,6 +885,7 @@ export const mockOccurrences: Occurrence[] = [
     dateTime: "2025-09-08",
     status: "Resolved",
     priority: "HIGH",
+    vendorId: null,
     assignedTo: "Locksmith",
     photos: [],
     comments: [],
@@ -892,6 +906,7 @@ export const mockOccurrences: Occurrence[] = [
     dateTime: "2025-08-30",
     status: "Closed",
     priority: "LOW",
+    vendorId: null,
     assignedTo: "Building Staff",
     photos: [],
     comments: [],
@@ -912,6 +927,7 @@ export const mockOccurrences: Occurrence[] = [
     dateTime: "2025-09-22",
     status: "Open",
     priority: "LOW",
+    vendorId: null,
     assignedTo: null,
     photos: [],
     comments: [],

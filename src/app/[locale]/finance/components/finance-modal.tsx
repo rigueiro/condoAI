@@ -11,6 +11,7 @@ import {
   summarizeBudget,
   type FinanceKind,
 } from "@/lib/finance";
+import { useOperations, VendorSelectField } from "@/lib/operations";
 
 export type FinanceRecord =
   | { kind: "budget"; data: AnnualBudget }
@@ -65,6 +66,7 @@ function FinanceModal({
 }) {
   const t = useTranslations("finance");
   const { formatCurrency } = useFormatCurrency();
+  const { vendors } = useOperations();
   const isEdit = Boolean(record);
   const initialBudget =
     record?.kind === "budget" ? normalizeAnnualBudget(record.data) : null;
@@ -100,6 +102,9 @@ function FinanceModal({
   );
   const [supplier, setSupplier] = useState(
     record?.kind === "expense" ? record.data.supplier : "",
+  );
+  const [vendorId, setVendorId] = useState(
+    record?.kind === "expense" ? (record.data.vendorId ?? "") : "",
   );
   const [bank, setBank] = useState(
     record?.kind === "bank" ? record.data.bank : "",
@@ -148,7 +153,7 @@ function FinanceModal({
       if (!category.trim()) {
         next.category = t("modal.validation.categoryRequired");
       }
-      if (!supplier.trim()) {
+      if (!vendorId && !supplier.trim()) {
         next.supplier = t("modal.validation.supplierRequired");
       }
     } else {
@@ -195,6 +200,7 @@ function FinanceModal({
           amount: Number(amount),
           category: category.trim(),
           supplier: supplier.trim(),
+          vendorId: vendorId || null,
           invoice: record?.kind === "expense" ? record.data.invoice : null,
         },
       });
@@ -260,7 +266,10 @@ function FinanceModal({
             <label className={labelClass}>{t("modal.condominium")}</label>
             <Select
               value={condominiumId}
-              onChange={(e) => setCondominiumId(e.target.value)}
+              onChange={(e) => {
+                setCondominiumId(e.target.value);
+                setVendorId("");
+              }}
             >
               {condominiums.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -427,16 +436,33 @@ function FinanceModal({
                   <p className="mt-1 text-xs text-error">{errors.category}</p>
                 )}
               </div>
+              <VendorSelectField
+                vendors={vendors}
+                condominiumId={condominiumId}
+                value={vendorId}
+                onChange={(nextId, vendor) => {
+                  setVendorId(nextId);
+                  if (vendor) setSupplier(vendor.name);
+                }}
+                label={t("modal.vendor")}
+                emptyOptionLabel={t("modal.noVendorSelected")}
+                noVendorsMessage={t("modal.noVendors")}
+                labelClassName={labelClass}
+              />
               <div>
                 <label className={labelClass}>{t("modal.supplier")}</label>
                 <input
                   className={fieldClass}
                   value={supplier}
                   onChange={(e) => setSupplier(e.target.value)}
+                  placeholder={t("modal.supplierPlaceholder")}
                 />
                 {errors.supplier && (
                   <p className="mt-1 text-xs text-error">{errors.supplier}</p>
                 )}
+                <p className="mt-1 text-xs text-text-secondary">
+                  {t("modal.supplierHint")}
+                </p>
               </div>
             </>
           )}

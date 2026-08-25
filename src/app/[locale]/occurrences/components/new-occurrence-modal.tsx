@@ -13,6 +13,7 @@ import {
   type OccurrencePriorityValue,
   type OccurrenceStateKey,
 } from "../types";
+import { useOperations, VendorSelectField } from "@/lib/operations";
 import {
   OCCURRENCE_CATEGORY_VALUES,
   OCCURRENCE_PRIORITY_VALUES,
@@ -30,6 +31,7 @@ interface FormState {
   condominiumId: string;
   ownerId: string;
   unit: string;
+  vendorId: string;
   assignedTo: string;
   priority: OccurrencePriorityValue;
   status: OccurrenceStateKey;
@@ -52,6 +54,7 @@ const emptyForm: FormState = {
   condominiumId: "",
   ownerId: "",
   unit: "",
+  vendorId: "",
   assignedTo: "",
   priority: "MEDIUM",
   status: "Open",
@@ -70,6 +73,7 @@ function NewOccurrenceModal({
   const tState = useTranslations("occurrences.states");
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
+  const { vendors } = useOperations();
 
   const linksByOwner = useMemo(
     () => indexOccupanciesByOwnerId(units),
@@ -85,6 +89,7 @@ function NewOccurrenceModal({
           condominiumId: occurrence.condominiumId || "",
           ownerId: occurrence.ownerId || "",
           unit: occurrence.unit || "",
+          vendorId: occurrence.vendorId ?? "",
           assignedTo: occurrence.assignedTo || "",
           priority: occurrence.priority || "MEDIUM",
           status: occurrence.status || "Open",
@@ -136,7 +141,8 @@ function NewOccurrenceModal({
       dateTime: occurrence?.dateTime ?? formatOccurrenceDate(new Date()),
       status: formData.status,
       priority: formData.priority,
-      assignedTo: formData.assignedTo.trim() || null,
+      vendorId: formData.vendorId || null,
+      assignedTo: formData.vendorId ? null : formData.assignedTo.trim() || null,
       photos: occurrence?.photos ?? [],
       comments: occurrence?.comments ?? [],
       history: occurrence?.history ?? [
@@ -159,6 +165,10 @@ function NewOccurrenceModal({
           (link) => link.unit.condominiumId === value,
         );
         if (prev.ownerId && !ownerStillValid) next.ownerId = "";
+        next.vendorId = "";
+      }
+      if (field === "vendorId" && value) {
+        next.assignedTo = "";
       }
       if (field === "ownerId" && value) {
         const links = linksByOwner.get(value) ?? [];
@@ -353,18 +363,31 @@ function NewOccurrenceModal({
                 </Select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  {t("assignedTo")}
-                </label>
-                <input
-                  type="text"
-                  value={formData.assignedTo}
-                  onChange={(e) => handleChange("assignedTo", e.target.value)}
-                  className={inputClass(false)}
-                  placeholder={t("assignedToPlaceholder")}
-                />
-              </div>
+              <VendorSelectField
+                vendors={vendors}
+                condominiumId={formData.condominiumId}
+                value={formData.vendorId}
+                onChange={(vendorId) => handleChange("vendorId", vendorId)}
+                label={t("vendor")}
+                emptyOptionLabel={t("noVendorSelected")}
+                noVendorsMessage={t("noVendors")}
+                labelClassName="block text-sm font-medium text-text-primary mb-2"
+              />
+
+              {!formData.vendorId && (
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">
+                    {t("internalAssignee")}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.assignedTo}
+                    onChange={(e) => handleChange("assignedTo", e.target.value)}
+                    className={inputClass(false)}
+                    placeholder={t("assignedToPlaceholder")}
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-2">

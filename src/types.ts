@@ -103,6 +103,8 @@ export interface Expense {
     date: Date | string;
     amount: number;
     category: string; // Ex.: 'maintenance', 'insurance'
+    /** Linked vendor from Operations; supplier keeps display / legacy free text. */
+    vendorId: string | null;
     supplier: string;
     invoice: string | null; // URL/path PDF
 }
@@ -234,6 +236,9 @@ export interface Occurrence {
     dateTime: Date | string;
     status: OccurrenceStatus;
     priority: OccurrencePriority;
+    /** Linked vendor from Operations when assignee is a registered contractor. */
+    vendorId: string | null;
+    /** Free-text assignee for internal staff or ad-hoc contractors. */
     assignedTo: string | null;
     photos: string[];
     comments: OccurrenceComment[];

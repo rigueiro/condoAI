@@ -49,7 +49,7 @@
     "empty": "Ainda sem registos.",
     "edit": "Editar",
     "delete": "Eliminar",
-    "deleteBlocked": "Remova primeiro os contratos associados"
+    "deleteBlocked": "Remova primeiro contratos, despesas ou ocorrências associadas"
   },
   "status": {
     "operational": "Operacional",
@@ -114,6 +114,6 @@
   "flash": {
     "saved": "Registo guardado",
     "deleted": "Registo eliminado",
-    "vendorBlocked": "Não é possível eliminar um fornecedor com contratos activos"
+    "vendorBlocked": "Não é possível eliminar um fornecedor ligado a contratos, despesas ou ocorrências"
   }
 }

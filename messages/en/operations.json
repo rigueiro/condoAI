@@ -49,7 +49,7 @@
     "empty": "No records yet.",
     "edit": "Edit",
     "delete": "Delete",
-    "deleteBlocked": "Remove linked contracts first"
+    "deleteBlocked": "Remove linked contracts, expenses, or occurrences first"
   },
   "status": {
     "operational": "Operational",
@@ -114,6 +114,6 @@
   "flash": {
     "saved": "Record saved",
     "deleted": "Record deleted",
-    "vendorBlocked": "Cannot delete a vendor with active contracts"
+    "vendorBlocked": "Cannot delete a vendor linked to contracts, expenses, or occurrences"
   }
 }

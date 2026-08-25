@@ -8,6 +8,7 @@ import Icon from "@/components/icon";
 import { downloadCsv } from "@/lib/export-csv";
 import { usePortfolio } from "@/lib/portfolio";
 import { useOccurrences } from "@/lib/occurrences";
+import { useResolveVendorLabel } from "@/lib/operations";
 
 import NewOccurrenceModal from "./components/new-occurrence-modal";
 import OccurrenceStatistics from "./components/occurrence-statistics";
@@ -38,6 +39,7 @@ function OccurrencesPage() {
     removeOccurrences,
     markOccurrencesResolved,
   } = useOccurrences();
+  const resolveVendorLabel = useResolveVendorLabel();
 
   const [selectedOccurrences, setSelectedOccurrences] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -145,10 +147,10 @@ function OccurrencesPage() {
       tState(occurrence.status),
       ownerName ?? "",
       formatOccurrenceDate(occurrence.dateTime),
-      occurrence.assignedTo ?? "",
+      resolveVendorLabel(occurrence.vendorId, occurrence.assignedTo),
     ]);
     downloadCsv(headers, rows, "occurrences-selected.csv");
-  }, [occurrenceRows, selectedOccurrences, t, tCategory, tPriority, tState]);
+  }, [occurrenceRows, selectedOccurrences, t, tCategory, tPriority, tState, resolveVendorLabel]);
 
   const handleBulkDelete = useCallback(() => {
     if (!window.confirm(t("confirmDeleteSelected"))) return;

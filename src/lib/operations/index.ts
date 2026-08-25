@@ -13,4 +13,11 @@ export {
   operationsFileLabel,
   openOperationsDocument,
 } from "./files";
-export { vendorNameById } from "./views";
+export {
+  resolveVendorLabel,
+  vendorNameById,
+  vendorsForCondominium,
+  buildVendorReferenceCounts,
+} from "./views";
+export { useResolveVendorLabel, useVendorNames } from "./use-vendor-label";
+export { VendorSelectField } from "./vendor-select-field";

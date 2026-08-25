@@ -6,6 +6,7 @@ import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
 import type { Equipment, MaintenanceContract, Vendor } from "@/types";
 import type { OperationsKind } from "@/lib/operations";
+import { VendorSelectField } from "@/lib/operations";
 import DocumentUpload from "./document-upload";
 
 export type OperationsRecord =
@@ -107,11 +108,6 @@ function OperationsModal({
   );
 
   const [errors, setErrors] = useState<Errors>({});
-
-  const condoVendors = useMemo(
-    () => vendors.filter((v) => v.condominiumId === condominiumId),
-    [vendors, condominiumId],
-  );
 
   const validate = (): boolean => {
     const next: Errors = {};
@@ -323,29 +319,19 @@ function OperationsModal({
 
           {kind === "contract" && (
             <>
-              <div>
-                <label className={labelClass}>{t("modal.vendor")}</label>
-                {condoVendors.length === 0 ? (
-                  <p className="text-xs text-text-secondary">
-                    {t("modal.noVendors")}
-                  </p>
-                ) : (
-                  <Select
-                    value={vendorId}
-                    onChange={(e) => setVendorId(e.target.value)}
-                  >
-                    <option value="">—</option>
-                    {condoVendors.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.name}
-                      </option>
-                    ))}
-                  </Select>
-                )}
-                {errors.vendorId && (
-                  <p className="mt-1 text-xs text-error">{errors.vendorId}</p>
-                )}
-              </div>
+              <VendorSelectField
+                vendors={vendors}
+                condominiumId={condominiumId}
+                value={vendorId}
+                onChange={(nextId) => setVendorId(nextId)}
+                label={t("modal.vendor")}
+                emptyOptionLabel="—"
+                noVendorsMessage={t("modal.noVendors")}
+                labelClassName={labelClass}
+              />
+              {errors.vendorId && (
+                <p className="mt-1 text-xs text-error">{errors.vendorId}</p>
+              )}
               <div>
                 <label className={labelClass}>{t("modal.service")}</label>
                 <input

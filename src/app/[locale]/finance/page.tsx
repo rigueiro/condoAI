@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
@@ -16,6 +16,7 @@ import {
   type FinanceTab,
   type IssueExtraordinaryInput,
 } from "@/lib/finance";
+import { useResolveVendorLabel } from "@/lib/operations";
 import DraftsPanel from "./components/drafts-panel";
 import ExtraordinaryQuotaModal from "./components/extraordinary-quota-modal";
 import FinanceModal, {
@@ -56,6 +57,13 @@ function FinancePage() {
     removeBankAccount,
     issueExtraordinaryQuota,
   } = useFinance();
+  const resolveVendorLabel = useResolveVendorLabel();
+
+  const expenseSupplierLabel = useCallback(
+    (expense: (typeof expenses)[number]) =>
+      resolveVendorLabel(expense.vendorId, expense.supplier) || "—",
+    [resolveVendorLabel],
+  );
 
   const [tab, setTab] = useState<FinanceTab>("attention");
   const [search, setSearch] = useState("");
@@ -110,9 +118,10 @@ function FinancePage() {
     return filterBySearch(
       expenses,
       searchLower,
-      (e) => `${e.category} ${e.supplier} ${nameOf(e.condominiumId)}`,
+      (e) =>
+        `${e.category} ${expenseSupplierLabel(e)} ${nameOf(e.condominiumId)}`,
     );
-  }, [expenses, searchLower, tab, condoNameById]);
+  }, [expenses, searchLower, tab, condoNameById, expenseSupplierLabel]);
 
   const filteredAccounts = useMemo(() => {
     if (tab !== "bank") return accounts;
@@ -437,7 +446,9 @@ function FinancePage() {
                   <td className="px-4 py-3">{nameOf(e.condominiumId)}</td>
                   <td className="px-4 py-3">{String(e.date).slice(0, 10)}</td>
                   <td className="px-4 py-3">{e.category}</td>
-                  <td className="px-4 py-3 text-text-secondary">{e.supplier}</td>
+                  <td className="px-4 py-3 text-text-secondary">
+                    {expenseSupplierLabel(e)}
+                  </td>
                   <td className="px-4 py-3">{formatCurrency(e.amount)}</td>
                   {actionCell({ kind: "expense", data: e })}
                 </tr>

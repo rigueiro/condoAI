@@ -12,10 +12,13 @@ import { usePortfolio } from "@/lib/portfolio";
 import {
   useOperations,
   vendorNameById,
+  buildVendorReferenceCounts,
   type ContractAttentionItem,
   type OperationsKind,
   type OperationsTab,
 } from "@/lib/operations";
+import { useFinance } from "@/lib/finance";
+import { useOccurrences } from "@/lib/occurrences";
 import type { Equipment } from "@/types";
 import DocumentCell from "./components/document-cell";
 import OperationsModal, {
@@ -74,6 +77,8 @@ function OperationsPage() {
     upsertEquipment,
     removeEquipment,
   } = useOperations();
+  const { expenses } = useFinance();
+  const { occurrences } = useOccurrences();
 
   const [tab, setTab] = useState<OperationsTab>("vendor");
   const [search, setSearch] = useState("");
@@ -101,13 +106,10 @@ function OperationsPage() {
   const nameOf = (id: string) => condoNameById.get(id) ?? id;
   const searchLower = search.trim().toLowerCase();
 
-  const vendorContractCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const c of contracts) {
-      counts.set(c.vendorId, (counts.get(c.vendorId) ?? 0) + 1);
-    }
-    return counts;
-  }, [contracts]);
+  const vendorReferenceCounts = useMemo(
+    () => buildVendorReferenceCounts(contracts, expenses, occurrences),
+    [contracts, expenses, occurrences],
+  );
 
   const filteredVendors = useMemo(
     () =>
@@ -344,7 +346,7 @@ function OperationsPage() {
                 {actionCell(
                   { kind: "vendor", data: v },
                   {
-                    deleteDisabled: (vendorContractCounts.get(v.id) ?? 0) > 0,
+                    deleteDisabled: (vendorReferenceCounts.get(v.id) ?? 0) > 0,
                   },
                 )}
               </tr>
