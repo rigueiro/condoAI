@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import "../globals.css";
 import { AuthProvider } from "@/lib/auth";
-import { PortfolioProvider } from "@/lib/portfolio";
+import { PortfolioProvider, ActiveCondominiumProvider } from "@/lib/portfolio";
 import { CollectionsProvider } from "@/lib/collections";
 import { ComplianceProvider } from "@/lib/compliance";
 import { FinanceProvider } from "@/lib/finance";
@@ -68,13 +68,15 @@ export default async function LocaleLayout({
           <ThemeProvider>
             <AuthProvider>
               <PortfolioProvider>
-                <CollectionsProvider>
-                  <ComplianceProvider>
-                    <FinanceProvider>
-                      <OccurrencesProvider>{children}</OccurrencesProvider>
-                    </FinanceProvider>
-                  </ComplianceProvider>
-                </CollectionsProvider>
+                <ActiveCondominiumProvider>
+                  <CollectionsProvider>
+                    <ComplianceProvider>
+                      <FinanceProvider>
+                        <OccurrencesProvider>{children}</OccurrencesProvider>
+                      </FinanceProvider>
+                    </ComplianceProvider>
+                  </CollectionsProvider>
+                </ActiveCondominiumProvider>
               </PortfolioProvider>
             </AuthProvider>
           </ThemeProvider>

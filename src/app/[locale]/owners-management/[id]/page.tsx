@@ -111,7 +111,7 @@ function OwnerDetailPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-20">
+        <main>
           <div className="max-w-7xl mx-auto px-6 py-8">
             <Breadcrumb />
             <div className="bg-surface rounded-lg border border-border-light p-8 text-center">
@@ -148,7 +148,7 @@ function OwnerDetailPage() {
         <Header />
       </div>
 
-      <main className="pt-20 print:pt-0">
+      <main className="print:pt-0">
         <div className="max-w-7xl mx-auto px-6 py-8 print:max-w-none print:px-0 print:py-0">
           <div className="print-chrome">
             <Breadcrumb />
@@ -321,7 +321,7 @@ function OwnerDetailPage() {
                 </dl>
               </div>
 
-              <div className="bg-surface rounded-lg border border-border-light p-6 sticky top-24">
+              <div className="bg-surface rounded-lg border border-border-light p-6 sticky top-32">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">
                   {t("quickActions")}
                 </h3>

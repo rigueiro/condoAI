@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import Icon from "../icon";
 import UserProfileDropdown from "./user-profile-dropdown";
 import MobileNavigationDrawer from "./mobile-navigation-drawer";
+import CondominiumSwitcher from "./condominium-switcher";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
 
@@ -61,10 +62,10 @@ function Header() {
     [t],
   );
 
-  const isActivePath = useCallback(
-    (path: string) => pathname === path,
-    [pathname],
-  );
+  const isActivePath = useCallback((path: string) => {
+    if (pathname === path) return true;
+    return path !== "/dashboard" && pathname.startsWith(`${path}/`);
+  }, [pathname]);
 
   const handleMobileMenuToggle = useCallback(() => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -84,7 +85,7 @@ function Header() {
 
   return (
     <>
-      <header className="fixed top-0 right-0 left-0 z-1000 border-b border-border-light bg-surface bg-secondary-50">
+      <header className="sticky top-0 z-1000 border-b border-border-light bg-surface bg-secondary-50">
         <div className="px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex min-w-0 items-center justify-between gap-3">
             <Link
@@ -147,6 +148,7 @@ function Header() {
             </div>
           </div>
         </div>
+        <CondominiumSwitcher />
       </header>
 
       <MobileNavigationDrawer

@@ -17,6 +17,10 @@
     "closeMenu": "Close menu",
     "version": "Version 1.0.0"
   },
+  "switcher": {
+    "label": "Active condominium",
+    "all": "All condominiums"
+  },
   "breadcrumb": {
     "ariaLabel": "Breadcrumb",
     "dashboard": "Dashboard",

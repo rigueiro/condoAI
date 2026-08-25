@@ -14,16 +14,11 @@ interface PaymentFiltersProps {
     searchTerm: string;
   };
   onFiltersChange: (newFilters: any) => void;
-  paymentHistory: Array<{
-    property: string;
-    [key: string]: any;
-  }>;
 }
 
 function PaymentFilters({
   filters,
   onFiltersChange,
-  paymentHistory,
 }: PaymentFiltersProps) {
   const t = useTranslations("paymentTracking.paymentFilters");
   const tStatus = useTranslations("paymentTracking.status");
@@ -65,7 +60,6 @@ function PaymentFilters({
   const hasActiveFilters = () => {
     return (
       localFilters.searchTerm ||
-      localFilters.property ||
       localFilters.status ||
       localFilters.dateRange.start ||
       localFilters.dateRange.end ||
@@ -73,11 +67,6 @@ function PaymentFilters({
       localFilters.amountRange.max
     );
   };
-
-  // Get unique properties from payment history
-  const uniqueProperties = [
-    ...new Set(paymentHistory?.map((payment) => payment.property) || []),
-  ];
 
   const statusOptions = [
     { value: "", label: t("allStatuses") },
@@ -134,21 +123,6 @@ function PaymentFilters({
                 className="pl-10"
               />
             </div>
-          </div>
-
-          {/* Property Filter */}
-          <div className="lg:w-48">
-            <Select
-              value={localFilters.property}
-              onChange={(e) => handleFilterChange("property", e.target.value)}
-            >
-              <option value="">{t("allProperties")}</option>
-              {uniqueProperties.map((property) => (
-                <option key={property} value={property}>
-                  {property}
-                </option>
-              ))}
-            </Select>
           </div>
 
           {/* Status Filter */}

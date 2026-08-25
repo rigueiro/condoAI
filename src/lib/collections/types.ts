@@ -117,6 +117,7 @@ export type OverdueItem = {
   phone?: string;
   unit: string;
   property: string;
+  propertyId?: string;
   amount: number;
   /** ISO date string for when the quota was due */
   dueDate: string;

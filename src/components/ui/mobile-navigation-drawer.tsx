@@ -46,7 +46,9 @@ function MobileNavigationDrawer({
     };
   }, [isOpen, onClose]);
 
-  const isActivePath = (path: string) => currentPath === path;
+  const isActivePath = (path: string) =>
+    currentPath === path ||
+    (path !== "/dashboard" && currentPath.startsWith(`${path}/`));
 
   const handleLinkClick = () => {
     onClose();

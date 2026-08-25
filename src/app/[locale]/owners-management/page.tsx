@@ -14,6 +14,7 @@ import BulkOperations from "./components/bulk-operations";
 import { type OwnerRow, type PaymentStatus } from "./components/types";
 import {
   ownerFromFormSave,
+  useActiveCondominium,
   usePortfolio,
 } from "@/lib/portfolio";
 import { useCollections } from "@/lib/collections";
@@ -28,6 +29,7 @@ interface Filters {
 function OwnersManagement() {
   const t = useTranslations("ownersManagement");
   const { portfolio, upsertOwner, removeOwner } = usePortfolio();
+  const { activeId, preferredId } = useActiveCondominium();
   const { ownersWithBalances } = useCollections();
   const portfolioProperties = portfolio.condominiums.map((c) => ({
     id: c.id,
@@ -43,8 +45,18 @@ function OwnersManagement() {
     balanceRange: "",
   });
 
+  const scopedOwners = useMemo(
+    () =>
+      activeId
+        ? ownersWithBalances.filter((row) =>
+            row.condominiumIds.includes(activeId),
+          )
+        : ownersWithBalances,
+    [activeId, ownersWithBalances],
+  );
+
   const filteredOwners = useMemo(() => {
-    return ownersWithBalances.filter((row) => {
+    return scopedOwners.filter((row) => {
       const { owner } = row;
       const matchesSearch =
         !filters.search ||
@@ -87,7 +99,7 @@ function OwnersManagement() {
         matchesBalanceRange
       );
     });
-  }, [filters, ownersWithBalances]);
+  }, [filters, scopedOwners]);
 
   const handleAddOwner = () => {
     setEditingOwner(null);
@@ -133,8 +145,7 @@ function OwnersManagement() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <div className="pt-20">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
           <BreadcrumbNavigation />
 
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
@@ -157,14 +168,13 @@ function OwnersManagement() {
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="lg:col-span-1">
-              <OwnerStatistics owners={ownersWithBalances} />
+              <OwnerStatistics owners={scopedOwners} />
             </div>
 
             <div className="lg:col-span-3 space-y-6">
               <OwnerFilters
                 filters={filters}
                 onFiltersChange={setFilters}
-                properties={portfolioProperties}
               />
 
               {selectedOwners.length > 0 && (
@@ -184,7 +194,6 @@ function OwnersManagement() {
               />
             </div>
           </div>
-        </div>
       </div>
 
       {isOwnerModalOpen && (
@@ -192,6 +201,7 @@ function OwnersManagement() {
           owner={editingOwner}
           properties={portfolioProperties}
           units={portfolio.units}
+          defaultCondominiumId={preferredId}
           onClose={() => setIsOwnerModalOpen(false)}
           onSave={handleSaveOwner}
         />

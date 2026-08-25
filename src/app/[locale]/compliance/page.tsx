@@ -6,10 +6,9 @@ import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Button from "@/components/ui/button";
 import Icon from "@/components/icon";
-import Select from "@/components/ui/select";
 import Toast from "@/components/ui/toast";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
-import { usePortfolio } from "@/lib/portfolio";
+import { useActiveCondominium, usePortfolio } from "@/lib/portfolio";
 import {
   useCompliance,
   useDigestCopy,
@@ -41,6 +40,7 @@ function CompliancePage() {
   const t = useTranslations("compliance");
   const { formatCurrency } = useFormatCurrency();
   const { portfolio } = usePortfolio();
+  const { activeId, preferredId } = useActiveCondominium();
   const condominiums = portfolio.condominiums;
 
   const {
@@ -65,7 +65,6 @@ function CompliancePage() {
   const digestCopy = useDigestCopy();
 
   const [tab, setTab] = useState<ComplianceTab>("attention");
-  const [condoFilter, setCondoFilter] = useState("");
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ComplianceRecord | null>(null);
@@ -88,6 +87,7 @@ function CompliancePage() {
 
   const nameOf = (id: string) => condoNameById.get(id) ?? id;
   const searchLower = search.trim().toLowerCase();
+  const condoFilter = activeId ?? "";
 
   const filteredAttention = useMemo(() => {
     if (!condoFilter) return attentionItems;
@@ -235,8 +235,7 @@ function CompliancePage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="pt-20">
-        <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-6 py-8">
           <Breadcrumb />
 
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -257,22 +256,22 @@ function CompliancePage() {
             {[
               {
                 label: t("stats.attention"),
-                value: attentionItems.length,
+                value: filteredAttention.length,
                 icon: "AlertTriangle",
               },
               {
                 label: t("stats.policies"),
-                value: policies.length,
+                value: filteredPolicies.length,
                 icon: "ShieldCheck",
               },
               {
                 label: t("stats.certificates"),
-                value: certificates.length,
+                value: filteredCertificates.length,
                 icon: "BadgeCheck",
               },
               {
                 label: t("stats.assemblies"),
-                value: assemblies.length,
+                value: filteredAssemblies.length,
                 icon: "Users",
               },
             ].map((stat) => (
@@ -293,20 +292,8 @@ function CompliancePage() {
             ))}
           </div>
 
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Select
-              value={condoFilter}
-              onChange={(e) => setCondoFilter(e.target.value)}
-              containerClassName="sm:w-64"
-            >
-              <option value="">{t("filters.allProperties")}</option>
-              {condoOptions.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-            <div className="relative flex-1">
+          <div className="mb-4">
+            <div className="relative">
               <Icon
                 name="Search"
                 size={16}
@@ -464,7 +451,6 @@ function CompliancePage() {
               ))}
             </RecordsTable>
           )}
-        </div>
       </div>
 
       {modalOpen && (
@@ -472,6 +458,7 @@ function CompliancePage() {
           record={editing}
           defaultKind={defaultKind}
           condominiums={condoOptions}
+          defaultCondominiumId={preferredId}
           onClose={() => {
             setModalOpen(false);
             setEditing(null);

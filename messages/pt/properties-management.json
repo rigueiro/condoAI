@@ -203,7 +203,14 @@
     "lastUpdated": "Última actualização",
     "amenities": "Comodidades",
     "unit": "Fração {unit}",
-    "addFraction": "Adicionar fração"
+    "addFraction": "Adicionar fração",
+    "tabs": {
+      "overview": "Resumo",
+      "units": "Frações",
+      "owners": "Condóminos",
+      "finance": "Finanças",
+      "occurrences": "Ocorrências"
+    }
   },
   "units": {
     "title": "Frações",

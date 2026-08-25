@@ -28,7 +28,7 @@ function DetailFrame({ children }: { children?: ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="pt-20">
+      <main>
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Breadcrumb />
           {children}
@@ -150,7 +150,7 @@ function OccurrenceDetailPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="pt-20">
+      <main>
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Breadcrumb />
 
@@ -346,7 +346,7 @@ function OccurrenceDetailPage() {
                 </dl>
               </div>
 
-              <div className="bg-surface rounded-lg border border-border-light p-6 sticky top-24">
+              <div className="bg-surface rounded-lg border border-border-light p-6 sticky top-32">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">
                   {t("manage")}
                 </h3>

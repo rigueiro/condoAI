@@ -52,12 +52,14 @@ function FinanceModal({
   record,
   defaultKind,
   condominiums,
+  defaultCondominiumId,
   onClose,
   onSave,
 }: {
   record: FinanceRecord | null;
   defaultKind: FinanceKind;
   condominiums: CondoOption[];
+  defaultCondominiumId?: string;
   onClose: () => void;
   onSave: (record: FinanceRecord) => void;
 }) {
@@ -68,7 +70,10 @@ function FinanceModal({
     record?.kind === "budget" ? normalizeAnnualBudget(record.data) : null;
   const [kind, setKind] = useState<FinanceKind>(record?.kind ?? defaultKind);
   const [condominiumId, setCondominiumId] = useState(
-    record?.data.condominiumId ?? condominiums[0]?.id ?? "",
+    record?.data.condominiumId ??
+      defaultCondominiumId ??
+      condominiums[0]?.id ??
+      "",
   );
   const [year, setYear] = useState(
     initialBudget ? String(initialBudget.year) : String(new Date().getFullYear()),

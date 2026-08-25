@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import { useUser } from "@/lib/auth";
-import { usePortfolio } from "@/lib/portfolio";
+import { useActiveCondominium, usePortfolio } from "@/lib/portfolio";
 import { Link, useRouter } from "@/i18n/navigation";
 
 import Header from "@/components/ui/header";
@@ -40,8 +40,17 @@ function Dashboard() {
   } = usePortfolio();
   const condominiums = portfolio.condominiums;
   const { overdueItems, ownersWithBalances } = useCollections();
+  const { activeId } = useActiveCondominium();
 
   const [now] = useState(() => Date.now());
+
+  const scopedOverdueItems = useMemo(
+    () =>
+      activeId
+        ? overdueItems.filter((item) => item.propertyId === activeId)
+        : overdueItems,
+    [activeId, overdueItems],
+  );
 
   useEffect(() => {
     if (isReady && mustOnboard) {
@@ -50,13 +59,13 @@ function Dashboard() {
   }, [isReady, mustOnboard, router]);
 
   const overdueTotal = useMemo(
-    () => overdueItems.reduce((sum, item) => sum + item.amount, 0),
-    [overdueItems],
+    () => scopedOverdueItems.reduce((sum, item) => sum + item.amount, 0),
+    [scopedOverdueItems],
   );
   const displayOwners = ownersWithBalances;
   const overdueHint =
-    overdueItems.length > 0
-      ? t("stats.overdueCount", { count: overdueItems.length })
+    scopedOverdueItems.length > 0
+      ? t("stats.overdueCount", { count: scopedOverdueItems.length })
       : t("stats.noOutstanding");
 
   const dashboardStats = useMemo(() => {
@@ -239,7 +248,7 @@ function Dashboard() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="pt-20 px-6 pb-8">
+      <main className="px-6 pb-8">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Breadcrumb />
 

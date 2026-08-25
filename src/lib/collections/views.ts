@@ -119,6 +119,7 @@ export function quotasToOverdueItems(
         phone: owner?.contacts.phone ?? "",
         unit: display?.unitLabel ?? "",
         property: display?.condominiumName ?? "",
+        propertyId: display?.condominiumId,
         amount: q.amount,
         dueDate: quotaDueDate(q.monthYear),
         monthYear: q.monthYear,

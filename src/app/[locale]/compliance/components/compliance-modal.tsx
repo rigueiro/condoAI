@@ -27,12 +27,14 @@ function ComplianceModal({
   record,
   defaultKind,
   condominiums,
+  defaultCondominiumId,
   onClose,
   onSave,
 }: {
   record: ComplianceRecord | null;
   defaultKind: ComplianceKind;
   condominiums: CondoOption[];
+  defaultCondominiumId?: string;
   onClose: () => void;
   onSave: (record: ComplianceRecord) => void;
 }) {
@@ -42,7 +44,10 @@ function ComplianceModal({
     record?.kind ?? defaultKind,
   );
   const [condominiumId, setCondominiumId] = useState(
-    record?.data.condominiumId ?? condominiums[0]?.id ?? "",
+    record?.data.condominiumId ??
+      defaultCondominiumId ??
+      condominiums[0]?.id ??
+      "",
   );
   const [insurer, setInsurer] = useState(
     record?.kind === "insurance" ? record.data.insurer : "",

@@ -202,7 +202,7 @@ function PropertiesManagement() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="pt-20">
+      <main>
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Breadcrumb />
 

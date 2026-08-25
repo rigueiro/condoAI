@@ -56,7 +56,7 @@ function ProfilePage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-20 px-6 pb-8">
+        <main className="px-6 pb-8">
           <div className="max-w-5xl mx-auto px-6 py-8">
             <div className="animate-pulse space-y-6">
               <div className="h-8 w-48 bg-secondary-100 rounded" />
@@ -74,7 +74,7 @@ function ProfilePage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="pt-20 px-6 pb-8">
+      <main className="px-6 pb-8">
         <div className="max-w-5xl mx-auto px-6 py-8">
           <Breadcrumb />
 

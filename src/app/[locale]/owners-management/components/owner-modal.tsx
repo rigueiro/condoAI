@@ -23,6 +23,7 @@ interface Props {
   owner: OwnerRow | null;
   properties: { id: string; name: string }[];
   units: Unit[];
+  defaultCondominiumId?: string;
   onClose: () => void;
   onSave: (ownerData: OwnerFormSave) => void;
 }
@@ -51,7 +52,14 @@ function newOccupancyRow(
   };
 }
 
-function OwnerModal({ owner, properties, units, onClose, onSave }: Props) {
+function OwnerModal({
+  owner,
+  properties,
+  units,
+  defaultCondominiumId = "",
+  onClose,
+  onSave,
+}: Props) {
   const t = useTranslations("ownersManagement.modal");
   const tRole = useTranslations("ownersManagement.roles");
   const { currencySymbol } = useFormatCurrency();
@@ -71,7 +79,7 @@ function OwnerModal({ owner, properties, units, onClose, onSave }: Props) {
       ? owner.occupancies.map((item) =>
           newOccupancyRow(item.condominiumId, item.unitId, item.role),
         )
-      : [newOccupancyRow()],
+      : [newOccupancyRow(defaultCondominiumId)],
   );
 
   const [errors, setErrors] = useState<Errors>({});

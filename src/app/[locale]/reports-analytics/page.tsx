@@ -2,7 +2,7 @@
 
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Header from "@/components/ui/header";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import ControlPanel from "./components/control-panel";
 import ReportTemplates from "./components/report-templates";
@@ -12,9 +12,11 @@ import GenerateReportSection from "./components/generate-report-section";
 import type { Filters } from "./components/control-panel";
 import { mockCondominiums } from "@/fixtures/domain";
 import { mockCondoStats } from "@/fixtures/views";
+import { useActiveCondominium } from "@/lib/portfolio";
 
 function ReportsAnalytics() {
   const t = useTranslations("reportsAnalytics");
+  const { activeId } = useActiveCondominium();
 
   const [filters, setFilters] = useState<Filters>(() => ({
     dateRange: {
@@ -46,6 +48,7 @@ function ReportsAnalytics() {
       const target = stats.averageFee * condo.numberOfUnits;
       const collected = Math.round(target * (stats.collectionRate / 100));
       return {
+        propertyId: condo.id,
         property: condo.name,
         units: condo.numberOfUnits,
         collected,
@@ -60,6 +63,16 @@ function ReportsAnalytics() {
       { method: "Cash", count: 12, amount: 29400, percentage: 3.1 },
     ],
   });
+
+  const visibleReportData = useMemo(() => {
+    if (!activeId) return reportData;
+    return {
+      ...reportData,
+      propertyPerformance: reportData.propertyPerformance.filter(
+        (row) => row.propertyId === activeId,
+      ),
+    };
+  }, [activeId, reportData]);
 
   const handleFilterChange = (newFilters: Partial<Filters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -79,7 +92,7 @@ function ReportsAnalytics() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="pt-20 px-6 pb-8">
+      <main className="px-6 pb-8">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Breadcrumb />
 
@@ -108,10 +121,13 @@ function ReportsAnalytics() {
             {/* Main Content Area */}
             <div className="lg:col-span-9 space-y-8">
               {/* Charts Section */}
-              <ChartsSection reportData={reportData} filters={filters} />
+              <ChartsSection reportData={visibleReportData} filters={filters} />
 
               {/* Data Tables */}
-              <DataTables reportData={reportData} onExport={handleExportData} />
+              <DataTables
+                reportData={visibleReportData}
+                onExport={handleExportData}
+              />
 
               {/* Generate Report Section */}
               <GenerateReportSection onGenerateReport={handleGenerateReport} />

@@ -21,10 +21,12 @@ interface Props {
       balanceRange: string;
     }>
   >;
-  properties: { id: string; name: string }[];
 }
 
-function OwnerFilters({ filters, onFiltersChange, properties }: Props) {
+function OwnerFilters({
+  filters,
+  onFiltersChange,
+}: Props) {
   const t = useTranslations("ownersManagement.filters");
   const tStatus = useTranslations("ownersManagement.status");
 
@@ -69,7 +71,7 @@ function OwnerFilters({ filters, onFiltersChange, properties }: Props) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="relative">
           <Icon
             name="Search"
@@ -84,19 +86,6 @@ function OwnerFilters({ filters, onFiltersChange, properties }: Props) {
             className="w-full pl-10 pr-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth"
           />
         </div>
-
-        <Select
-          value={filters.property}
-          onChange={(e) => handleFilterChange("property", e.target.value)}
-          className="text-ellipsis"
-        >
-          <option value="">{t("allProperties")}</option>
-          {properties.map((property) => (
-            <option key={property.id} value={property.name}>
-              {property.name}
-            </option>
-          ))}
-        </Select>
 
         <Select
           value={filters.paymentStatus}
@@ -131,19 +120,6 @@ function OwnerFilters({ filters, onFiltersChange, properties }: Props) {
               <button
                 onClick={() => handleFilterChange("search", "")}
                 className="hover:bg-primary-100 rounded-full p-0.5 transition-smooth"
-              >
-                <Icon name="X" size={14} />
-              </button>
-            </span>
-          )}
-          {filters.property && (
-            <span className="inline-flex items-center space-x-1 bg-accent-50 text-accent px-3 py-1 rounded-full text-sm">
-              <span>
-                {t("chipProperty")} {filters.property}
-              </span>
-              <button
-                onClick={() => handleFilterChange("property", "")}
-                className="hover:bg-accent-100 rounded-full p-0.5 transition-smooth"
               >
                 <Icon name="X" size={14} />
               </button>

@@ -19,18 +19,22 @@ function ExtraordinaryQuotaModal({
   condominiums,
   units,
   owners,
+  defaultCondominiumId,
   onClose,
   onIssue,
 }: {
   condominiums: CondoOption[];
   units: Unit[];
   owners: Owner[];
+  defaultCondominiumId?: string;
   onClose: () => void;
   onIssue: (input: IssueExtraordinaryInput) => Promise<boolean>;
 }) {
   const t = useTranslations("finance");
   const { formatCurrency } = useFormatCurrency();
-  const [condominiumId, setCondominiumId] = useState(condominiums[0]?.id ?? "");
+  const [condominiumId, setCondominiumId] = useState(
+    defaultCondominiumId ?? condominiums[0]?.id ?? "",
+  );
   const [description, setDescription] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
   const [date, setDate] = useState(todayKey());

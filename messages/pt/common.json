@@ -17,6 +17,10 @@
     "closeMenu": "Fechar menu",
     "version": "Versão 1.0.0"
   },
+  "switcher": {
+    "label": "Condomínio activo",
+    "all": "Todos os condomínios"
+  },
   "breadcrumb": {
     "ariaLabel": "Navegação",
     "dashboard": "Painel",

@@ -4,7 +4,6 @@ import Icon from "@/components/icon";
 import Button from "@/components/ui/button";
 import Select from "@/components/ui/select";
 import { format } from "date-fns";
-import { mockCondominiums } from "@/fixtures/domain";
 
 type DataRange = {
   start: Date;
@@ -43,11 +42,6 @@ function ControlPanel({
     { value: "payment-trends", label: t("reportTypes.paymentTrends") },
   ];
 
-  const propertyOptions = [
-    { id: "all", name: t("allProperties") },
-    ...mockCondominiums.map((c) => ({ id: c.id, name: c.name })),
-  ];
-
   const presetRanges = [
     { label: t("last30Days"), days: 30 },
     { label: t("last3Months"), days: 90 },
@@ -78,21 +72,6 @@ function ControlPanel({
 
   const handleReportTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onFilterChange?.({ reportType: e.target.value });
-  };
-
-  const handlePropertyChange = (propertyId: string) => {
-    const selectedProperties = filters?.selectedProperties || [];
-
-    if (propertyId === "all") {
-      onFilterChange?.({ selectedProperties: [] });
-    } else {
-      const isSelected = selectedProperties.includes(propertyId);
-      const newSelection = isSelected
-        ? selectedProperties.filter((id) => id !== propertyId)
-        : [...selectedProperties, propertyId];
-
-      onFilterChange?.({ selectedProperties: newSelection });
-    }
   };
 
   const formatDateRange = () => {
@@ -167,37 +146,6 @@ function ControlPanel({
               </option>
             ))}
           </Select>
-        </div>
-        <div className="flex-1 min-w-0">
-          <label className="block text-sm font-medium text-text-primary mb-2">
-            {t("properties")}
-          </label>
-          <div className="relative">
-            <div className="bg-surface border border-border-light rounded-lg p-3 max-h-32 overflow-y-auto">
-              {propertyOptions.map((property) => {
-                const isSelected =
-                  property.id === "all"
-                    ? (filters?.selectedProperties?.length || 0) === 0
-                    : filters?.selectedProperties?.includes(property.id);
-                return (
-                  <label
-                    key={property.id}
-                    className="flex items-center space-x-2 py-1 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handlePropertyChange(property.id)}
-                      className="w-4 h-4 text-primary border-border-medium rounded focus:ring-primary"
-                    />
-                    <span className="text-sm text-text-primary">
-                      {property.name}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
         </div>
         <div className="flex items-end space-x-3">
           <Button variant="outline" size="sm">

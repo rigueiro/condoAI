@@ -203,7 +203,14 @@
     "lastUpdated": "Last updated",
     "amenities": "Amenities",
     "unit": "Unit {unit}",
-    "addFraction": "Add fraction"
+    "addFraction": "Add fraction",
+    "tabs": {
+      "overview": "Overview",
+      "units": "Fractions",
+      "owners": "Owners",
+      "finance": "Finance",
+      "occurrences": "Occurrences"
+    }
   },
   "units": {
     "title": "Fractions",

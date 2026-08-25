@@ -21,13 +21,11 @@ export interface OccurrenceFiltersState {
 interface Props {
   filters: OccurrenceFiltersState;
   onFiltersChange: React.Dispatch<React.SetStateAction<OccurrenceFiltersState>>;
-  condominiums: { id: string; name: string }[];
 }
 
 function OccurrenceFilters({
   filters,
   onFiltersChange,
-  condominiums,
 }: Props) {
   const t = useTranslations("occurrences.filters");
   const tState = useTranslations("occurrences.states");
@@ -51,7 +49,12 @@ function OccurrenceFilters({
     });
   };
 
-  const hasActiveFilters = Object.values(filters).some((value) => value !== "");
+  const hasActiveFilters = [
+    filters.search,
+    filters.category,
+    filters.state,
+    filters.priority,
+  ].some((value) => value !== "");
 
   return (
     <div className="bg-surface rounded-lg border border-border-light p-6">
@@ -84,19 +87,6 @@ function OccurrenceFilters({
             className="w-full pl-10 pr-4 py-2 border border-border-light rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary transition-smooth"
           />
         </div>
-
-        <Select
-          value={filters.condominiumId}
-          onChange={(e) => handleFilterChange("condominiumId", e.target.value)}
-          className="text-ellipsis"
-        >
-          <option value="">{t("allProperties")}</option>
-          {condominiums.map((condo) => (
-            <option key={condo.id} value={condo.id}>
-              {condo.name}
-            </option>
-          ))}
-        </Select>
 
         <Select
           value={filters.category}

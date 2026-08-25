@@ -9,6 +9,15 @@ export {
 } from "./types";
 export { PortfolioProvider, usePortfolio } from "./portfolio-provider";
 export {
+  ActiveCondominiumProvider,
+  useActiveCondominium,
+  buildingWorkspaceHref,
+  isBuildingWorkspacePath,
+  isBuildingWorkspaceTab,
+  BUILDING_WORKSPACE_TABS,
+  type BuildingWorkspaceTab,
+} from "./active-condominium";
+export {
   buildEmptyCondominium,
   buildEmptyOwner,
   buildCollectionFromPortfolio,

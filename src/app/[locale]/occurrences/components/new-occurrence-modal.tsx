@@ -40,6 +40,7 @@ interface Props {
   condominiums: Pick<Condominium, "id" | "name">[];
   owners: Owner[];
   units?: Unit[];
+  defaultCondominiumId?: string;
   onClose: () => void;
   onSave: (occurrence: Occurrence) => void;
 }
@@ -61,6 +62,7 @@ function NewOccurrenceModal({
   condominiums,
   owners,
   units = [],
+  defaultCondominiumId,
   onClose,
   onSave,
 }: Props): JSX.Element {
@@ -87,7 +89,7 @@ function NewOccurrenceModal({
           priority: occurrence.priority || "MEDIUM",
           status: occurrence.status || "Open",
         }
-      : emptyForm,
+      : { ...emptyForm, condominiumId: defaultCondominiumId ?? "" },
   );
   const [errors, setErrors] = useState<Errors>({});
 

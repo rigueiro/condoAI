@@ -21,9 +21,12 @@ import {
 } from "@/lib/collections";
 import {
   buildCollectionFromPortfolio,
+  collectionSummaryForCondo,
+  condoStats,
+  useActiveCondominium,
   usePortfolio,
 } from "@/lib/portfolio";
-import { buildMockCollectionSummary } from "@/fixtures/views";
+import { buildMockCollectionSummary, mockCondoStats } from "@/fixtures/views";
 import ReceiptModal from "@/app/[locale]/owners-management/components/receipt-modal";
 
 interface Filters {
@@ -39,6 +42,7 @@ function PaymentTracking() {
   const tDash = useTranslations("dashboard.upcomingPayments");
   const tReceipt = useTranslations("currentAccount.receipt");
   const { portfolio, isDemo } = usePortfolio();
+  const { activeId } = useActiveCondominium();
   const reminderCopy = useReminderCopy();
   const {
     payments: paymentHistory,
@@ -81,13 +85,20 @@ function PaymentTracking() {
     };
   }, [viewingReceipt, paymentHistory, portfolio.owners]);
 
-  const collectionData = useMemo(
-    () =>
-      isDemo
-        ? buildMockCollectionSummary()
-        : buildCollectionFromPortfolio(portfolio, quotas),
-    [isDemo, portfolio, quotas],
-  );
+  const collectionData = useMemo(() => {
+    if (activeId) {
+      const condo = portfolio.condominiums.find((c) => c.id === activeId);
+      if (condo) {
+        const stats = isDemo
+          ? mockCondoStats(condo)
+          : condoStats(condo, portfolio, quotas);
+        return collectionSummaryForCondo(condo, stats);
+      }
+    }
+    return isDemo
+      ? buildMockCollectionSummary()
+      : buildCollectionFromPortfolio(portfolio, quotas);
+  }, [activeId, isDemo, portfolio, quotas]);
 
   const handleRecordPayment = async (paymentData: RecordPaymentInput) => {
     const result = await recordPayment(paymentData);
@@ -119,7 +130,7 @@ function PaymentTracking() {
 
   const handleSelectAll = (isSelected: boolean) => {
     setSelectedPayments(
-      isSelected ? paymentHistory.map((payment) => payment.id) : [],
+      isSelected ? filteredPayments.map((payment) => payment.id) : [],
     );
   };
 
@@ -148,6 +159,8 @@ function PaymentTracking() {
   };
 
   const filteredPayments = paymentHistory.filter((payment) => {
+    const matchesActive =
+      !activeId || payment.propertyId === activeId;
     const matchesProperty =
       !filters.property ||
       payment.property.toLowerCase().includes(filters.property.toLowerCase());
@@ -168,6 +181,7 @@ function PaymentTracking() {
         payment.amount <= parseFloat(filters.amountRange.max));
 
     return (
+      matchesActive &&
       matchesProperty &&
       matchesStatus &&
       matchesSearch &&
@@ -180,7 +194,7 @@ function PaymentTracking() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="pt-20 px-6 pb-8">
+      <main className="px-6 pb-8">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <Breadcrumb />
 
@@ -225,7 +239,6 @@ function PaymentTracking() {
               <PaymentFilters
                 filters={filters}
                 onFiltersChange={setFilters}
-                paymentHistory={paymentHistory}
               />
 
               <PaymentHistoryTable
@@ -254,7 +267,7 @@ function PaymentTracking() {
             <div className="xl:col-span-4">
               <CollectionAnalytics
                 collectionData={collectionData}
-                paymentHistory={paymentHistory}
+                paymentHistory={filteredPayments}
               />
             </div>
           </div>

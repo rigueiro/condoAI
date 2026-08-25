@@ -4,10 +4,12 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import Icon from "../icon";
 import { Link, usePathname } from "@/i18n/navigation";
+import { usePortfolio } from "@/lib/portfolio";
 
 function Breadcrumb() {
   const t = useTranslations("common.breadcrumb");
   const currentPath = usePathname();
+  const { portfolio } = usePortfolio();
 
   const routeConfig = {
     "/dashboard": { labelKey: "dashboard" as const, parent: null },
@@ -31,13 +33,17 @@ function Breadcrumb() {
       path.startsWith("/properties-management/") &&
       path !== "/properties-management"
     ) {
+      const condoId = path.slice("/properties-management/".length).split("/")[0];
+      const condoName =
+        portfolio.condominiums.find((condo) => condo.id === condoId)?.name ??
+        t("propertyDetail");
       return [
         {
           label: t("properties"),
           path: "/properties-management",
           isActive: false,
         },
-        { label: t("propertyDetail"), path, isActive: true },
+        { label: condoName, path, isActive: true },
       ];
     }
 

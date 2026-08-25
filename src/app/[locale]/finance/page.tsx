@@ -6,9 +6,8 @@ import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Button from "@/components/ui/button";
 import Icon from "@/components/icon";
-import Select from "@/components/ui/select";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
-import { usePortfolio } from "@/lib/portfolio";
+import { useActiveCondominium, usePortfolio } from "@/lib/portfolio";
 import {
   summarizeBudget,
   useFinance,
@@ -50,6 +49,7 @@ function FinancePage() {
   const t = useTranslations("finance");
   const { formatCurrency } = useFormatCurrency();
   const { portfolio } = usePortfolio();
+  const { activeId, preferredId } = useActiveCondominium();
   const condominiums = portfolio.condominiums;
 
   const {
@@ -69,7 +69,6 @@ function FinancePage() {
   } = useFinance();
 
   const [tab, setTab] = useState<FinanceTab>("attention");
-  const [condoFilter, setCondoFilter] = useState("");
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [extraOpen, setExtraOpen] = useState(false);
@@ -100,10 +99,15 @@ function FinancePage() {
 
   const nameOf = (id: string) => condoNameById.get(id) ?? id;
   const searchLower = search.trim().toLowerCase();
+  const condoFilter = activeId ?? "";
 
   const totalBankBalance = useMemo(
-    () => accounts.reduce((sum, a) => sum + a.currentBalance, 0),
-    [accounts],
+    () =>
+      byCondo(accounts, condoFilter).reduce(
+        (sum, a) => sum + a.currentBalance,
+        0,
+      ),
+    [accounts, condoFilter],
   );
 
   // Condo-only counts for inactive tabs; full search only on the active tab.
@@ -244,8 +248,7 @@ function FinancePage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="pt-20">
-        <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-6 py-8">
           <Breadcrumb />
 
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -282,17 +285,17 @@ function FinancePage() {
             {[
               {
                 label: t("stats.drafts"),
-                value: String(draftItems.length),
+                value: String(filteredDrafts.length),
                 icon: "FilePen",
               },
               {
                 label: t("stats.budgets"),
-                value: String(budgets.length),
+                value: String(byCondo(budgets, condoFilter).length),
                 icon: "Wallet",
               },
               {
                 label: t("stats.expenses"),
-                value: String(expenses.length),
+                value: String(byCondo(expenses, condoFilter).length),
                 icon: "Receipt",
               },
               {
@@ -318,20 +321,8 @@ function FinancePage() {
             ))}
           </div>
 
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Select
-              value={condoFilter}
-              onChange={(e) => setCondoFilter(e.target.value)}
-              containerClassName="sm:w-64"
-            >
-              <option value="">{t("filters.allProperties")}</option>
-              {condoOptions.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-            <div className="relative flex-1">
+          <div className="mb-4">
+            <div className="relative">
               <Icon
                 name="Search"
                 size={16}
@@ -506,7 +497,6 @@ function FinancePage() {
               ))}
             </RecordsTable>
           )}
-        </div>
       </div>
 
       {modalOpen && (
@@ -514,6 +504,7 @@ function FinancePage() {
           record={editing}
           defaultKind={defaultKind}
           condominiums={condoOptions}
+          defaultCondominiumId={preferredId}
           onClose={() => {
             setModalOpen(false);
             setEditing(null);
@@ -527,6 +518,7 @@ function FinancePage() {
           condominiums={condoOptions}
           units={portfolio.units}
           owners={portfolio.owners}
+          defaultCondominiumId={preferredId}
           onClose={() => setExtraOpen(false)}
           onIssue={handleIssueExtra}
         />

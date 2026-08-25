@@ -6,7 +6,7 @@ import Header from "@/components/ui/header";
 import BreadcrumbNavigation from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 import { downloadCsv } from "@/lib/export-csv";
-import { usePortfolio } from "@/lib/portfolio";
+import { useActiveCondominium, usePortfolio } from "@/lib/portfolio";
 import { useOccurrences } from "@/lib/occurrences";
 
 import NewOccurrenceModal from "./components/new-occurrence-modal";
@@ -30,6 +30,7 @@ function OccurrencesPage() {
   const tCategory = useTranslations("occurrences.categories");
   const tPriority = useTranslations("occurrences.priorities");
   const { portfolio } = usePortfolio();
+  const { activeId, preferredId } = useActiveCondominium();
   const { condominiums, owners, units } = portfolio;
   const {
     occurrences,
@@ -56,20 +57,28 @@ function OccurrencesPage() {
     [occurrences, condominiums, owners],
   );
 
+  const scopedRows = useMemo(
+    () =>
+      activeId
+        ? occurrenceRows.filter(
+            (row) => row.occurrence.condominiumId === activeId,
+          )
+        : occurrenceRows,
+    [activeId, occurrenceRows],
+  );
+
   const filteredRows = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
-    return occurrenceRows.filter((row) => {
+    return scopedRows.filter((row) => {
       const { occurrence } = row;
       return (
         occurrenceMatchesSearch(row, q) &&
-        (!filters.condominiumId ||
-          occurrence.condominiumId === filters.condominiumId) &&
         (!filters.category || occurrence.category === filters.category) &&
         (!filters.state || occurrence.status === filters.state) &&
         (!filters.priority || occurrence.priority === filters.priority)
       );
     });
-  }, [occurrenceRows, filters]);
+  }, [scopedRows, filters]);
 
   const handleAddOccurrence = useCallback(() => {
     setEditingOccurrence(null);
@@ -161,8 +170,7 @@ function OccurrencesPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <div className="pt-20">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
           <BreadcrumbNavigation />
 
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
@@ -185,14 +193,13 @@ function OccurrencesPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="lg:col-span-1">
-              <OccurrenceStatistics rows={occurrenceRows} />
+              <OccurrenceStatistics rows={scopedRows} />
             </div>
 
             <div className="lg:col-span-3 space-y-6">
               <OccurrenceFilters
                 filters={filters}
                 onFiltersChange={setFilters}
-                condominiums={condominiums}
               />
 
               {selectedOccurrences.length > 0 && (
@@ -215,7 +222,6 @@ function OccurrencesPage() {
               />
             </div>
           </div>
-        </div>
       </div>
 
       {isModalOpen && (
@@ -224,6 +230,7 @@ function OccurrencesPage() {
           condominiums={condominiums}
           owners={owners}
           units={units}
+          defaultCondominiumId={preferredId}
           onClose={() => {
             setIsModalOpen(false);
             setEditingOccurrence(null);

@@ -118,7 +118,7 @@ function HelpPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="pt-20 px-6 pb-8">
+      <main className="px-6 pb-8">
         <div className="max-w-6xl mx-auto px-6 py-8">
           <Breadcrumb />
 
