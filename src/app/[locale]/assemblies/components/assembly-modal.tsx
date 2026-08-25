@@ -21,7 +21,7 @@ function AssemblyModal({
   defaultCondominiumId?: string;
   onClose: () => void;
   onCreate: (input: CreateAssemblyInput) => Promise<boolean>;
-  onSave: (assembly: Assembly) => void;
+  onSave: (assembly: Assembly) => Promise<boolean>;
 }) {
   const t = useTranslations("assemblies");
   const isEdit = Boolean(assembly);
@@ -57,7 +57,8 @@ function AssemblyModal({
     if (Object.keys(next).length > 0) return;
 
     if (isEdit && assembly) {
-      onSave({
+      setBusy(true);
+      const ok = await onSave({
         ...assembly,
         condominiumId,
         type,
@@ -66,7 +67,8 @@ function AssemblyModal({
         scheduledTime,
         location: location.trim(),
       });
-      onClose();
+      setBusy(false);
+      if (ok) onClose();
       return;
     }
 

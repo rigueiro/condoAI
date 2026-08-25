@@ -87,9 +87,11 @@
     "back": "All assemblies",
     "when": "{date} at {time}",
     "sendSummons": "Send summons",
+    "sendBlockedNotice": "Schedule the meeting at least {days} days from today before sending.",
     "openSession": "Open session",
     "openSecondCall": "Open on second call",
     "close": "Close and record resolutions",
+    "closeBlockedQuorum": "Quorum is required to close and record resolutions.",
     "closedHint": "This assembly is closed. Resolutions are locked.",
     "draftHint": "Finish the agenda, then send the summons with at least {days} days’ notice.",
     "summonedHint": "Owners have been summoned. Open the session on the meeting day to take attendance and vote.",
@@ -101,6 +103,8 @@
     "method": "Channel",
     "body": "Notice text",
     "bodyHint": "The agenda must be in the convocatória. A second-call clause is included by default.",
+    "willMeet": "Notice from today: {days} days (minimum {min}).",
+    "willShort": "Only {days} days from today — below the {min}-day legal minimum.",
     "legalOk": "Legal notice met ({days} days before the meeting).",
     "legalShort": "Only {days} days’ notice. The legal minimum is {min} days (art. 1432.º CC)."
   },
@@ -128,6 +132,7 @@
     "share": "Permillage",
     "status": "Attendance",
     "proxy": "Represented by",
+    "proxyRequired": "Choose who represents this owner — otherwise they do not count for quorum or votes.",
     "none": "No voting owners on this building’s fractions."
   },
   "voting": {
@@ -158,9 +163,12 @@
     "requestFailed": "Could not save. Try again.",
     "badRequest": "Check the required fields.",
     "assemblyClosed": "This assembly is already closed.",
-    "agendaRequired": "Add at least one agenda item before sending the summons.",
+    "assemblyLocked": "This step is locked for the current status.",
+    "agendaRequired": "Add at least one titled agenda item before sending the summons.",
     "summonsRequired": "Send the summons before opening the session.",
+    "noticeTooShort": "Portuguese law requires at least 10 days’ written notice before the meeting.",
     "notInSession": "Open the session before closing it.",
+    "quorumRequired": "Quorum is required before votes count and before closing.",
     "minutesRequired": "The minutes cannot be empty.",
     "notFound": "Assembly not found."
   }

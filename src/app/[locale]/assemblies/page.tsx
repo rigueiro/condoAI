@@ -199,9 +199,14 @@ function AssembliesContent() {
                         <button
                           type="button"
                           className="text-sm text-error hover:underline"
-                          onClick={() => {
+                          onClick={async () => {
                             if (window.confirm(t("confirmDelete"))) {
-                              removeAssembly(assembly.id);
+                              const result = await removeAssembly(assembly.id);
+                              if (!result.ok) {
+                                setFlash(
+                                  t(`errors.${assemblyErrorKey(result.code)}`),
+                                );
+                              }
                             }
                           }}
                         >
@@ -237,7 +242,14 @@ function AssembliesContent() {
             }
             return true;
           }}
-          onSave={upsertAssembly}
+          onSave={async (assembly) => {
+            const result = await upsertAssembly(assembly);
+            if (!result.ok) {
+              setFlash(t(`errors.${assemblyErrorKey(result.code)}`));
+              return false;
+            }
+            return true;
+          }}
         />
       )}
 

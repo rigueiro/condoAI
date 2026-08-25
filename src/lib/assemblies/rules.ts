@@ -9,8 +9,8 @@ import {
   type AssemblyResolution,
   type AssemblySummons,
   type AttendanceRecord,
-  type AttendanceStatus,
   type ItemVotes,
+  type VoteChoice,
   type VoteTally,
   type VotingShare,
 } from "./types";
@@ -26,17 +26,50 @@ function calendarDaysBetween(from: string, to: string): number | null {
   return Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+/** Days between a proposed send date and the meeting (defaults send = today). */
+export function projectedNoticeDays(
+  scheduledDate: string,
+  sentDate = new Date().toISOString().slice(0, 10),
+): number | null {
+  return calendarDaysBetween(sentDate, scheduledDate);
+}
+
 export function noticeDays(assembly: Assembly): number | null {
   if (!assembly.summons?.sentDate) return null;
-  return calendarDaysBetween(
-    assembly.summons.sentDate,
-    assembly.scheduledDate,
-  );
+  return projectedNoticeDays(assembly.scheduledDate, assembly.summons.sentDate);
+}
+
+export function noticeMeetsLegalMinimum(
+  scheduledDate: string,
+  sentDate = new Date().toISOString().slice(0, 10),
+): boolean {
+  const days = projectedNoticeDays(scheduledDate, sentDate);
+  return days != null && days >= LEGAL_NOTICE_DAYS;
 }
 
 export function noticeSatisfied(assembly: Assembly): boolean {
-  const days = noticeDays(assembly);
-  return days != null && days >= LEGAL_NOTICE_DAYS;
+  if (!assembly.summons?.sentDate) return false;
+  return noticeMeetsLegalMinimum(
+    assembly.scheduledDate,
+    assembly.summons.sentDate,
+  );
+}
+
+/** Split a unit's permillage across co-owners so the fraction is not double-counted. */
+function splitPermillage(total: number, ownerCount: number): number[] {
+  if (ownerCount <= 0) return [];
+  const shares: number[] = [];
+  let remaining = total;
+  for (let i = 0; i < ownerCount; i += 1) {
+    if (i === ownerCount - 1) {
+      shares.push(roundPermillage(remaining));
+      break;
+    }
+    const share = roundPermillage(remaining / (ownerCount - i));
+    shares.push(share);
+    remaining = roundPermillage(remaining - share);
+  }
+  return shares;
 }
 
 /** Owners with role `owner` and the permillage they vote. Tenants do not vote. */
@@ -49,30 +82,44 @@ export function votingRoll(
     if (unit.condominiumId !== condominiumId) continue;
     const permillage = Number(unit.permillage) || 0;
     if (permillage <= 0) continue;
-    for (const occupancy of unit.occupancies ?? []) {
-      if (occupancy.role !== "owner") continue;
+    const owners = (unit.occupancies ?? []).filter(
+      (occupancy) => occupancy.role === "owner",
+    );
+    if (owners.length === 0) continue;
+    const shares = splitPermillage(permillage, owners.length);
+    owners.forEach((occupancy, index) => {
+      const share = shares[index] ?? 0;
       const current = byOwner.get(occupancy.ownerId);
       if (current) {
-        current.permillage = roundPermillage(
-          current.permillage + permillage,
-        );
+        current.permillage = roundPermillage(current.permillage + share);
         if (!current.unitLabels.includes(unit.label)) {
           current.unitLabels.push(unit.label);
         }
       } else {
         byOwner.set(occupancy.ownerId, {
           ownerId: occupancy.ownerId,
-          permillage: roundPermillage(permillage),
+          permillage: share,
           unitLabels: [unit.label],
         });
       }
-    }
+    });
   }
   return [...byOwner.values()].sort((a, b) => b.permillage - a.permillage);
 }
 
-export function isAttending(status: AttendanceStatus): boolean {
-  return status === "present" || status === "represented";
+/** Present, or represented by another owner on the roll. */
+export function isAttending(
+  row: AttendanceRecord | null | undefined,
+): boolean {
+  if (!row) return false;
+  if (row.status === "present") return true;
+  if (row.status === "represented") {
+    return Boolean(
+      row.representedByOwnerId &&
+        row.representedByOwnerId !== row.ownerId,
+    );
+  }
+  return false;
 }
 
 export function attendanceByOwnerId(
@@ -89,7 +136,7 @@ export function attendingPermillage(
   return roundPermillage(
     roll.reduce((sum, share) => {
       const row = byOwner.get(share.ownerId);
-      return row && isAttending(row.status) ? sum + share.permillage : sum;
+      return isAttending(row) ? sum + share.permillage : sum;
     }, 0),
   );
 }
@@ -112,7 +159,18 @@ export function quorumMet(
 export function canVote(assembly: Assembly, ownerId: string): boolean {
   if (assembly.status !== "in_session") return false;
   const row = attendanceByOwnerId(assembly.attendance).get(ownerId);
-  return Boolean(row && isAttending(row.status));
+  return isAttending(row);
+}
+
+export function canRecordVotes(
+  assembly: Assembly,
+  roll: VotingShare[],
+  totalCapital?: number,
+): boolean {
+  return (
+    assembly.status === "in_session" &&
+    quorumMet(assembly, roll, totalCapital)
+  );
 }
 
 export function votesForItem(
@@ -142,7 +200,7 @@ export function tallyItem(
 
   for (const share of roll) {
     const row = byOwner.get(share.ownerId);
-    if (!row || !isAttending(row.status)) continue;
+    if (!isAttending(row)) continue;
     const choice = ballots[share.ownerId];
     if (choice === "for") forPermillage += share.permillage;
     else if (choice === "against") againstPermillage += share.permillage;
@@ -158,13 +216,18 @@ export function tallyItem(
     forPermillage + againstPermillage + abstainPermillage + unvotedPermillage,
   );
 
+  const hasQuorum = quorumMet(assembly, roll, totalCapital);
   let passed = false;
-  if (item.majority === "simple") {
-    passed = forPermillage > againstPermillage;
-  } else if (item.majority === "absolute-present") {
-    passed = attending > 0 && forPermillage > attending / 2;
-  } else {
-    passed = forPermillage >= roundPermillage((totalCapital ?? TOTAL_CAPITAL) * QUALIFIED_MAJORITY);
+  if (hasQuorum) {
+    if (item.majority === "simple") {
+      passed = forPermillage > againstPermillage;
+    } else if (item.majority === "absolute-present") {
+      passed = attending > 0 && forPermillage > attending / 2;
+    } else {
+      passed =
+        forPermillage >=
+        roundPermillage((totalCapital ?? TOTAL_CAPITAL) * QUALIFIED_MAJORITY);
+    }
   }
 
   return {
@@ -203,29 +266,61 @@ export function emptyMinutes(): Assembly["minutes"] {
   return { text: "", file: null, recordedAt: null };
 }
 
-export function seedAttendance(roll: VotingShare[]): AttendanceRecord[] {
-  return roll.map((share) => ({
-    ownerId: share.ownerId,
-    status: "absent" as const,
-    representedByOwnerId: null,
-  }));
-}
-
-export function mergeAttendance(
-  existing: AttendanceRecord[],
+/** Keep only roll owners; clear invalid proxies. */
+export function normalizeAttendanceRows(
+  rows: AttendanceRecord[],
   roll: VotingShare[],
 ): AttendanceRecord[] {
-  const byOwner = attendanceByOwnerId(existing);
+  const allowed = new Set(roll.map((share) => share.ownerId));
+  const byOwner = attendanceByOwnerId(rows);
   return roll.map((share) => {
     const row = byOwner.get(share.ownerId);
-    return (
-      row ?? {
+    if (!row || row.status === "absent") {
+      return {
         ownerId: share.ownerId,
-        status: "absent",
+        status: "absent" as const,
         representedByOwnerId: null,
-      }
-    );
+      };
+    }
+    if (row.status === "present") {
+      return {
+        ownerId: share.ownerId,
+        status: "present" as const,
+        representedByOwnerId: null,
+      };
+    }
+    const proxy = row.representedByOwnerId;
+    const valid =
+      Boolean(proxy) &&
+      proxy !== share.ownerId &&
+      allowed.has(proxy as string);
+    return {
+      ownerId: share.ownerId,
+      status: "represented" as const,
+      representedByOwnerId: valid ? proxy : null,
+    };
   });
+}
+
+export function sanitizeVotes(
+  votes: ItemVotes[],
+  assembly: Assembly,
+): ItemVotes[] {
+  const agendaIds = new Set(assembly.agenda.map((item) => item.id));
+  return votes
+    .filter((row) => agendaIds.has(row.itemId))
+    .map((row) => {
+      const ballots: Record<string, VoteChoice> = {};
+      for (const [ownerId, choice] of Object.entries(row.ballots ?? {})) {
+        if (
+          canVote(assembly, ownerId) &&
+          (choice === "for" || choice === "against" || choice === "abstain")
+        ) {
+          ballots[ownerId] = choice;
+        }
+      }
+      return { itemId: row.itemId, ballots };
+    });
 }
 
 export function withVote(
@@ -268,7 +363,8 @@ export function buildSummons(
     Pick<AssemblySummons, "method" | "title" | "content">,
 ): AssemblySummons {
   return {
-    sentDate: input.sentDate?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+    sentDate:
+      input.sentDate?.slice(0, 10) || new Date().toISOString().slice(0, 10),
     method: input.method,
     title: input.title.trim(),
     content: input.content.trim(),

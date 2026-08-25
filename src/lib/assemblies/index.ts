@@ -16,6 +16,7 @@ export {
   firstCallQuorum,
   noticeDays,
   noticeSatisfied,
+  projectedNoticeDays,
   quorumMet,
   tallyItem,
   votingRoll,

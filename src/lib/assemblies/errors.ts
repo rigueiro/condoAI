@@ -2,9 +2,12 @@ export const ASSEMBLY_ERROR_CODES = [
   "requestFailed",
   "badRequest",
   "assemblyClosed",
+  "assemblyLocked",
   "agendaRequired",
   "summonsRequired",
+  "noticeTooShort",
   "notInSession",
+  "quorumRequired",
   "minutesRequired",
   "notFound",
 ] as const;

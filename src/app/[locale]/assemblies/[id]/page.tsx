@@ -20,6 +20,7 @@ import {
   firstCallQuorum,
   noticeDays,
   noticeSatisfied,
+  projectedNoticeDays,
   quorumMet,
   tallyItem,
   useAssemblies,
@@ -108,14 +109,27 @@ function AssemblyDetailPage() {
   const closed = assembly.status === "closed";
   const attending = attendingPermillage(assembly, roll);
   const hasQuorum = quorumMet(assembly, roll, condo?.totalPermillage);
+  const votesOpen = inSession && hasQuorum;
   const days = noticeDays(assembly);
+  const daysFromToday = projectedNoticeDays(assembly.scheduledDate);
+  const canSendByNotice =
+    daysFromToday != null && daysFromToday >= LEGAL_NOTICE_DAYS;
   const draftContent =
     summonsContent ?? assembly.summons?.content ?? defaultSummonsContent(assembly);
   const draftTitle = summonsTitle ?? assembly.summons?.title ?? assembly.title;
+  const agendaItems = [...assembly.agenda].sort((a, b) => a.order - b.order);
 
   const showFlash = (code: string) => setFlash(errorMessage(t, code));
 
-  const save = (next: Assembly) => upsertAssembly(next);
+  const run = async (
+    result: { ok: true } | { ok: false; code: string },
+  ) => {
+    if (!result.ok) showFlash(result.code);
+    return result.ok;
+  };
+
+  const save = async (next: Assembly) =>
+    run(await upsertAssembly(next));
 
   const addAgendaItem = () => {
     const item: AgendaItem = {
@@ -125,11 +139,11 @@ function AssemblyDetailPage() {
       description: "",
       majority: "absolute-present",
     };
-    save({ ...assembly, agenda: [...assembly.agenda, item] });
+    void save({ ...assembly, agenda: [...assembly.agenda, item] });
   };
 
   const updateAgenda = (itemId: string, patch: Partial<AgendaItem>) => {
-    save({
+    void save({
       ...assembly,
       agenda: assembly.agenda.map((item) =>
         item.id === itemId ? { ...item, ...patch } : item,
@@ -138,7 +152,7 @@ function AssemblyDetailPage() {
   };
 
   const removeAgenda = (itemId: string) => {
-    save({
+    void save({
       ...assembly,
       agenda: assembly.agenda
         .filter((item) => item.id !== itemId)
@@ -152,9 +166,17 @@ function AssemblyDetailPage() {
     representedByOwnerId: string | null,
   ) => {
     const rest = assembly.attendance.filter((row) => row.ownerId !== ownerId);
-    save({
+    void save({
       ...assembly,
-      attendance: [...rest, { ownerId, status, representedByOwnerId }],
+      attendance: [
+        ...rest,
+        {
+          ownerId,
+          status,
+          representedByOwnerId:
+            status === "represented" ? representedByOwnerId : null,
+        },
+      ],
     });
   };
 
@@ -197,14 +219,21 @@ function AssemblyDetailPage() {
           <div className="flex flex-wrap gap-2">
             {assembly.status === "draft" && (
               <Button
+                disabled={!canSendByNotice}
+                title={
+                  canSendByNotice
+                    ? undefined
+                    : t("detail.sendBlockedNotice", { days: LEGAL_NOTICE_DAYS })
+                }
                 onClick={async () => {
-                  const result = await sendSummons({
-                    id: assembly.id,
-                    method: summonsMethod,
-                    title: draftTitle,
-                    content: draftContent,
-                  });
-                  if (!result.ok) showFlash(result.code);
+                  await run(
+                    await sendSummons({
+                      id: assembly.id,
+                      method: summonsMethod,
+                      title: draftTitle,
+                      content: draftContent,
+                    }),
+                  );
                 }}
               >
                 {t("detail.sendSummons")}
@@ -214,8 +243,7 @@ function AssemblyDetailPage() {
               <Button
                 variant="secondary"
                 onClick={async () => {
-                  const result = await openSession(assembly.id, 1);
-                  if (!result.ok) showFlash(result.code);
+                  await run(await openSession(assembly.id, 1));
                 }}
               >
                 {t("detail.openSession")}
@@ -226,8 +254,7 @@ function AssemblyDetailPage() {
               <Button
                 variant="outline"
                 onClick={async () => {
-                  const result = await openSession(assembly.id, 2);
-                  if (!result.ok) showFlash(result.code);
+                  await run(await openSession(assembly.id, 2));
                 }}
               >
                 {t("detail.openSecondCall")}
@@ -236,9 +263,10 @@ function AssemblyDetailPage() {
             {inSession && (
               <Button
                 variant="success"
+                disabled={!hasQuorum}
+                title={hasQuorum ? undefined : t("detail.closeBlockedQuorum")}
                 onClick={async () => {
-                  const result = await closeSession(assembly.id);
-                  if (!result.ok) showFlash(result.code);
+                  await run(await closeSession(assembly.id));
                 }}
               >
                 {t("detail.close")}
@@ -265,9 +293,7 @@ function AssemblyDetailPage() {
               <p className="mb-3 text-sm text-text-secondary">{t("agenda.empty")}</p>
             )}
             <ol className="space-y-4">
-              {[...assembly.agenda]
-                .sort((a, b) => a.order - b.order)
-                .map((item, index) => (
+              {agendaItems.map((item, index) => (
                   <li key={item.id} className="rounded-lg border border-border-light p-4">
                     <p className="mb-2 text-xs font-medium uppercase text-text-secondary">
                       {t("agenda.item", { n: index + 1 })}
@@ -343,6 +369,21 @@ function AssemblyDetailPage() {
                 {noticeSatisfied(assembly)
                   ? t("summons.legalOk", { days })
                   : t("summons.legalShort", { days, min: LEGAL_NOTICE_DAYS })}
+              </p>
+            )}
+            {!assembly.summons && daysFromToday != null && (
+              <p
+                className={`mb-3 text-sm ${canSendByNotice ? "text-success" : "text-warning"}`}
+              >
+                {canSendByNotice
+                  ? t("summons.willMeet", {
+                      days: daysFromToday,
+                      min: LEGAL_NOTICE_DAYS,
+                    })
+                  : t("summons.willShort", {
+                      days: daysFromToday,
+                      min: LEGAL_NOTICE_DAYS,
+                    })}
               </p>
             )}
             {assembly.summons && (
@@ -476,28 +517,41 @@ function AssemblyDetailPage() {
                             </td>
                             <td className="py-2">
                               {status === "represented" ? (
-                                <Select
-                                  selectSize="sm"
-                                  value={row?.representedByOwnerId ?? ""}
-                                  disabled={closed}
-                                  onChange={(event) =>
-                                    setAttendance(
-                                      share.ownerId,
-                                      "represented",
-                                      event.target.value || null,
-                                    )
-                                  }
-                                >
-                                  <option value="">—</option>
-                                  {roll
-                                    .filter((other) => other.ownerId !== share.ownerId)
-                                    .map((other) => (
-                                      <option key={other.ownerId} value={other.ownerId}>
-                                        {ownerById.get(other.ownerId)?.fullName ??
-                                          other.ownerId}
-                                      </option>
-                                    ))}
-                                </Select>
+                                <div>
+                                  <Select
+                                    selectSize="sm"
+                                    value={row?.representedByOwnerId ?? ""}
+                                    disabled={closed}
+                                    onChange={(event) =>
+                                      setAttendance(
+                                        share.ownerId,
+                                        "represented",
+                                        event.target.value || null,
+                                      )
+                                    }
+                                  >
+                                    <option value="">—</option>
+                                    {roll
+                                      .filter(
+                                        (other) =>
+                                          other.ownerId !== share.ownerId,
+                                      )
+                                      .map((other) => (
+                                        <option
+                                          key={other.ownerId}
+                                          value={other.ownerId}
+                                        >
+                                          {ownerById.get(other.ownerId)
+                                            ?.fullName ?? other.ownerId}
+                                        </option>
+                                      ))}
+                                  </Select>
+                                  {!row?.representedByOwnerId && (
+                                    <p className="mt-1 text-xs text-warning">
+                                      {t("attendance.proxyRequired")}
+                                    </p>
+                                  )}
+                                </div>
                               ) : (
                                 "—"
                               )}
@@ -524,9 +578,7 @@ function AssemblyDetailPage() {
                 <p className="mb-3 text-sm text-text-secondary">{t("voting.closed")}</p>
               )}
               <div className="space-y-6">
-                {[...assembly.agenda]
-                  .sort((a, b) => a.order - b.order)
-                  .map((item) => {
+                {agendaItems.map((item) => {
                     const tally = tallyItem(
                       assembly,
                       item,
@@ -578,7 +630,8 @@ function AssemblyDetailPage() {
                         </p>
                         <ul className="space-y-2">
                           {roll.map((share) => {
-                            const enabled = canVote(assembly, share.ownerId);
+                            const enabled =
+                              votesOpen && canVote(assembly, share.ownerId);
                             const choice =
                               assembly.votes.find((row) => row.itemId === item.id)
                                 ?.ballots[share.ownerId] ?? "";
@@ -601,7 +654,7 @@ function AssemblyDetailPage() {
                                   onChange={(event) => {
                                     const next = event.target.value as VoteChoice;
                                     if (!next) return;
-                                    save(
+                                    void save(
                                       withVote(
                                         assembly,
                                         item.id,
@@ -641,7 +694,7 @@ function AssemblyDetailPage() {
                 disabled={closed}
                 placeholder={t("minutes.placeholder")}
                 onChange={(event) =>
-                  save({
+                  void save({
                     ...assembly,
                     minutes: { ...assembly.minutes, text: event.target.value },
                   })

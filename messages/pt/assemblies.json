@@ -87,9 +87,11 @@
     "back": "Todas as assembleias",
     "when": "{date} às {time}",
     "sendSummons": "Enviar convocatória",
+    "sendBlockedNotice": "Agende a reunião com pelo menos {days} dias a partir de hoje antes de enviar.",
     "openSession": "Abrir sessão",
     "openSecondCall": "Abrir em segunda convocatória",
     "close": "Encerrar e lavrar deliberações",
+    "closeBlockedQuorum": "É preciso quórum para encerrar e lavrar deliberações.",
     "closedHint": "Esta assembleia está encerrada. As deliberações estão bloqueadas.",
     "draftHint": "Feche a ordem de trabalhos e envie a convocatória com pelo menos {days} dias de antecedência.",
     "summonedHint": "Os condóminos já foram convocados. No dia da reunião, abra a sessão para passar lista e votar.",
@@ -101,6 +103,8 @@
     "method": "Canal",
     "body": "Texto da convocatória",
     "bodyHint": "A ordem de trabalhos tem de constar da convocatória. A cláusula de segunda convocatória é incluída por omissão.",
+    "willMeet": "Antecedência a partir de hoje: {days} dias (mínimo {min}).",
+    "willShort": "Apenas {days} dias a partir de hoje — abaixo do mínimo legal de {min} dias.",
     "legalOk": "Prazo legal cumprido ({days} dias antes da reunião).",
     "legalShort": "Apenas {days} dias de antecedência. O mínimo legal é {min} dias (art. 1432.º CC)."
   },
@@ -128,6 +132,7 @@
     "share": "Permilagem",
     "status": "Presença",
     "proxy": "Representado por",
+    "proxyRequired": "Indique quem representa este condómino — caso contrário não conta para quórum nem votos.",
     "none": "Não há condóminos com voto nas frações deste edifício."
   },
   "voting": {
@@ -158,9 +163,12 @@
     "requestFailed": "Não foi possível guardar. Tente de novo.",
     "badRequest": "Verifique os campos obrigatórios.",
     "assemblyClosed": "Esta assembleia já está encerrada.",
-    "agendaRequired": "Adicione pelo menos um ponto à ordem de trabalhos antes de enviar a convocatória.",
+    "assemblyLocked": "Este passo está bloqueado no estado actual.",
+    "agendaRequired": "Adicione pelo menos um ponto com título antes de enviar a convocatória.",
     "summonsRequired": "Envie a convocatória antes de abrir a sessão.",
+    "noticeTooShort": "A lei exige convocatória escrita com pelo menos 10 dias de antecedência.",
     "notInSession": "Abra a sessão antes de encerrar.",
+    "quorumRequired": "É preciso quórum para os votos contarem e para encerrar.",
     "minutesRequired": "A acta não pode ficar vazia.",
     "notFound": "Assembleia não encontrada."
   }

@@ -20,8 +20,8 @@ type ActionResult = { ok: true } | { ok: false; code: string };
 interface AssembliesContextValue {
   isReady: boolean;
   assemblies: Assembly[];
-  upsertAssembly: (assembly: Assembly) => void;
-  removeAssembly: (id: string) => void;
+  upsertAssembly: (assembly: Assembly) => Promise<ActionResult>;
+  removeAssembly: (id: string) => Promise<ActionResult>;
   createAssembly: (input: CreateAssemblyInput) => Promise<ActionResult>;
   sendSummons: (input: SendSummonsInput) => Promise<ActionResult>;
   openSession: (id: string, call?: 1 | 2) => Promise<ActionResult>;
@@ -113,19 +113,16 @@ export function AssembliesProvider({ children }: { children: ReactNode }) {
     () => ({
       isReady,
       assemblies: state.assemblies,
-      upsertAssembly: (assembly) => {
-        void patch({ action: "upsert", assembly });
-      },
-      removeAssembly: (id) => {
-        void patch({ action: "remove", id });
-      },
+      upsertAssembly: (assembly) =>
+        runAction({ action: "upsert", assembly }),
+      removeAssembly: (id) => runAction({ action: "remove", id }),
       createAssembly: (input) => runAction({ action: "create", ...input }),
       sendSummons: (input) => runAction({ action: "sendSummons", ...input }),
       openSession: (id, call) => runAction({ action: "openSession", id, call }),
       closeSession: (id) => runAction({ action: "close", id }),
       refresh,
     }),
-    [isReady, state.assemblies, patch, runAction, refresh],
+    [isReady, state.assemblies, runAction, refresh],
   );
 
   return (

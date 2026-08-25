@@ -10,9 +10,13 @@ import {
 import {
   buildResolutions,
   buildSummons,
+  canRecordVotes,
   defaultSummonsContent,
-  mergeAttendance,
-  seedAttendance,
+  normalizeAttendanceRows,
+  noticeMeetsLegalMinimum,
+  noticeSatisfied,
+  quorumMet,
+  sanitizeVotes,
   votingRoll,
 } from "@/lib/assemblies/rules";
 import {
@@ -79,17 +83,86 @@ function requireAssembly(state: AssembliesState, id: string): Assembly {
   return assembly;
 }
 
-function unitsFor(email: string): Unit[] {
-  return getPortfolio(email).units ?? [];
+function condoContext(email: string, condominiumId: string) {
+  const portfolio = getPortfolio(email);
+  return {
+    units: portfolio.units ?? [],
+    totalCapital: portfolio.condominiums.find((condo) => condo.id === condominiumId)
+      ?.totalPermillage,
+  };
 }
 
-export function putAssembly(email: string, assembly: Assembly): AssembliesState {
-  if (!assembly.id || !assembly.condominiumId) throw new Error("badRequest");
-  return mutate(email, (current) => upsertAssembly(current, assembly));
+/**
+ * Status-locked upsert:
+ * - draft: schedule + agenda only
+ * - in_session: attendance / votes / minutes (votes need quorum)
+ * - summoned / closed: rejected
+ */
+export function putAssembly(email: string, incoming: Assembly): AssembliesState {
+  if (!incoming.id || !incoming.condominiumId) throw new Error("badRequest");
+  return mutate(email, (current) => {
+    const existing = requireAssembly(current, incoming.id);
+    if (existing.condominiumId !== incoming.condominiumId) {
+      throw new Error("badRequest");
+    }
+    if (existing.status === "closed") throw new Error("assemblyClosed");
+    if (existing.status === "summoned") throw new Error("assemblyLocked");
+
+    if (existing.status === "draft") {
+      return upsertAssembly(current, {
+        ...existing,
+        type: incoming.type === "extraordinary" ? "extraordinary" : "ordinary",
+        title: incoming.title?.trim() || existing.title,
+        scheduledDate:
+          incoming.scheduledDate?.slice(0, 10) || existing.scheduledDate,
+        scheduledTime: incoming.scheduledTime || existing.scheduledTime,
+        location:
+          typeof incoming.location === "string"
+            ? incoming.location
+            : existing.location,
+        agenda: Array.isArray(incoming.agenda) ? incoming.agenda : existing.agenda,
+      });
+    }
+
+    const { units, totalCapital } = condoContext(email, existing.condominiumId);
+    const roll = votingRoll(units, existing.condominiumId);
+    const attendance = Array.isArray(incoming.attendance)
+      ? normalizeAttendanceRows(incoming.attendance, roll)
+      : existing.attendance;
+    const withAttendance = { ...existing, attendance };
+
+    const votes =
+      Array.isArray(incoming.votes) &&
+      canRecordVotes(withAttendance, roll, totalCapital)
+        ? sanitizeVotes(incoming.votes, withAttendance)
+        : existing.votes;
+
+    const minutes = incoming.minutes
+      ? {
+          text: String(incoming.minutes.text ?? ""),
+          file:
+            incoming.minutes.file === undefined
+              ? existing.minutes.file
+              : incoming.minutes.file,
+          recordedAt: existing.minutes.recordedAt,
+        }
+      : existing.minutes;
+
+    return upsertAssembly(current, {
+      ...existing,
+      attendance,
+      votes,
+      minutes,
+    });
+  });
 }
 
 export function deleteAssembly(email: string, id: string): AssembliesState {
-  return mutate(email, (current) => removeAssembly(current, id));
+  return mutate(email, (current) => {
+    const assembly = requireAssembly(current, id);
+    if (assembly.status !== "draft") throw new Error("assemblyLocked");
+    return removeAssembly(current, id);
+  });
 }
 
 export function createAssembly(
@@ -119,8 +192,18 @@ export function sendAssemblySummons(
 ): AssembliesState {
   return mutate(email, (current) => {
     const assembly = requireAssembly(current, input.id);
-    if (assembly.status === "closed") throw new Error("assemblyClosed");
-    if (assembly.agenda.length === 0) throw new Error("agendaRequired");
+    if (assembly.status !== "draft") {
+      throw new Error(
+        assembly.status === "closed" ? "assemblyClosed" : "assemblyLocked",
+      );
+    }
+    if (
+      assembly.agenda.length === 0 ||
+      assembly.agenda.some((item) => !item.title.trim())
+    ) {
+      throw new Error("agendaRequired");
+    }
+
     const summons = buildSummons({
       method: input.method === "mail" ? "mail" : "email",
       title: input.title || assembly.title,
@@ -128,10 +211,14 @@ export function sendAssemblySummons(
       sentDate: input.sentDate,
       proof: input.proof,
     });
+    if (!noticeMeetsLegalMinimum(assembly.scheduledDate, summons.sentDate)) {
+      throw new Error("noticeTooShort");
+    }
+
     return upsertAssembly(current, {
       ...assembly,
       summons,
-      status: assembly.status === "draft" ? "summoned" : assembly.status,
+      status: "summoned",
     });
   });
 }
@@ -145,16 +232,18 @@ export function openAssemblySession(
     const assembly = requireAssembly(current, id);
     if (assembly.status === "closed") throw new Error("assemblyClosed");
     if (assembly.status === "draft") throw new Error("summonsRequired");
-    const roll = votingRoll(unitsFor(email), assembly.condominiumId);
-    const attendance =
-      assembly.attendance.length > 0
-        ? mergeAttendance(assembly.attendance, roll)
-        : seedAttendance(roll);
+    if (!noticeSatisfied(assembly)) throw new Error("noticeTooShort");
+    if (call === 1 && assembly.call === 2) throw new Error("badRequest");
+
+    const nextCall: 1 | 2 = call === 2 || assembly.call === 2 ? 2 : 1;
+    const { units } = condoContext(email, assembly.condominiumId);
+    const roll = votingRoll(units, assembly.condominiumId);
+
     return upsertAssembly(current, {
       ...assembly,
       status: "in_session",
-      call: call === 2 ? 2 : assembly.call,
-      attendance,
+      call: nextCall,
+      attendance: normalizeAttendanceRows(assembly.attendance, roll),
     });
   });
 }
@@ -164,7 +253,11 @@ export function closeAssembly(email: string, id: string): AssembliesState {
     const assembly = requireAssembly(current, id);
     if (assembly.status !== "in_session") throw new Error("notInSession");
     if (!assembly.minutes.text.trim()) throw new Error("minutesRequired");
-    const roll = votingRoll(unitsFor(email), assembly.condominiumId);
+    const { units, totalCapital } = condoContext(email, assembly.condominiumId);
+    const roll = votingRoll(units, assembly.condominiumId);
+    if (!quorumMet(assembly, roll, totalCapital)) {
+      throw new Error("quorumRequired");
+    }
     return upsertAssembly(current, {
       ...assembly,
       status: "closed",
@@ -173,7 +266,7 @@ export function closeAssembly(email: string, id: string): AssembliesState {
         recordedAt:
           assembly.minutes.recordedAt ?? new Date().toISOString().slice(0, 10),
       },
-      resolutions: buildResolutions(assembly, roll),
+      resolutions: buildResolutions(assembly, roll, totalCapital),
     });
   });
 }

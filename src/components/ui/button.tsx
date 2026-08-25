@@ -26,6 +26,7 @@ interface ButtonProps {
   iconSize?: number | null;
   iconColor?: string | null;
   className?: string;
+  title?: string;
   onClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 

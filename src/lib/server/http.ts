@@ -25,9 +25,12 @@ const ERROR_STATUS: Record<string, number> = {
   invalidAmount: 400,
   noBilledOwners: 400,
   assemblyClosed: 409,
+  assemblyLocked: 409,
   agendaRequired: 400,
   summonsRequired: 400,
+  noticeTooShort: 400,
   notInSession: 409,
+  quorumRequired: 409,
   minutesRequired: 400,
 };
 
