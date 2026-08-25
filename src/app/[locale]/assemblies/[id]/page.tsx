@@ -12,12 +12,16 @@ import { Link } from "@/i18n/navigation";
 import { useUser } from "@/lib/auth";
 import { formatPermillage, usePortfolio } from "@/lib/portfolio";
 import DocumentUpload from "@/app/[locale]/compliance/components/document-upload";
+import MinutesPackageModal from "@/app/[locale]/assemblies/components/minutes-package-modal";
+import { openComplianceDocument } from "@/lib/compliance/files";
 import {
   LEGAL_NOTICE_DAYS,
   MAJORITY_RULES,
   VOTE_CHOICES,
   attendingPermillage,
+  buildMinutesPackage,
   canVote,
+  defaultMinutesNotes,
   defaultSummonsContent,
   deliverAssemblySummonsEmails,
   firstCallQuorum,
@@ -32,6 +36,7 @@ import {
   withVote,
   assemblyErrorKey,
   type AgendaItem,
+  type Assembly,
   type AttendanceStatus,
   type MajorityRule,
   type VoteChoice,
@@ -83,6 +88,7 @@ function AssemblyDetailPage() {
   const [summonsContent, setSummonsContent] = useState<string | null>(null);
   const [summonsMethod, setSummonsMethod] = useState<"email" | "mail">("email");
   const [proofDraft, setProofDraft] = useState<string | null>(null);
+  const [packageOpen, setPackageOpen] = useState(false);
 
   const assembly = assemblies.find((row) => row.id === id);
   const condo = portfolio.condominiums.find(
@@ -217,6 +223,25 @@ function AssemblyDetailPage() {
     }
     if (method === "email") await fanOutEmails(draftTitle, draftContent);
     else setFlash(t("summons.resent"));
+  };
+
+  const minutesContext = () => ({
+    assembly,
+    roll,
+    condominiumName: condo?.name ?? assembly.condominiumId,
+    ownerName: (ownerId: string) =>
+      ownerById.get(ownerId)?.fullName ?? ownerId,
+    totalCapital: condo?.totalPermillage,
+  });
+
+  const handleGenerateMinutes = () => {
+    void save({
+      ...assembly,
+      minutes: {
+        ...assembly.minutes,
+        text: defaultMinutesNotes(minutesContext()),
+      },
+    });
   };
 
   const addAgendaItem = () => {
@@ -849,9 +874,31 @@ function AssemblyDetailPage() {
 
           {(inSession || closed) && (
             <section className="rounded-xl border border-border-light bg-surface p-5">
-              <h2 className="mb-3 text-lg font-semibold text-text-primary">
-                {t("minutes.title")}
-              </h2>
+              <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                <h2 className="text-lg font-semibold text-text-primary">
+                  {t("minutes.title")}
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {inSession && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={handleGenerateMinutes}
+                      title={t("minutes.generateHint")}
+                    >
+                      {t("minutes.generate")}
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setPackageOpen(true)}
+                    title={t("minutes.packageHint")}
+                  >
+                    {t("minutes.viewPackage")}
+                  </Button>
+                </div>
+              </div>
               <textarea
                 className={`${fieldClass} min-h-40`}
                 value={assembly.minutes.text}
@@ -865,8 +912,42 @@ function AssemblyDetailPage() {
                 }
               />
               {inSession && !assembly.minutes.text.trim() && (
-                <p className="mt-2 text-xs text-warning">{t("minutes.required")}</p>
+                <p className="mt-2 text-xs text-text-secondary">
+                  {t("minutes.required")}
+                </p>
               )}
+              <div className="mt-4">
+                {inSession ? (
+                  <>
+                    <DocumentUpload
+                      label={t("minutes.file")}
+                      value={assembly.minutes.file}
+                      onChange={(next) => {
+                        void save({
+                          ...assembly,
+                          minutes: { ...assembly.minutes, file: next },
+                        });
+                      }}
+                    />
+                    <p className="mt-1 text-xs text-text-secondary">
+                      {t("minutes.fileHint")}
+                    </p>
+                  </>
+                ) : (
+                  assembly.minutes.file && (
+                    <button
+                      type="button"
+                      className="text-sm text-primary hover:underline"
+                      onClick={() => {
+                        const file = assembly.minutes.file;
+                        if (file) openComplianceDocument(file);
+                      }}
+                    >
+                      {t("package.openFile")}
+                    </button>
+                  )
+                )}
+              </div>
             </section>
           )}
 
@@ -922,6 +1003,13 @@ function AssemblyDetailPage() {
           )}
         </div>
       </div>
+
+      {packageOpen && (
+        <MinutesPackageModal
+          pack={buildMinutesPackage(minutesContext())}
+          onClose={() => setPackageOpen(false)}
+        />
+      )}
     </div>
   );
 }

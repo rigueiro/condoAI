@@ -161,8 +161,40 @@
   "minutes": {
     "title": "Minutes",
     "body": "Acta",
-    "placeholder": "Record the discussion, votes, and approvals. The acta is the legal memory of the meeting.",
-    "required": "Write the minutes before closing the assembly."
+    "placeholder": "Record discussion notes. Or generate a draft from attendance and votes.",
+    "required": "Closing will fill the acta from the session if this is still empty.",
+    "generate": "Generate from session",
+    "generateHint": "Builds Portuguese draft notes from attendance and current tallies. You can edit afterwards.",
+    "file": "Signed minutes scan",
+    "fileHint": "Optional attachment of the signed acta PDF or scan.",
+    "viewPackage": "View / print package",
+    "packageHint": "Attendance, resolutions, and narrative in one printable acta."
+  },
+  "package": {
+    "title": "Minutes package",
+    "documentTitle": "Minutes of the owners’ meeting",
+    "when": "{date} at {time} · {location}",
+    "call": "{call, select, 1 {First call} 2 {Second call} other {Call {call}}}",
+    "recorded": "Recorded {date}",
+    "attendance": "Attendance",
+    "status": {
+      "present": "Present",
+      "represented": "Represented",
+      "absent": "Absent"
+    },
+    "representedBy": "Represented by {proxy}",
+    "quorumLine": "Attending {attending} of {total} · {quorum}",
+    "quorumOk": "quorum met",
+    "quorumFail": "quorum not met",
+    "resolutions": "Resolutions",
+    "noResolutions": "No agenda items to resolve.",
+    "tally": "{for} for · {against} against · {abstain} abstain",
+    "passed": "Approved",
+    "rejected": "Rejected",
+    "narrative": "Narrative",
+    "openFile": "Open attached scan",
+    "print": "Print",
+    "close": "Close"
   },
   "resolutions": {
     "title": "Resolutions",

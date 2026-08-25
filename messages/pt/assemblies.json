@@ -161,8 +161,40 @@
   "minutes": {
     "title": "Acta",
     "body": "Texto da acta",
-    "placeholder": "Registe a discussão, as votações e as aprovações. A acta é a memória legal da reunião.",
-    "required": "Redija a acta antes de encerrar a assembleia."
+    "placeholder": "Registe notas da discussão. Ou gere um rascunho a partir das presenças e votos.",
+    "required": "Ao encerrar, a acta é preenchida a partir da sessão se ainda estiver vazia.",
+    "generate": "Gerar a partir da sessão",
+    "generateHint": "Cria um rascunho em português com presenças e resultados provisórios. Pode editar depois.",
+    "file": "Acta assinada (digitalização)",
+    "fileHint": "Anexo opcional do PDF ou digitalização da acta assinada.",
+    "viewPackage": "Ver / imprimir pacote",
+    "packageHint": "Presenças, deliberações e narrativa numa acta imprimível."
+  },
+  "package": {
+    "title": "Pacote da acta",
+    "documentTitle": "Acta da assembleia de condóminos",
+    "when": "{date} às {time} · {location}",
+    "call": "{call, select, 1 {Primeira convocatória} 2 {Segunda convocatória} other {Convocatória {call}}}",
+    "recorded": "Registada em {date}",
+    "attendance": "Presenças",
+    "status": {
+      "present": "Presente",
+      "represented": "Representado",
+      "absent": "Ausente"
+    },
+    "representedBy": "Representado por {proxy}",
+    "quorumLine": "Presentes {attending} de {total} · {quorum}",
+    "quorumOk": "quórum cumprido",
+    "quorumFail": "quórum não cumprido",
+    "resolutions": "Deliberações",
+    "noResolutions": "Sem pontos na ordem de trabalhos.",
+    "tally": "{for} a favor · {against} contra · {abstain} abstenção",
+    "passed": "Aprovada",
+    "rejected": "Rejeitada",
+    "narrative": "Narrativa",
+    "openFile": "Abrir digitalização anexa",
+    "print": "Imprimir",
+    "close": "Fechar"
   },
   "resolutions": {
     "title": "Deliberações",

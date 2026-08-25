@@ -1,4 +1,3 @@
-import type { Unit } from "@/types";
 import { isDemoEmail } from "@/lib/auth/constants";
 import {
   EMPTY_ASSEMBLIES,
@@ -10,6 +9,7 @@ import {
   type ResendSummonsInput,
   type SendSummonsInput,
 } from "@/lib/assemblies/types";
+import { defaultMinutesNotes } from "@/lib/assemblies/minutes";
 import {
   buildResolutions,
   buildSummons,
@@ -88,10 +88,14 @@ function requireAssembly(state: AssembliesState, id: string): Assembly {
 
 function condoContext(email: string, condominiumId: string) {
   const portfolio = getPortfolio(email);
+  const condominium = portfolio.condominiums.find(
+    (condo) => condo.id === condominiumId,
+  );
   return {
     units: portfolio.units ?? [],
-    totalCapital: portfolio.condominiums.find((condo) => condo.id === condominiumId)
-      ?.totalPermillage,
+    owners: portfolio.owners ?? [],
+    condominium,
+    totalCapital: condominium?.totalPermillage,
   };
 }
 
@@ -325,17 +329,32 @@ export function closeAssembly(email: string, id: string): AssembliesState {
   return mutate(email, (current) => {
     const assembly = requireAssembly(current, id);
     if (assembly.status !== "in_session") throw new Error("notInSession");
-    if (!assembly.minutes.text.trim()) throw new Error("minutesRequired");
-    const { units, totalCapital } = condoContext(email, assembly.condominiumId);
+    const { units, owners, condominium, totalCapital } = condoContext(
+      email,
+      assembly.condominiumId,
+    );
     const roll = votingRoll(units, assembly.condominiumId);
     if (!quorumMet(assembly, roll, totalCapital)) {
       throw new Error("quorumRequired");
     }
+
+    const ownerById = new Map(owners.map((owner) => [owner.id, owner]));
+    const narrative =
+      assembly.minutes.text.trim() ||
+      defaultMinutesNotes({
+        assembly,
+        roll,
+        condominiumName: condominium?.name ?? assembly.condominiumId,
+        ownerName: (ownerId) => ownerById.get(ownerId)?.fullName ?? ownerId,
+        totalCapital,
+      });
+
     return upsertAssembly(current, {
       ...assembly,
       status: "closed",
       minutes: {
         ...assembly.minutes,
+        text: narrative,
         recordedAt:
           assembly.minutes.recordedAt ?? new Date().toISOString().slice(0, 10),
       },

@@ -26,5 +26,10 @@ export {
   deliverAssemblySummonsEmails,
   summonsRecipients,
 } from "./delivery";
+export {
+  buildMinutesPackage,
+  defaultMinutesNotes,
+} from "./minutes";
+export type { MinutesPackage, MinutesPackageAttendance } from "./minutes";
 export { assemblyErrorKey, isAssemblyErrorCode } from "./errors";
 export { AssembliesProvider, useAssemblies } from "./assemblies-provider";
