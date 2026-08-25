@@ -15,6 +15,7 @@ import type {
 } from "@/types";
 import { calculateMonthlyQuota } from "@/lib/quota";
 import { collectableBudgetTotal } from "@/lib/finance/budget";
+import { DEMO_PDF } from "./demo-files";
 
 export const mockCondominiums: Condominium[] = [
   {
@@ -34,11 +35,11 @@ export const mockCondominiums: Condominium[] = [
     commonAreas: ["elevators", "garden", "parking", "gym", "pool"],
     buildingType: "mid-rise",
     status: "active",
-    constitutiveTitle: null,
+    constitutiveTitle: DEMO_PDF,
     internalRegulations: {
       version: "2.1",
       date: "2024-01-10",
-      file: null,
+      file: DEMO_PDF,
     },
   },
   {
@@ -599,7 +600,7 @@ export const mockCertificates: Certificate[] = [
     condominiumId: "1",
     type: "energy",
     validity: "2026-09-01",
-    file: null,
+    file: DEMO_PDF,
   },
   {
     id: "cert2",
@@ -686,7 +687,7 @@ export const mockExpenses: Expense[] = [
     category: "cleaning",
     supplier: "Limpeza Amoreira Lda.",
     vendorId: "vendor-2",
-    invoice: null,
+    invoice: DEMO_PDF,
   },
   {
     id: "ex2",
@@ -980,7 +981,7 @@ export const mockMaintenanceContracts: MaintenanceContract[] = [
     monthlyValue: 420,
     startDate: "2024-01-01",
     endDate: "2026-12-31",
-    document: null,
+    document: DEMO_PDF,
   },
   {
     id: "contract-2",

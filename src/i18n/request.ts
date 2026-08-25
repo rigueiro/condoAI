@@ -24,6 +24,7 @@ const messageNamespaces = [
   "assemblies",
   "portal",
   "operations",
+  "documents",
 ] as const;
 
 const messageFiles: Record<(typeof messageNamespaces)[number], string> = {
@@ -48,6 +49,7 @@ const messageFiles: Record<(typeof messageNamespaces)[number], string> = {
   assemblies: "assemblies",
   portal: "portal",
   operations: "operations",
+  documents: "documents",
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {

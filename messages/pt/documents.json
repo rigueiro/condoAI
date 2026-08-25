@@ -1,0 +1,57 @@
+{
+  "title": "Arquivo documental",
+  "subtitle": "Uma biblioteca por edifício — título, regulamento, atas, seguros, certificados, faturas e contratos.",
+  "tabs": {
+    "all": "Todos",
+    "constitutive-title": "Título",
+    "internal-regulations": "Regulamento",
+    "assembly-minutes": "Atas",
+    "insurance": "Seguros",
+    "certificate": "Certificados",
+    "invoice": "Faturas",
+    "maintenance-contract": "Contratos"
+  },
+  "stats": {
+    "total": "Documentos listados",
+    "withFile": "Com ficheiro",
+    "missing": "Sem ficheiro"
+  },
+  "filters": {
+    "allProperties": "Todos os condomínios",
+    "search": "Pesquisar por título, fornecedor ou edifício…"
+  },
+  "kinds": {
+    "constitutive-title": "Título constitutivo",
+    "internal-regulations": "Regulamento interno",
+    "assembly-minutes": "Ata de assembleia",
+    "insurance": "Apólice de seguro",
+    "certificate": "Certificado",
+    "invoice": "Fatura de fornecedor",
+    "maintenance-contract": "Contrato de manutenção"
+  },
+  "table": {
+    "condominium": "Condomínio",
+    "kind": "Tipo",
+    "title": "Título",
+    "date": "Data",
+    "file": "Ficheiro",
+    "actions": "Ações",
+    "empty": "Nenhum documento corresponde aos filtros.",
+    "noFile": "—",
+    "textOnly": "Só texto",
+    "viewFile": "Ver {type}",
+    "upload": "Carregar ficheiro",
+    "manage": "Abrir registo de origem"
+  },
+  "modal": {
+    "editTitle": "Carregar {kind}",
+    "fileLabel": "PDF ou imagem",
+    "regsVersion": "Versão",
+    "regsDate": "Data de vigência",
+    "cancel": "Cancelar",
+    "save": "Guardar"
+  },
+  "flash": {
+    "saved": "Documento guardado."
+  }
+}

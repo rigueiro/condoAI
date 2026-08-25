@@ -1,0 +1,57 @@
+{
+  "title": "Document archive",
+  "subtitle": "One library per building — title deed, regulations, minutes, insurance, certificates, invoices, and contracts.",
+  "tabs": {
+    "all": "All",
+    "constitutive-title": "Title deed",
+    "internal-regulations": "Regulations",
+    "assembly-minutes": "Minutes",
+    "insurance": "Insurance",
+    "certificate": "Certificates",
+    "invoice": "Invoices",
+    "maintenance-contract": "Contracts"
+  },
+  "stats": {
+    "total": "Listed documents",
+    "withFile": "With file attached",
+    "missing": "Missing file"
+  },
+  "filters": {
+    "allProperties": "All condominiums",
+    "search": "Search by title, supplier, or building…"
+  },
+  "kinds": {
+    "constitutive-title": "Constitutive title",
+    "internal-regulations": "Internal regulations",
+    "assembly-minutes": "Assembly minutes",
+    "insurance": "Insurance policy",
+    "certificate": "Certificate",
+    "invoice": "Supplier invoice",
+    "maintenance-contract": "Maintenance contract"
+  },
+  "table": {
+    "condominium": "Condominium",
+    "kind": "Type",
+    "title": "Title",
+    "date": "Date",
+    "file": "File",
+    "actions": "Actions",
+    "empty": "No documents match your filters.",
+    "noFile": "—",
+    "textOnly": "Text only",
+    "viewFile": "View {type}",
+    "upload": "Upload file",
+    "manage": "Open source record"
+  },
+  "modal": {
+    "editTitle": "Upload {kind}",
+    "fileLabel": "PDF or image",
+    "regsVersion": "Version",
+    "regsDate": "Effective date",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "flash": {
+    "saved": "Document saved."
+  }
+}

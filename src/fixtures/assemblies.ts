@@ -1,4 +1,5 @@
 import type { Assembly } from "@/lib/assemblies/types";
+import { DEMO_PDF } from "./demo-files";
 
 export const mockAssemblies: Assembly[] = [
   {
@@ -147,8 +148,8 @@ export const mockAssemblies: Assembly[] = [
       },
     ],
     minutes: {
-      text: "A assembleia deliberou lançar o procedimento para as obras de conservação da fachada. A acta foi lida e aprovada em minuta.",
-      file: null,
+      text: "Acta da assembleia ordinária de 2025 — prestação de contas aprovada por unanimidade.",
+      file: DEMO_PDF,
       recordedAt: "2025-11-08",
     },
     resolutions: [
