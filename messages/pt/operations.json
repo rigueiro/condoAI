@@ -1,0 +1,119 @@
+{
+  "title": "Operações",
+  "subtitle": "Fornecedores, contratos de manutenção e equipamentos do edifício.",
+  "add": "Adicionar registo",
+  "tabs": {
+    "vendor": "Fornecedores",
+    "contract": "Contratos",
+    "equipment": "Equipamentos"
+  },
+  "stats": {
+    "vendors": "Fornecedores",
+    "contracts": "Contratos",
+    "equipment": "Equipamentos",
+    "attention": "Contratos a terminar"
+  },
+  "attention": {
+    "title": "Contratos a terminar",
+    "empty": "Nenhum contrato a terminar nos próximos 60 dias.",
+    "overdue": "Terminado",
+    "dueSoon": "A terminar",
+    "daysOverdue": "{count, plural, one {# dia após o fim} other {# dias após o fim}}",
+    "daysLeft": "{count, plural, one {# dia restante} other {# dias restantes}}",
+    "dueToday": "Termina hoje"
+  },
+  "filters": {
+    "search": "Pesquisar…"
+  },
+  "table": {
+    "condominium": "Condomínio",
+    "name": "Nome",
+    "nif": "NIF",
+    "contact": "Contacto",
+    "services": "Serviços",
+    "vendor": "Fornecedor",
+    "service": "Serviço",
+    "monthlyValue": "Mensal",
+    "startDate": "Início",
+    "endDate": "Fim",
+    "openEnded": "Sem termo",
+    "document": "Documento",
+    "noFile": "—",
+    "viewFile": "Ver {type}",
+    "type": "Tipo",
+    "brand": "Marca",
+    "location": "Localização",
+    "installed": "Instalado",
+    "status": "Estado",
+    "actions": "Ações",
+    "empty": "Ainda sem registos.",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteBlocked": "Remova primeiro os contratos associados"
+  },
+  "status": {
+    "operational": "Operacional",
+    "maintenance": "Manutenção",
+    "broken": "Avariado"
+  },
+  "kinds": {
+    "vendor": "Fornecedor",
+    "contract": "Contrato",
+    "equipment": "Equipamento"
+  },
+  "modal": {
+    "addTitle": "Adicionar {kind}",
+    "editTitle": "Editar {kind}",
+    "kind": "Tipo de registo",
+    "condominium": "Condomínio",
+    "name": "Nome da empresa",
+    "nif": "NIF",
+    "email": "Email",
+    "phone": "Telefone",
+    "services": "Serviços",
+    "notes": "Notas",
+    "vendor": "Fornecedor",
+    "noVendors": "Sem fornecedores neste condomínio — adicione um fornecedor primeiro.",
+    "service": "Serviço",
+    "monthlyValue": "Valor mensal",
+    "startDate": "Data de início",
+    "endDate": "Data de fim",
+    "endDateHint": "Deixe vazio para contratos sem termo.",
+    "type": "Tipo de equipamento",
+    "brand": "Marca",
+    "installationDate": "Data de instalação",
+    "location": "Localização",
+    "status": "Estado",
+    "file": {
+      "document": "Documento do contrato",
+      "hint": "PDF ou imagem, máx. 2 MB. Guardado localmente até haver API de uploads.",
+      "upload": "Carregar",
+      "replace": "Substituir",
+      "view": "Ver",
+      "remove": "Remover",
+      "attached": "{type} anexado",
+      "invalidType": "Use um ficheiro PDF, PNG ou JPEG.",
+      "tooLarge": "Ficheiro demasiado grande (máx. 2 MB).",
+      "readFailed": "Não foi possível ler o ficheiro."
+    },
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "validation": {
+      "condominiumRequired": "Selecione um condomínio",
+      "nameRequired": "O nome da empresa é obrigatório",
+      "vendorRequired": "Selecione um fornecedor",
+      "serviceRequired": "O serviço é obrigatório",
+      "startRequired": "A data de início é obrigatória",
+      "typeRequired": "O tipo de equipamento é obrigatório",
+      "brandRequired": "A marca é obrigatória",
+      "installedRequired": "A data de instalação é obrigatória",
+      "locationRequired": "A localização é obrigatória"
+    }
+  },
+  "confirmDelete": "Eliminar este registo?",
+  "flash": {
+    "saved": "Registo guardado",
+    "deleted": "Registo eliminado",
+    "vendorBlocked": "Não é possível eliminar um fornecedor com contratos activos"
+  }
+}

@@ -23,6 +23,7 @@ function Breadcrumb() {
     "/assemblies": { labelKey: "assemblies" as const, parent: "/dashboard" },
     "/occurrences": { labelKey: "occurrences" as const, parent: "/dashboard" },
     "/compliance": { labelKey: "compliance" as const, parent: "/dashboard" },
+    "/operations": { labelKey: "operations" as const, parent: "/dashboard" },
     "/reports-analytics": { labelKey: "reports" as const, parent: "/dashboard" },
     "/portal": { labelKey: "portal" as const, parent: null },
     "/portal/extract": { labelKey: "extract" as const, parent: "/portal" },

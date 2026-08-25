@@ -51,6 +51,7 @@ function Header() {
         icon: "ClipboardList",
       },
       { label: t("nav.compliance"), path: "/compliance", icon: "ScrollText" },
+      { label: t("nav.operations"), path: "/operations", icon: "Wrench" },
       { label: t("nav.reports"), path: "/reports-analytics", icon: "BarChart3" },
     ];
   }, [isPortal, t]);

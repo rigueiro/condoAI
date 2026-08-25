@@ -7,6 +7,7 @@ import type { FinanceState } from "@/lib/finance/types";
 import type { ComplianceState } from "@/lib/compliance/types";
 import type { OccurrencesState } from "@/lib/occurrences/types";
 import type { AssembliesState } from "@/lib/assemblies/types";
+import type { OperationsState } from "@/lib/operations/types";
 import type { CondoMembership } from "@/lib/memberships/types";
 import { DEFAULT_PASSWORD } from "@/lib/auth/constants";
 
@@ -43,6 +44,7 @@ export interface StoreDocument {
   compliance: Record<string, ComplianceState>;
   occurrences: Record<string, OccurrencesState>;
   assemblies: Record<string, AssembliesState>;
+  operations: Record<string, OperationsState>;
   /** Per-host invite list: manager email → condo memberships. */
   membershipsByHost: Record<string, CondoMembership[]>;
 }
@@ -58,6 +60,7 @@ const EMPTY_STORE: StoreDocument = {
   compliance: {},
   occurrences: {},
   assemblies: {},
+  operations: {},
   membershipsByHost: {},
 };
 
@@ -94,6 +97,7 @@ function cloneEmpty(): StoreDocument {
     compliance: {},
     occurrences: {},
     assemblies: {},
+    operations: {},
     membershipsByHost: {},
   };
 }
@@ -115,6 +119,7 @@ export function readStore(): StoreDocument {
       compliance: parsed.compliance ?? {},
       occurrences: parsed.occurrences ?? {},
       assemblies: parsed.assemblies ?? {},
+      operations: parsed.operations ?? {},
       membershipsByHost: parsed.membershipsByHost ?? {},
     };
     return cache;

@@ -1,0 +1,119 @@
+{
+  "title": "Operations",
+  "subtitle": "Vendors, maintenance contracts, and building equipment.",
+  "add": "Add record",
+  "tabs": {
+    "vendor": "Vendors",
+    "contract": "Contracts",
+    "equipment": "Equipment"
+  },
+  "stats": {
+    "vendors": "Vendors",
+    "contracts": "Contracts",
+    "equipment": "Equipment",
+    "attention": "Contracts ending soon"
+  },
+  "attention": {
+    "title": "Contracts ending soon",
+    "empty": "No contracts ending in the next 60 days.",
+    "overdue": "Ended",
+    "dueSoon": "Ending soon",
+    "daysOverdue": "{count, plural, one {# day past end} other {# days past end}}",
+    "daysLeft": "{count, plural, one {# day left} other {# days left}}",
+    "dueToday": "Ends today"
+  },
+  "filters": {
+    "search": "Search…"
+  },
+  "table": {
+    "condominium": "Condominium",
+    "name": "Name",
+    "nif": "NIF",
+    "contact": "Contact",
+    "services": "Services",
+    "vendor": "Vendor",
+    "service": "Service",
+    "monthlyValue": "Monthly",
+    "startDate": "Start",
+    "endDate": "End",
+    "openEnded": "Open-ended",
+    "document": "Document",
+    "noFile": "—",
+    "viewFile": "View {type}",
+    "type": "Type",
+    "brand": "Brand",
+    "location": "Location",
+    "installed": "Installed",
+    "status": "Status",
+    "actions": "Actions",
+    "empty": "No records yet.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteBlocked": "Remove linked contracts first"
+  },
+  "status": {
+    "operational": "Operational",
+    "maintenance": "Maintenance",
+    "broken": "Broken"
+  },
+  "kinds": {
+    "vendor": "Vendor",
+    "contract": "Contract",
+    "equipment": "Equipment"
+  },
+  "modal": {
+    "addTitle": "Add {kind}",
+    "editTitle": "Edit {kind}",
+    "kind": "Record type",
+    "condominium": "Condominium",
+    "name": "Company name",
+    "nif": "NIF",
+    "email": "Email",
+    "phone": "Phone",
+    "services": "Services",
+    "notes": "Notes",
+    "vendor": "Vendor",
+    "noVendors": "No vendors for this condominium — add a vendor first.",
+    "service": "Service",
+    "monthlyValue": "Monthly value",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "endDateHint": "Leave empty for open-ended contracts.",
+    "type": "Equipment type",
+    "brand": "Brand",
+    "installationDate": "Installation date",
+    "location": "Location",
+    "status": "Status",
+    "file": {
+      "document": "Contract document",
+      "hint": "PDF or image, max 2 MB. Stored locally until uploads are backed by the API.",
+      "upload": "Upload",
+      "replace": "Replace",
+      "view": "View",
+      "remove": "Remove",
+      "attached": "{type} attached",
+      "invalidType": "Use a PDF, PNG, or JPEG file.",
+      "tooLarge": "File is too large (max 2 MB).",
+      "readFailed": "Could not read that file."
+    },
+    "save": "Save",
+    "cancel": "Cancel",
+    "validation": {
+      "condominiumRequired": "Select a condominium",
+      "nameRequired": "Company name is required",
+      "vendorRequired": "Select a vendor",
+      "serviceRequired": "Service is required",
+      "startRequired": "Start date is required",
+      "typeRequired": "Equipment type is required",
+      "brandRequired": "Brand is required",
+      "installedRequired": "Installation date is required",
+      "locationRequired": "Location is required"
+    }
+  },
+  "confirmDelete": "Delete this record?",
+  "flash": {
+    "saved": "Record saved",
+    "deleted": "Record deleted",
+    "vendorBlocked": "Cannot delete a vendor with active contracts"
+  }
+}

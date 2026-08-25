@@ -107,6 +107,17 @@ export interface Expense {
     invoice: string | null; // URL/path PDF
 }
 
+export interface Vendor {
+    id: string;
+    condominiumId: string;
+    name: string;
+    nif: string;
+    email: string;
+    phone: string;
+    services: string; // free-text categories, e.g. "elevators, cleaning"
+    notes: string;
+}
+
 export interface Equipment {
     id: string;
     condominiumId: string;
@@ -120,7 +131,7 @@ export interface Equipment {
 export interface MaintenanceContract {
     id: string;
     condominiumId: string;
-    company: string;
+    vendorId: string;
     service: string;
     monthlyValue: number;
     startDate: Date | string;

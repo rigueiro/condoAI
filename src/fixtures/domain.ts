@@ -3,12 +3,15 @@ import type {
   BankAccount,
   Certificate,
   Condominium,
+  Equipment,
   Expense,
   InsurancePolicy,
+  MaintenanceContract,
   Occurrence,
   Owner,
   QuotaPayment,
   Unit,
+  Vendor,
 } from "@/types";
 import { calculateMonthlyQuota } from "@/lib/quota";
 import { collectableBudgetTotal } from "@/lib/finance/budget";
@@ -915,5 +918,102 @@ export const mockOccurrences: Occurrence[] = [
     history: [
       { action: "reported", date: "2025-09-22", author: "Carlos Manuel Sousa" },
     ],
+  },
+];
+
+/** Demo operations spine — vendors linked to maintenance contracts and equipment. */
+export const mockVendors: Vendor[] = [
+  {
+    id: "vendor-1",
+    condominiumId: "1",
+    name: "Elevadores Lisboa",
+    nif: "509112233",
+    email: "contratos@elevadoreslisboa.pt",
+    phone: "+351 21 340 1100",
+    services: "elevators",
+    notes: "Monthly inspection + call-out.",
+  },
+  {
+    id: "vendor-2",
+    condominiumId: "1",
+    name: "Limpeza Amoreira Lda.",
+    nif: "508445566",
+    email: "geral@limpezaamoreira.pt",
+    phone: "+351 21 390 2200",
+    services: "cleaning",
+    notes: "Common areas weekdays.",
+  },
+  {
+    id: "vendor-3",
+    condominiumId: "2",
+    name: "CleanPro Belém",
+    nif: "514778899",
+    email: "ops@cleanprobelem.pt",
+    phone: "+351 21 361 3300",
+    services: "cleaning, gardens",
+    notes: "",
+  },
+];
+
+export const mockMaintenanceContracts: MaintenanceContract[] = [
+  {
+    id: "contract-1",
+    condominiumId: "1",
+    vendorId: "vendor-1",
+    service: "Elevator maintenance",
+    monthlyValue: 420,
+    startDate: "2024-01-01",
+    endDate: "2026-12-31",
+    document: null,
+  },
+  {
+    id: "contract-2",
+    condominiumId: "1",
+    vendorId: "vendor-2",
+    service: "Common-area cleaning",
+    monthlyValue: 890,
+    startDate: "2025-03-01",
+    endDate: "2026-02-28",
+    document: null,
+  },
+  {
+    id: "contract-3",
+    condominiumId: "2",
+    vendorId: "vendor-3",
+    service: "Cleaning & gardens",
+    monthlyValue: 1250,
+    startDate: "2025-06-01",
+    endDate: null,
+    document: null,
+  },
+];
+
+export const mockEquipment: Equipment[] = [
+  {
+    id: "equip-1",
+    condominiumId: "1",
+    type: "elevator",
+    brand: "Schindler",
+    installationDate: "2018-05-12",
+    location: "Tower A — main shaft",
+    status: "operational",
+  },
+  {
+    id: "equip-2",
+    condominiumId: "1",
+    type: "water-pump",
+    brand: "Grundfos",
+    installationDate: "2021-09-03",
+    location: "Basement plant room",
+    status: "maintenance",
+  },
+  {
+    id: "equip-3",
+    condominiumId: "2",
+    type: "elevator",
+    brand: "Otis",
+    installationDate: "2020-07-20",
+    location: "Core B",
+    status: "operational",
   },
 ];

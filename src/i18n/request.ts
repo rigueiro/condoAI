@@ -23,6 +23,7 @@ const messageNamespaces = [
   "currentAccount",
   "assemblies",
   "portal",
+  "operations",
 ] as const;
 
 const messageFiles: Record<(typeof messageNamespaces)[number], string> = {
@@ -46,6 +47,7 @@ const messageFiles: Record<(typeof messageNamespaces)[number], string> = {
   currentAccount: "current-account",
   assemblies: "assemblies",
   portal: "portal",
+  operations: "operations",
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {

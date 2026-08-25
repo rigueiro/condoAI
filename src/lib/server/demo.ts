@@ -6,9 +6,12 @@ import {
   mockDomainOwners,
   mockExpenses,
   mockInsurancePolicies,
+  mockMaintenanceContracts,
   mockOccurrences,
   mockQuotaPayments,
   mockUnits,
+  mockVendors,
+  mockEquipment,
 } from "@/fixtures/domain";
 import type { Organization } from "@/app/[locale]/account/types";
 import { UserRole } from "@/app/types";
@@ -19,6 +22,7 @@ import type { FinanceState } from "@/lib/finance/types";
 import type { ComplianceState } from "@/lib/compliance/types";
 import type { OccurrencesState } from "@/lib/occurrences/types";
 import type { AssembliesState } from "@/lib/assemblies/types";
+import type { OperationsState } from "@/lib/operations/types";
 import type { CondoMembership } from "@/lib/memberships/types";
 import { mockAssemblies } from "@/fixtures/assemblies";
 import { DEMO_EMAIL, DEFAULT_PASSWORD } from "@/lib/auth/constants";
@@ -81,6 +85,14 @@ export function buildDemoCompliance(): ComplianceState {
   return {
     policies: mockInsurancePolicies.map((p) => ({ ...p })),
     certificates: mockCertificates.map((c) => ({ ...c })),
+  };
+}
+
+export function buildDemoOperations(): OperationsState {
+  return {
+    vendors: mockVendors.map((v) => ({ ...v })),
+    contracts: mockMaintenanceContracts.map((c) => ({ ...c })),
+    equipment: mockEquipment.map((e) => ({ ...e })),
   };
 }
 
@@ -195,6 +207,7 @@ export function restoreDemoWorkspace(): Portfolio {
     store.compliance[key] = buildDemoCompliance();
     store.occurrences[key] = buildDemoOccurrences();
     store.assemblies[key] = buildDemoAssemblies();
+    store.operations[key] = buildDemoOperations();
 
     const password = store.demoPassword || DEFAULT_PASSWORD;
     for (const account of portalDemoAccounts(password)) {
