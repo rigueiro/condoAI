@@ -8,14 +8,104 @@ export interface PaymentDetails {
   timestamp?: string;
 }
 
+export type ChargeKind = "opening" | "charge" | "credit";
+
+export interface AccountCharge {
+  id: string;
+  ownerId: string;
+  condominiumId: string;
+  date: string;
+  kind: ChargeKind;
+  description: string;
+  amount: number;
+}
+
+export interface AccountReceipt {
+  id: string;
+  ownerId: string;
+  condominiumId: string;
+  date: string;
+  amount: number;
+  paymentMethod: string;
+  notes: string | null;
+  year: number;
+  sequence: number;
+  number: string;
+  quotaId: string | null;
+}
+
+export interface DebtCertificate {
+  id: string;
+  ownerId: string;
+  condominiumId: string;
+  issuedAt: string;
+  asOfDate: string;
+  year: number;
+  sequence: number;
+  number: string;
+  totalDue: number;
+}
+
+export type LedgerSide = "debit" | "credit";
+
+export type LedgerMovement = {
+  id: string;
+  date: string;
+  side: LedgerSide;
+  source: "quota" | "charge" | "receipt";
+  description: string;
+  amount: number;
+  balance: number;
+  receiptNumber?: string;
+  receiptId?: string;
+  quotaId?: string;
+  chargeId?: string;
+  chargeKind?: ChargeKind;
+};
+
 export interface CollectionsState {
   quotas: QuotaPayment[];
   details: Record<string, PaymentDetails>;
+  charges: AccountCharge[];
+  receipts: AccountReceipt[];
+  certificates: DebtCertificate[];
+  receiptSeqByYear: Record<string, number>;
+  certificateSeqByYear: Record<string, number>;
 }
 
 export const EMPTY_COLLECTIONS: CollectionsState = {
   quotas: [],
   details: {},
+  charges: [],
+  receipts: [],
+  certificates: [],
+  receiptSeqByYear: {},
+  certificateSeqByYear: {},
+};
+
+export type RecordPaymentInput = {
+  ownerId: string;
+  amount: number | string;
+  paymentMethod?: string;
+  paymentDate?: string;
+  notes?: string;
+  /** Prefer matching a specific overdue/pending quota when known. */
+  quotaId?: string;
+};
+
+export type AddChargeInput = {
+  ownerId: string;
+  condominiumId?: string;
+  date?: string;
+  kind?: string;
+  description?: string;
+  amount: number | string;
+};
+
+export type IssueCertificateInput = {
+  ownerId: string;
+  condominiumId?: string;
+  asOfDate?: string;
 };
 
 /** Overdue row shown on the manager dashboard daily job. */

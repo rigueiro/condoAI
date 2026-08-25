@@ -6,7 +6,13 @@ import type {
 } from "@/app/[locale]/owners-management/components/types";
 import type { Portfolio } from "@/lib/portfolio/types";
 import { ownerDisplay, portfolioToOwnerRows } from "@/lib/portfolio/mappers";
-import type { OverdueItem, PaymentDetails } from "./types";
+import type {
+  AccountCharge,
+  AccountReceipt,
+  OverdueItem,
+  PaymentDetails,
+} from "./types";
+import { buildExtract, closingBalance, groupByOwnerId, quotaDueDate } from "./ledger";
 
 const QUOTA_TO_PAYMENT_STATUS: Record<
   QuotaPayment["status"],
@@ -20,32 +26,17 @@ const QUOTA_TO_PAYMENT_STATUS: Record<
 /** Payment history row with stable quota id for mutations. */
 export type PaymentRow = PaymentView & { quotaId: string };
 
-function quotasByOwnerId(
+function deriveStatus(
   quotas: QuotaPayment[],
-): Map<string, QuotaPayment[]> {
-  const map = new Map<string, QuotaPayment[]>();
-  for (const q of quotas) {
-    const list = map.get(q.ownerId) ?? [];
-    list.push(q);
-    map.set(q.ownerId, list);
-  }
-  return map;
-}
-
-function deriveBalances(
-  quotas: QuotaPayment[],
-): Pick<OwnerRow, "paymentStatus" | "currentBalance" | "lastPayment"> {
-  let balance = 0;
+): Pick<OwnerRow, "paymentStatus" | "lastPayment"> {
   let hasOverdue = false;
   let hasPending = false;
   let lastPayment = "";
 
   for (const q of quotas) {
-    if (q.status === "overdue" || q.status === "pending") {
-      balance += q.amount;
-      if (q.status === "overdue") hasOverdue = true;
-      else hasPending = true;
-    } else if (q.status === "paid" && q.paymentDate) {
+    if (q.status === "overdue") hasOverdue = true;
+    else if (q.status === "pending") hasPending = true;
+    else if (q.status === "paid" && q.paymentDate) {
       const paid = String(q.paymentDate).slice(0, 10);
       if (!lastPayment || paid > lastPayment) lastPayment = paid;
     }
@@ -59,7 +50,7 @@ function deriveBalances(
         ? "current"
         : "";
 
-  return { paymentStatus, currentBalance: balance, lastPayment };
+  return { paymentStatus, lastPayment };
 }
 
 function portfolioLookup(portfolio: Portfolio) {
@@ -99,9 +90,7 @@ export function quotasToPaymentRows(
       amount: quota.amount,
       paymentMethod: meta?.paymentMethod ?? "Bank Transfer",
       status: QUOTA_TO_PAYMENT_STATUS[quota.status],
-      receiptNumber:
-        meta?.receiptNumber ??
-        `RCP-${quota.monthYear.replace("-", "")}-${quota.id.toUpperCase()}`,
+      receiptNumber: meta?.receiptNumber ?? "",
       timestamp: meta?.timestamp ?? `${date}T10:30:00Z`,
       monthYear: quota.monthYear,
       quotaStatus: quota.status,
@@ -131,7 +120,7 @@ export function quotasToOverdueItems(
         unit: display?.unitLabel ?? "",
         property: display?.condominiumName ?? "",
         amount: q.amount,
-        dueDate: `${q.monthYear}-08`,
+        dueDate: quotaDueDate(q.monthYear),
         monthYear: q.monthYear,
       };
     });
@@ -142,10 +131,39 @@ export function applyOwnerBalances(
   portfolio: Portfolio,
   quotas: QuotaPayment[],
   avatars: Record<string, string> = {},
+  charges: AccountCharge[] = [],
+  receipts: AccountReceipt[] = [],
 ): OwnerRow[] {
-  const byOwner = quotasByOwnerId(quotas);
-  return portfolioToOwnerRows(portfolio, avatars).map((row) => ({
-    ...row,
-    ...deriveBalances(byOwner.get(row.owner.id) ?? []),
-  }));
+  const quotasByOwner = groupByOwnerId(quotas);
+  const chargesByOwner = groupByOwnerId(charges);
+  const receiptsByOwner = groupByOwnerId(receipts);
+  return portfolioToOwnerRows(portfolio, avatars).map((row) => {
+    const ownerQuotas = quotasByOwner.get(row.owner.id) ?? [];
+    const ownerCharges = chargesByOwner.get(row.owner.id) ?? [];
+    const ownerReceipts = receiptsByOwner.get(row.owner.id) ?? [];
+    const derived = deriveStatus(ownerQuotas);
+    const movements = buildExtract(
+      row.owner.id,
+      ownerQuotas,
+      ownerCharges,
+      ownerReceipts,
+    );
+    const balance = closingBalance(movements);
+    let lastPayment = derived.lastPayment;
+    for (const receipt of ownerReceipts) {
+      if (!lastPayment || receipt.date > lastPayment) lastPayment = receipt.date;
+    }
+    const paymentStatus =
+      derived.paymentStatus === "overdue"
+        ? "overdue"
+        : balance > 0
+          ? "pending"
+          : derived.paymentStatus || (movements.length > 0 ? "current" : "");
+    return {
+      ...row,
+      paymentStatus,
+      currentBalance: balance,
+      lastPayment,
+    };
+  });
 }

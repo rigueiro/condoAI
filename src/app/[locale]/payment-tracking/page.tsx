@@ -15,6 +15,7 @@ import Toast, { type ToastTone } from "@/components/ui/toast";
 import {
   useCollections,
   useReminderCopy,
+  type AccountReceipt,
   type PaymentRow,
   type RecordPaymentInput,
 } from "@/lib/collections";
@@ -23,6 +24,7 @@ import {
   usePortfolio,
 } from "@/lib/portfolio";
 import { buildMockCollectionSummary } from "@/fixtures/views";
+import ReceiptModal from "@/app/[locale]/owners-management/components/receipt-modal";
 
 interface Filters {
   dateRange: { start: string; end: string };
@@ -35,6 +37,7 @@ interface Filters {
 function PaymentTracking() {
   const t = useTranslations("paymentTracking");
   const tDash = useTranslations("dashboard.upcomingPayments");
+  const tReceipt = useTranslations("currentAccount.receipt");
   const { portfolio, isDemo } = usePortfolio();
   const reminderCopy = useReminderCopy();
   const {
@@ -42,12 +45,16 @@ function PaymentTracking() {
     quotas,
     recordPayment,
     sendReminders,
+    receiptForQuota,
   } = useCollections();
 
   const [isRecordPaymentModalOpen, setIsRecordPaymentModalOpen] =
     useState(false);
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
   const [selectedPayments, setSelectedPayments] = useState<number[]>([]);
+  const [viewingReceipt, setViewingReceipt] = useState<AccountReceipt | null>(
+    null,
+  );
   const [flash, setFlash] = useState<{
     message: string;
     tone: ToastTone;
@@ -60,6 +67,19 @@ function PaymentTracking() {
     amountRange: { min: "", max: "" },
     searchTerm: "",
   });
+
+  const receiptParty = useMemo(() => {
+    if (!viewingReceipt) return { ownerName: "", property: undefined, unit: undefined };
+    const row = paymentHistory.find((p) => p.quotaId === viewingReceipt.quotaId);
+    return {
+      ownerName:
+        row?.ownerName ??
+        portfolio.owners.find((o) => o.id === viewingReceipt.ownerId)?.fullName ??
+        "",
+      property: row?.property,
+      unit: row?.unit,
+    };
+  }, [viewingReceipt, paymentHistory, portfolio.owners]);
 
   const collectionData = useMemo(
     () =>
@@ -83,6 +103,7 @@ function PaymentTracking() {
       tone: "success",
     });
     setIsRecordPaymentModalOpen(false);
+    if (result?.receipt) setViewingReceipt(result.receipt);
   };
 
   const handleBulkImport = (importData: unknown) => {
@@ -212,9 +233,17 @@ function PaymentTracking() {
                 selectedPayments={selectedPayments}
                 onPaymentSelect={handlePaymentSelect}
                 onSelectAll={handleSelectAll}
-                onViewReceipt={(payment) =>
-                  console.log("Viewing receipt for payment:", payment.receiptNumber)
-                }
+                onViewReceipt={(payment) => {
+                  const receipt = receiptForQuota(payment.quotaId);
+                  if (!receipt) {
+                    setFlash({
+                      message: tReceipt("notIssued"),
+                      tone: "warning",
+                    });
+                    return;
+                  }
+                  setViewingReceipt(receipt);
+                }}
                 onSendReminder={handleSendReminder}
                 onMarkDisputed={(payment) =>
                   console.log("Mark disputed:", payment.quotaId)
@@ -241,6 +270,14 @@ function PaymentTracking() {
           isOpen={isBulkImportModalOpen}
           onClose={() => setIsBulkImportModalOpen(false)}
           onSubmit={handleBulkImport}
+        />
+
+        <ReceiptModal
+          receipt={viewingReceipt}
+          ownerName={receiptParty.ownerName}
+          property={receiptParty.property}
+          unit={receiptParty.unit}
+          onClose={() => setViewingReceipt(null)}
         />
 
         {flash && (

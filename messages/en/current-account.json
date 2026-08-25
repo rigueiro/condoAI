@@ -1,0 +1,89 @@
+{
+  "title": "Current account",
+  "subtitle": "Charges, receipts, and running balance",
+  "printExtract": "Print extract",
+  "addCharge": "Add charge",
+  "issueCertificate": "Issue debt certificate",
+  "empty": "No movements on this current account yet.",
+  "printHeading": "Current-account extract",
+  "asOf": "As of {date}",
+  "columns": {
+    "date": "Date",
+    "description": "Description",
+    "debit": "Debit",
+    "credit": "Credit",
+    "balance": "Balance"
+  },
+  "side": {
+    "debit": "Debit",
+    "credit": "Credit"
+  },
+  "source": {
+    "quota": "Monthly quota — {period}",
+    "charge": "Charge",
+    "receipt": "Receipt {number}"
+  },
+  "kinds": {
+    "opening": "Opening balance",
+    "charge": "Charge",
+    "credit": "Credit note"
+  },
+  "chargeModal": {
+    "title": "Add charge",
+    "subtitle": "Post a debit, credit note, or opening balance to this current account",
+    "kind": "Type",
+    "date": "Date",
+    "description": "Description",
+    "descriptionPlaceholder": "e.g. Opening balance, extraordinary work",
+    "amount": "Amount",
+    "cancel": "Cancel",
+    "save": "Post charge",
+    "saving": "Posting...",
+    "validation": {
+      "amountRequired": "Enter a valid amount",
+      "descriptionRequired": "Description is required",
+      "dateRequired": "Date is required"
+    }
+  },
+  "receipt": {
+    "title": "Receipt",
+    "subtitle": "Official payment receipt",
+    "number": "Receipt no.",
+    "date": "Date",
+    "owner": "Owner",
+    "property": "Condominium",
+    "unit": "Fraction",
+    "amount": "Amount",
+    "method": "Payment method",
+    "notes": "Notes",
+    "print": "Print receipt",
+    "close": "Close",
+    "notIssued": "No receipt has been issued for this payment yet."
+  },
+  "certificate": {
+    "title": "Debt certificate",
+    "subtitle": "Issue a numbered certidão de dívida as of a given date",
+    "asOfDate": "As of date",
+    "previewTitle": "Open items",
+    "previewEmpty": "No open items on this date.",
+    "previewTotal": "Current-account balance",
+    "issue": "Issue certificate",
+    "issuing": "Issuing...",
+    "print": "Print certificate",
+    "close": "Close",
+    "back": "Back",
+    "documentTitle": "Debt certificate",
+    "number": "Certificate no. {number}",
+    "intro": "The administration of {condominium}, managed by {administrator}{adminTax}, with registered office at {adminAddress}, hereby certifies that, as of {asOfDate}:",
+    "ownerLine": "{name}, tax ID {taxId}, holder of fraction(s) {fractions}, has the following outstanding condominium amounts:",
+    "noDebt": "There are no outstanding amounts on this date.",
+    "itemQuota": "Monthly quota — {period}",
+    "total": "Total due",
+    "legal": "This certificate is issued as evidence of the owner’s debt for the applicable legal purposes under Portuguese horizontal-property law.",
+    "issued": "Issued on {issuedAt}.",
+    "signature": "The administration",
+    "unknownTaxId": "not on file",
+    "unknownAddress": "address not on file",
+    "noFractions": "no fractions linked"
+  }
+}

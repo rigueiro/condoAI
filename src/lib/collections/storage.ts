@@ -6,6 +6,7 @@ import {
   type CollectionsState,
   type PaymentDetails,
 } from "./types";
+import { emptyLedgerFields } from "./ledger";
 
 const STORAGE_PREFIX = "condoai.collections.";
 
@@ -42,7 +43,7 @@ export function seedQuotasForOwners(
       paymentDate: null,
     },
   ]);
-  return { quotas, details: {} };
+  return { quotas, details: {}, ...emptyLedgerFields() };
 }
 
 export function defaultCollections(
@@ -53,6 +54,7 @@ export function defaultCollections(
     return {
       quotas: mockQuotaPayments.map((q) => ({ ...q })),
       details: {},
+      ...emptyLedgerFields(),
     };
   }
   if (owners.length === 0) return { ...EMPTY_COLLECTIONS };
@@ -70,6 +72,20 @@ export function readCollections(email: string): CollectionsState | null {
       details:
         parsed.details && typeof parsed.details === "object"
           ? parsed.details
+          : {},
+      charges: Array.isArray(parsed.charges) ? parsed.charges : [],
+      receipts: Array.isArray(parsed.receipts) ? parsed.receipts : [],
+      certificates: Array.isArray(parsed.certificates)
+        ? parsed.certificates
+        : [],
+      receiptSeqByYear:
+        parsed.receiptSeqByYear && typeof parsed.receiptSeqByYear === "object"
+          ? parsed.receiptSeqByYear
+          : {},
+      certificateSeqByYear:
+        parsed.certificateSeqByYear &&
+        typeof parsed.certificateSeqByYear === "object"
+          ? parsed.certificateSeqByYear
           : {},
     };
   } catch {
@@ -120,6 +136,7 @@ export function markQuotaPaid(
   details?: PaymentDetails,
 ): CollectionsState {
   return {
+    ...state,
     quotas: state.quotas.map((q) =>
       q.id === quotaId ? { ...q, status: "paid" as const, paymentDate } : q,
     ),
@@ -133,6 +150,7 @@ export function appendPaidQuota(
   details?: PaymentDetails,
 ): CollectionsState {
   return {
+    ...state,
     quotas: [quota, ...state.quotas],
     details: withDetails(state, quota.id, details),
   };

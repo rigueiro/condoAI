@@ -30,9 +30,15 @@ import {
 } from "./reminders";
 import {
   EMPTY_COLLECTIONS,
+  type AccountCharge,
+  type AccountReceipt,
+  type AddChargeInput,
   type CollectionsState,
   type ContactAttempt,
+  type DebtCertificate,
+  type IssueCertificateInput,
   type OverdueItem,
+  type RecordPaymentInput,
   type ReminderCopy,
   type ReminderRecipient,
 } from "./types";
@@ -42,31 +48,36 @@ import {
   quotasToPaymentRows,
   type PaymentRow,
 } from "./views";
+import {
+  buildExtract,
+  normalizeLedger,
+  type CertificateView,
+} from "./ledger";
 
 export type { SendResult };
-
-export type RecordPaymentInput = {
-  ownerId: string;
-  amount: number | string;
-  paymentMethod?: string;
-  paymentDate?: string;
-  notes?: string;
-  /** Prefer matching a specific overdue/pending quota when known. */
-  quotaId?: string;
-};
+export type { AddChargeInput, IssueCertificateInput, RecordPaymentInput };
 
 interface CollectionsContextValue {
   isReady: boolean;
   quotas: QuotaPayment[];
+  charges: AccountCharge[];
+  receipts: AccountReceipt[];
+  certificates: DebtCertificate[];
   payments: PaymentRow[];
   overdueItems: OverdueItem[];
   ownersWithBalances: OwnerRow[];
   remindedIds: Set<string>;
   contactAttempts: ContactAttempt[];
   digestSentToday: boolean;
+  extractForOwner: (ownerId: string, asOfDate?: string) => ReturnType<typeof buildExtract>;
+  receiptForQuota: (quotaId: string) => AccountReceipt | undefined;
   recordPayment: (
     input: RecordPaymentInput,
-  ) => Promise<{ quotaId: string } | null>;
+  ) => Promise<{ quotaId: string; receipt?: AccountReceipt } | null>;
+  addCharge: (input: AddChargeInput) => Promise<boolean>;
+  issueCertificate: (
+    input: IssueCertificateInput,
+  ) => Promise<CertificateView | null>;
   sendReminders: (ids: string[], copy: ReminderCopy) => SendResult;
   escalateOverdue: (ids: string[], copy: ReminderCopy) => SendResult;
   sendCollectionsDigest: (copy: ReminderCopy) => SendResult;
@@ -120,10 +131,13 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
         }>("/api/quotas");
         if (cancelled) return;
         setState(
-          data.state ?? {
-            quotas: data.quotas,
-            details: data.details ?? {},
-          },
+          normalizeLedger(
+            data.state ?? {
+              ...EMPTY_COLLECTIONS,
+              quotas: data.quotas,
+              details: data.details ?? {},
+            },
+          ),
         );
         setContactAttempts(readContactAttempts(email));
         setDigestSentToday(readCollectionsDigestSentToday(email));
@@ -154,8 +168,15 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
   }, [email]);
 
   const ownersWithBalances = useMemo(
-    () => applyOwnerBalances(portfolio, state.quotas, OWNER_AVATARS),
-    [portfolio, state.quotas],
+    () =>
+      applyOwnerBalances(
+        portfolio,
+        state.quotas,
+        OWNER_AVATARS,
+        state.charges,
+        state.receipts,
+      ),
+    [portfolio, state.quotas, state.charges, state.receipts],
   );
 
   const payments = useMemo(
@@ -240,10 +261,29 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
     [email],
   );
 
+  const extractForOwner = useCallback(
+    (ownerId: string, asOfDate?: string) =>
+      buildExtract(ownerId, state.quotas, state.charges, state.receipts, asOfDate),
+    [state.quotas, state.charges, state.receipts],
+  );
+
+  const receiptsByQuotaId = useMemo(() => {
+    const map = new Map<string, AccountReceipt>();
+    for (const receipt of state.receipts) {
+      if (receipt.quotaId) map.set(receipt.quotaId, receipt);
+    }
+    return map;
+  }, [state.receipts]);
+
+  const receiptForQuota = useCallback(
+    (quotaId: string) => receiptsByQuotaId.get(quotaId),
+    [receiptsByQuotaId],
+  );
+
   const recordPayment = useCallback(
     async (
       input: RecordPaymentInput,
-    ): Promise<{ quotaId: string } | null> => {
+    ): Promise<{ quotaId: string; receipt?: AccountReceipt } | null> => {
       const amount =
         typeof input.amount === "string"
           ? parseFloat(input.amount)
@@ -260,7 +300,45 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify(input),
         });
         setState(data.state);
-        return { quotaId: data.quotaId };
+        const receipt = data.state.receipts.find(
+          (item) => item.quotaId === data.quotaId,
+        );
+        return { quotaId: data.quotaId, receipt };
+      } catch {
+        return null;
+      }
+    },
+    [],
+  );
+
+  const addCharge = useCallback(async (input: AddChargeInput) => {
+    try {
+      const data = await apiFetch<{ state: CollectionsState }>(
+        "/api/ledger/charges",
+        {
+          method: "POST",
+          body: JSON.stringify(input),
+        },
+      );
+      setState(data.state);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const issueCertificate = useCallback(
+    async (input: IssueCertificateInput): Promise<CertificateView | null> => {
+      try {
+        const data = await apiFetch<{
+          state: CollectionsState;
+          view: CertificateView;
+        }>("/api/ledger/certificates", {
+          method: "POST",
+          body: JSON.stringify(input),
+        });
+        setState(data.state);
+        return data.view;
       } catch {
         return null;
       }
@@ -347,13 +425,20 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
     () => ({
       isReady,
       quotas: state.quotas,
+      charges: state.charges,
+      receipts: state.receipts,
+      certificates: state.certificates,
       payments,
       overdueItems,
       ownersWithBalances,
       remindedIds,
       contactAttempts,
       digestSentToday,
+      extractForOwner,
+      receiptForQuota,
       recordPayment,
+      addCharge,
+      issueCertificate,
       sendReminders,
       escalateOverdue,
       sendCollectionsDigest,
@@ -362,13 +447,20 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
     [
       isReady,
       state.quotas,
+      state.charges,
+      state.receipts,
+      state.certificates,
       payments,
       overdueItems,
       ownersWithBalances,
       remindedIds,
       contactAttempts,
       digestSentToday,
+      extractForOwner,
+      receiptForQuota,
       recordPayment,
+      addCharge,
+      issueCertificate,
       sendReminders,
       escalateOverdue,
       sendCollectionsDigest,

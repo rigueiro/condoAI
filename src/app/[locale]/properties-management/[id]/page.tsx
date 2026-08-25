@@ -11,6 +11,7 @@ import Icon from "@/components/icon";
 import CollectionSummary from "@/app/[locale]/payment-tracking/components/collection-summary";
 import PaymentHistoryTable from "@/app/[locale]/payment-tracking/components/payment-history-table";
 import RecordPaymentModal from "@/app/[locale]/payment-tracking/components/record-payment-modal";
+import ReceiptModal from "@/app/[locale]/owners-management/components/receipt-modal";
 import PropertyModal from "../components/property-modal";
 import PropertyDetailStats from "../components/property-detail-stats";
 import PropertyOwnersList from "../components/property-owners-list";
@@ -20,7 +21,7 @@ import {
   toOccurrenceRows,
 } from "@/app/[locale]/occurrences/types";
 import type { Condominium } from "@/types";
-import { useCollections } from "@/lib/collections";
+import { useCollections, type AccountReceipt } from "@/lib/collections";
 import { useOccurrences } from "@/lib/occurrences";
 import {
   buildingTypeI18nKey,
@@ -48,13 +49,16 @@ function PropertyDetailPage() {
 
   const { portfolio, isDemo, upsertCondominium, upsertUnit, removeUnit } =
     usePortfolio();
-  const { quotas, payments, recordPayment, ownersWithBalances } =
+  const { quotas, payments, recordPayment, ownersWithBalances, receiptForQuota } =
     useCollections();
   const { occurrences } = useOccurrences();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
   const [addUnitSignal, setAddUnitSignal] = useState(0);
+  const [viewingReceipt, setViewingReceipt] = useState<AccountReceipt | null>(
+    null,
+  );
 
   const condo = useMemo(
     () =>
@@ -80,6 +84,19 @@ function PropertyDetailPage() {
     if (!id) return [];
     return payments.filter((p) => p.propertyId === id);
   }, [id, payments]);
+
+  const receiptParty = useMemo(() => {
+    if (!viewingReceipt) return { ownerName: "", unit: undefined };
+    const row = payments.find((p) => p.quotaId === viewingReceipt.quotaId);
+    return {
+      ownerName:
+        row?.ownerName ??
+        ownersWithBalances.find((o) => o.owner.id === viewingReceipt.ownerId)
+          ?.owner.fullName ??
+        "",
+      unit: row?.unit,
+    };
+  }, [viewingReceipt, payments, ownersWithBalances]);
 
   const propertyOccurrenceRows = useMemo(() => {
     if (!condo) return [];
@@ -224,7 +241,10 @@ function PropertyDetailPage() {
                     selectedPayments={[]}
                     onPaymentSelect={() => {}}
                     onSelectAll={() => {}}
-                    onViewReceipt={() => {}}
+                    onViewReceipt={(payment) => {
+                      const receipt = receiptForQuota(payment.quotaId);
+                      if (receipt) setViewingReceipt(receipt);
+                    }}
                     onSendReminder={() => {}}
                     onMarkDisputed={() => {}}
                   />
@@ -442,9 +462,18 @@ function PropertyDetailPage() {
         isOpen={isRecordPaymentOpen}
         onClose={() => setIsRecordPaymentOpen(false)}
         onSubmit={async (paymentData) => {
-          await recordPayment(paymentData);
+          const result = await recordPayment(paymentData);
           setIsRecordPaymentOpen(false);
+          if (result?.receipt) setViewingReceipt(result.receipt);
         }}
+      />
+
+      <ReceiptModal
+        receipt={viewingReceipt}
+        ownerName={receiptParty.ownerName}
+        property={condo.name}
+        unit={receiptParty.unit}
+        onClose={() => setViewingReceipt(null)}
       />
     </div>
   );

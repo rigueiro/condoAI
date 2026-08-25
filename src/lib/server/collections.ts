@@ -6,33 +6,35 @@ import {
   markQuotaPaid,
   seedQuotasForOwners,
 } from "@/lib/collections/storage";
+import { occupanciesForOwner } from "@/lib/portfolio/occupancy";
+import { monthYearFromDate, todayKey } from "@/lib/collections/dates";
 import {
   EMPTY_COLLECTIONS,
+  type AccountCharge,
+  type AddChargeInput,
   type CollectionsState,
+  type IssueCertificateInput,
   type PaymentDetails,
+  type RecordPaymentInput,
 } from "@/lib/collections/types";
-import { monthYearFromDate } from "@/lib/collections/dates";
+import {
+  addChargeToState,
+  buildCertificateView,
+  formatCertificateNumber,
+  issueReceipt,
+  nextSequence,
+  normalizeLedger,
+  parseChargeKind,
+  yearFromDate,
+} from "@/lib/collections/ledger";
 import { getPortfolio } from "./portfolio";
 import { buildDemoCollections } from "./demo";
 import { readStore, writeStore } from "./store";
 
-export type RecordPaymentInput = {
-  ownerId: string;
-  amount: number | string;
-  paymentMethod?: string;
-  paymentDate?: string;
-  notes?: string;
-  quotaId?: string;
-};
+export type { AddChargeInput, IssueCertificateInput, RecordPaymentInput };
 
 function normalizeCollections(parsed: CollectionsState): CollectionsState {
-  return {
-    quotas: Array.isArray(parsed.quotas) ? parsed.quotas : [],
-    details:
-      parsed.details && typeof parsed.details === "object"
-        ? parsed.details
-        : {},
-  };
+  return normalizeLedger(parsed);
 }
 
 function saveCollections(
@@ -47,6 +49,11 @@ function saveCollections(
   return next;
 }
 
+function condominiumIdForOwner(email: string, ownerId: string): string {
+  const portfolio = getPortfolio(email);
+  return occupanciesForOwner(portfolio.units, ownerId)[0]?.unit.condominiumId ?? "";
+}
+
 /** Load collections. Skips portfolio lookup when quotas already exist. */
 export function getCollections(email: string): CollectionsState {
   const key = email.trim().toLowerCase();
@@ -54,7 +61,11 @@ export function getCollections(email: string): CollectionsState {
   const existing = store.collections[key];
 
   if (existing?.quotas.length) {
-    return normalizeCollections(existing);
+    const next = normalizeCollections(existing);
+    const needsWrite =
+      next.receipts.length !== (existing.receipts?.length ?? 0) ||
+      !existing.receiptSeqByYear;
+    return needsWrite ? saveCollections(key, next) : next;
   }
 
   if (isDemoEmail(key)) {
@@ -98,8 +109,12 @@ export function deleteQuota(
   const { [quotaId]: _removed, ...details } = current.details;
   void _removed;
   return saveCollections(email, {
+    ...current,
     quotas: current.quotas.filter((q) => q.id !== quotaId),
     details,
+    receipts: current.receipts.map((receipt) =>
+      receipt.quotaId === quotaId ? { ...receipt, quotaId: null } : receipt,
+    ),
   });
 }
 
@@ -119,28 +134,47 @@ export function recordPayment(
   if (!owner) return null;
 
   const state = getCollections(email);
-  const paidOn =
-    input.paymentDate ?? new Date().toISOString().slice(0, 10);
-  const details: PaymentDetails = {
-    paymentMethod: input.paymentMethod ?? "Bank Transfer",
-    receiptNumber: `RCP-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
-    notes: input.notes,
-    timestamp: new Date().toISOString(),
-  };
+  const paidOn = input.paymentDate ?? todayKey();
+  const condominiumId = condominiumIdForOwner(email, owner.id);
 
   const existingId =
     input.quotaId && state.quotas.some((q) => q.id === input.quotaId)
       ? input.quotaId
       : findOpenQuota(state.quotas, owner.id, amount)?.id;
 
+  const issued = issueReceipt(state, {
+    ownerId: owner.id,
+    condominiumId,
+    date: paidOn,
+    amount,
+    paymentMethod: input.paymentMethod ?? "Bank Transfer",
+    notes: input.notes,
+    quotaId: existingId ?? null,
+  });
+
+  const details: PaymentDetails = {
+    paymentMethod: issued.receipt.paymentMethod,
+    receiptNumber: issued.receipt.number,
+    notes: input.notes,
+    timestamp: new Date().toISOString(),
+  };
+
   if (existingId) {
-    const next = markQuotaPaid(state, existingId, paidOn, details);
+    const next = markQuotaPaid(issued.state, existingId, paidOn, details);
     return { quotaId: existingId, state: saveCollections(email, next) };
   }
 
   const newId = `pay-${crypto.randomUUID()}`;
+  const withQuota = {
+    ...issued.state,
+    receipts: issued.state.receipts.map((receipt) =>
+      receipt.id === issued.receipt.id
+        ? { ...receipt, quotaId: newId }
+        : receipt,
+    ),
+  };
   const next = appendPaidQuota(
-    state,
+    withQuota,
     {
       id: newId,
       ownerId: owner.id,
@@ -152,4 +186,93 @@ export function recordPayment(
     details,
   );
   return { quotaId: newId, state: saveCollections(email, next) };
+}
+
+export function addCharge(
+  email: string,
+  input: AddChargeInput,
+): CollectionsState {
+  const amount =
+    typeof input.amount === "string"
+      ? parseFloat(input.amount)
+      : input.amount;
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error("invalidAmount");
+  }
+  if (!input.ownerId) {
+    throw new Error("badRequest");
+  }
+
+  const portfolio = getPortfolio(email);
+  const owner = portfolio.owners.find((item) => item.id === input.ownerId);
+  if (!owner) {
+    throw new Error("notFound");
+  }
+
+  const kind = parseChargeKind(input.kind);
+  const date = input.date?.slice(0, 10) || todayKey();
+  const condominiumId =
+    input.condominiumId || condominiumIdForOwner(email, owner.id);
+  const description = input.description?.trim() || kind;
+
+  const charge: AccountCharge = {
+    id: crypto.randomUUID(),
+    ownerId: owner.id,
+    condominiumId,
+    date,
+    kind,
+    description,
+    amount,
+  };
+
+  return saveCollections(email, addChargeToState(getCollections(email), charge));
+}
+
+export function issueCertificate(
+  email: string,
+  input: IssueCertificateInput,
+) {
+  if (!input.ownerId) {
+    throw new Error("badRequest");
+  }
+  const portfolio = getPortfolio(email);
+  const owner = portfolio.owners.find((item) => item.id === input.ownerId);
+  if (!owner) {
+    throw new Error("notFound");
+  }
+
+  const state = getCollections(email);
+  const asOfDate = input.asOfDate?.slice(0, 10) || todayKey();
+  const condominiumId =
+    input.condominiumId || condominiumIdForOwner(email, owner.id);
+  const year = yearFromDate(asOfDate);
+  const sequenced = nextSequence(state.certificateSeqByYear, year);
+  const draft = {
+    id: crypto.randomUUID(),
+    ownerId: owner.id,
+    condominiumId,
+    issuedAt: new Date().toISOString(),
+    asOfDate,
+    year,
+    sequence: sequenced.sequence,
+    number: formatCertificateNumber(year, sequenced.sequence),
+    totalDue: 0,
+  };
+  const view = buildCertificateView(draft, {
+    owner,
+    units: portfolio.units,
+    condominiums: portfolio.condominiums,
+    organization: portfolio.organization,
+    quotas: state.quotas,
+    charges: state.charges,
+    receipts: state.receipts,
+  });
+  const certificate = { ...draft, totalDue: view.totalDue };
+  const next = saveCollections(email, {
+    ...state,
+    certificates: [...state.certificates, certificate],
+    certificateSeqByYear: sequenced.seqByYear,
+  });
+
+  return { state: next, view: { ...view, certificate } };
 }

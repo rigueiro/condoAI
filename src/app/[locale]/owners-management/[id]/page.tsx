@@ -9,12 +9,23 @@ import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 import Image from "@/components/image";
-import PaymentHistoryTable from "@/app/[locale]/payment-tracking/components/payment-history-table";
 import RecordPaymentModal from "@/app/[locale]/payment-tracking/components/record-payment-modal";
 import OwnerModal, { type OwnerFormSave } from "../components/owner-modal";
+import CurrentAccountExtract from "../components/current-account-extract";
+import ChargeModal from "../components/charge-modal";
+import ReceiptModal from "../components/receipt-modal";
+import DebtCertificateModal from "../components/debt-certificate-modal";
 import type { PaymentStatus } from "../components/types";
 import { ownerFromFormSave, usePortfolio } from "@/lib/portfolio";
-import { useCollections, type RecordPaymentInput } from "@/lib/collections";
+import {
+  useCollections,
+  type AccountReceipt,
+  type AddChargeInput,
+  type RecordPaymentInput,
+} from "@/lib/collections";
+
+const ACTION_CLASS =
+  "w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth";
 
 function OwnerDetailPage() {
   const t = useTranslations("ownersManagement.detail");
@@ -25,23 +36,35 @@ function OwnerDetailPage() {
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
 
   const { portfolio, upsertOwner } = usePortfolio();
-  const { ownersWithBalances, payments, recordPayment } = useCollections();
+  const {
+    ownersWithBalances,
+    recordPayment,
+    addCharge,
+    issueCertificate,
+    extractForOwner,
+    receipts,
+    quotas,
+    charges,
+  } = useCollections();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
+  const [isChargeOpen, setIsChargeOpen] = useState(false);
+  const [isCertificateOpen, setIsCertificateOpen] = useState(false);
+  const [viewingReceipt, setViewingReceipt] = useState<AccountReceipt | null>(
+    null,
+  );
 
   const row = useMemo(
     () =>
-      id
-        ? ownersWithBalances.find((o) => o.owner.id === id)
-        : undefined,
+      id ? ownersWithBalances.find((o) => o.owner.id === id) : undefined,
     [id, ownersWithBalances],
   );
 
-  const ownerPayments = useMemo(() => {
-    if (!row) return [];
-    return payments.filter((p) => p.ownerId === row.owner.id);
-  }, [row, payments]);
+  const extract = useMemo(
+    () => (row ? extractForOwner(row.owner.id) : []),
+    [row, extractForOwner],
+  );
 
   const properties = portfolio.condominiums.map((c) => ({
     id: c.id,
@@ -77,9 +100,12 @@ function OwnerDetailPage() {
   };
 
   const handleRecordPayment = async (paymentData: RecordPaymentInput) => {
-    await recordPayment(paymentData);
+    const result = await recordPayment(paymentData);
     setIsRecordPaymentOpen(false);
+    if (result?.receipt) setViewingReceipt(result.receipt);
   };
+
+  const handleAddCharge = (input: AddChargeInput) => addCharge(input);
 
   if (!id || !row) {
     return (
@@ -118,46 +144,50 @@ function OwnerDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <div className="print-chrome">
+        <Header />
+      </div>
 
-      <main className="pt-20">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <Breadcrumb />
+      <main className="pt-20 print:pt-0">
+        <div className="max-w-7xl mx-auto px-6 py-8 print:max-w-none print:px-0 print:py-0">
+          <div className="print-chrome">
+            <Breadcrumb />
 
-          <div className="mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-secondary-100 shrink-0">
-                <Image
-                  src={row.avatar || ""}
-                  alt={owner.fullName}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-3 mb-1">
-                  <h1 className="text-3xl font-bold text-text-primary">
-                    {owner.fullName}
-                  </h1>
-                  {getPaymentStatusBadge(row.paymentStatus)}
+            <div className="mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-secondary-100 shrink-0">
+                  <Image
+                    src={row.avatar || ""}
+                    alt={owner.fullName}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <p className="text-text-secondary">
-                  {row.occupancies.length > 0
-                    ? t("unitProperty", {
-                        unit: row.unitLabel,
-                        property: row.condominiumName,
-                      })
-                    : t("noFractions")}
-                </p>
-                <p className="text-sm text-text-secondary mt-1">
-                  {owner.contacts.email}
-                </p>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-3 mb-1">
+                    <h1 className="text-3xl font-bold text-text-primary">
+                      {owner.fullName}
+                    </h1>
+                    {getPaymentStatusBadge(row.paymentStatus)}
+                  </div>
+                  <p className="text-text-secondary">
+                    {row.occupancies.length > 0
+                      ? t("unitProperty", {
+                          unit: row.unitLabel,
+                          property: row.condominiumName,
+                        })
+                      : t("noFractions")}
+                  </p>
+                  <p className="text-sm text-text-secondary mt-1">
+                    {owner.contacts.email}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            <div className="xl:col-span-2 space-y-8">
-              <section className="bg-surface rounded-lg border border-border-light p-6">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 print:block">
+            <div className="xl:col-span-2 space-y-8 print:space-y-0">
+              <section className="bg-surface rounded-lg border border-border-light p-6 print-chrome">
                 <h2 className="text-lg font-semibold text-text-primary mb-4">
                   {t("balanceStatus")}
                 </h2>
@@ -193,23 +223,19 @@ function OwnerDetailPage() {
                 </div>
               </section>
 
-              <section>
-                <h2 className="text-xl font-semibold text-text-primary mb-4">
-                  {t("paymentHistory")}
-                </h2>
-                <PaymentHistoryTable
-                  payments={ownerPayments}
-                  selectedPayments={[]}
-                  onPaymentSelect={() => {}}
-                  onSelectAll={() => {}}
-                  onViewReceipt={() => {}}
-                  onSendReminder={() => {}}
-                  onMarkDisputed={() => {}}
-                />
-              </section>
+              <CurrentAccountExtract
+                movements={extract}
+                ownerName={owner.fullName}
+                unitLabel={row.unitLabel}
+                condominiumName={row.condominiumName}
+                onReceiptClick={(receiptId) => {
+                  const receipt = receipts.find((item) => item.id === receiptId);
+                  if (receipt) setViewingReceipt(receipt);
+                }}
+              />
             </div>
 
-            <div className="xl:col-span-1 space-y-6">
+            <div className="xl:col-span-1 space-y-6 print-chrome">
               <div className="bg-surface rounded-lg border border-border-light p-6">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">
                   {t("ownerInfo")}
@@ -300,27 +326,52 @@ function OwnerDetailPage() {
                   {t("quickActions")}
                 </h3>
                 <div className="space-y-2">
-                  <button
-                    onClick={() => setIsRecordPaymentOpen(true)}
-                    className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
-                  >
-                    <Icon
-                      name="CreditCard"
-                      size={16}
-                      className="mr-2 shrink-0"
-                    />
-                    {t("recordPayment")}
-                  </button>
-                  <button
-                    onClick={() => setIsEditModalOpen(true)}
-                    className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
-                  >
-                    <Icon name="Edit2" size={16} className="mr-2 shrink-0" />
-                    {t("editOwner")}
-                  </button>
+                  {(
+                    [
+                      {
+                        icon: "CreditCard",
+                        label: t("recordPayment"),
+                        onClick: () => setIsRecordPaymentOpen(true),
+                      },
+                      {
+                        icon: "PlusCircle",
+                        label: t("addCharge"),
+                        onClick: () => setIsChargeOpen(true),
+                      },
+                      {
+                        icon: "ScrollText",
+                        label: t("issueCertificate"),
+                        onClick: () => setIsCertificateOpen(true),
+                      },
+                      {
+                        icon: "Printer",
+                        label: t("printExtract"),
+                        onClick: () => window.print(),
+                      },
+                      {
+                        icon: "Edit2",
+                        label: t("editOwner"),
+                        onClick: () => setIsEditModalOpen(true),
+                      },
+                    ] as const
+                  ).map((action) => (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={action.onClick}
+                      className={ACTION_CLASS}
+                    >
+                      <Icon
+                        name={action.icon}
+                        size={16}
+                        className="mr-2 shrink-0"
+                      />
+                      {action.label}
+                    </button>
+                  ))}
                   <Link
                     href={`/properties-management/${row.condominiumId}`}
-                    className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
+                    className={ACTION_CLASS}
                   >
                     <Icon
                       name="Building2"
@@ -331,7 +382,7 @@ function OwnerDetailPage() {
                   </Link>
                   <Link
                     href="/payment-tracking"
-                    className="w-full flex items-center px-3 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 rounded-lg transition-smooth"
+                    className={ACTION_CLASS}
                   >
                     <Icon name="Receipt" size={16} className="mr-2 shrink-0" />
                     {t("allPayments")}
@@ -368,6 +419,39 @@ function OwnerDetailPage() {
           ownerId: owner.id,
           amount: row.currentBalance > 0 ? row.currentBalance : owner.monthlyQuota,
         }}
+      />
+
+      <ChargeModal
+        isOpen={isChargeOpen}
+        ownerId={owner.id}
+        condominiumId={row.condominiumId}
+        onClose={() => setIsChargeOpen(false)}
+        onSubmit={handleAddCharge}
+      />
+
+      <DebtCertificateModal
+        isOpen={isCertificateOpen}
+        ownerId={owner.id}
+        ownerName={owner.fullName}
+        quotas={quotas}
+        charges={charges}
+        receipts={receipts}
+        onClose={() => setIsCertificateOpen(false)}
+        onIssue={(asOfDate) =>
+          issueCertificate({
+            ownerId: owner.id,
+            condominiumId: row.condominiumId,
+            asOfDate,
+          })
+        }
+      />
+
+      <ReceiptModal
+        receipt={viewingReceipt}
+        ownerName={owner.fullName}
+        property={row.condominiumName}
+        unit={row.unitLabel}
+        onClose={() => setViewingReceipt(null)}
       />
     </div>
   );

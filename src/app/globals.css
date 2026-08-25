@@ -193,3 +193,29 @@ html[data-theme="dark"] {
     animation: none;
   }
 }
+
+@media print {
+  body {
+    background: #fff !important;
+    color: #0f172a !important;
+  }
+  .print-chrome {
+    display: none !important;
+  }
+  body.print-document * {
+    visibility: hidden;
+  }
+  body.print-document .print-document,
+  body.print-document .print-document * {
+    visibility: visible;
+  }
+  body.print-document .print-document {
+    position: absolute;
+    inset: 0;
+    box-shadow: none !important;
+    background: #fff !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}

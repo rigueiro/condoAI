@@ -1,0 +1,89 @@
+{
+  "title": "Conta corrente",
+  "subtitle": "Lançamentos, recibos e saldo acumulado",
+  "printExtract": "Imprimir extrato",
+  "addCharge": "Adicionar lançamento",
+  "issueCertificate": "Emitir certidão de dívida",
+  "empty": "Ainda não existem movimentos nesta conta corrente.",
+  "printHeading": "Extrato de conta corrente",
+  "asOf": "À data de {date}",
+  "columns": {
+    "date": "Data",
+    "description": "Descrição",
+    "debit": "Débito",
+    "credit": "Crédito",
+    "balance": "Saldo"
+  },
+  "side": {
+    "debit": "Débito",
+    "credit": "Crédito"
+  },
+  "source": {
+    "quota": "Quota mensal — {period}",
+    "charge": "Lançamento",
+    "receipt": "Recibo {number}"
+  },
+  "kinds": {
+    "opening": "Saldo de abertura",
+    "charge": "Lançamento",
+    "credit": "Nota de crédito"
+  },
+  "chargeModal": {
+    "title": "Adicionar lançamento",
+    "subtitle": "Registar um débito, nota de crédito ou saldo de abertura nesta conta corrente",
+    "kind": "Tipo",
+    "date": "Data",
+    "description": "Descrição",
+    "descriptionPlaceholder": "ex.: Saldo de abertura, obras extraordinárias",
+    "amount": "Valor",
+    "cancel": "Cancelar",
+    "save": "Registar lançamento",
+    "saving": "A registar...",
+    "validation": {
+      "amountRequired": "Introduza um valor válido",
+      "descriptionRequired": "A descrição é obrigatória",
+      "dateRequired": "A data é obrigatória"
+    }
+  },
+  "receipt": {
+    "title": "Recibo",
+    "subtitle": "Recibo oficial de pagamento",
+    "number": "Recibo n.º",
+    "date": "Data",
+    "owner": "Proprietário",
+    "property": "Condomínio",
+    "unit": "Fração",
+    "amount": "Valor",
+    "method": "Método de pagamento",
+    "notes": "Notas",
+    "print": "Imprimir recibo",
+    "close": "Fechar",
+    "notIssued": "Ainda não foi emitido recibo para este pagamento."
+  },
+  "certificate": {
+    "title": "Certidão de dívida",
+    "subtitle": "Emitir uma certidão de dívida numerada à data indicada",
+    "asOfDate": "À data de",
+    "previewTitle": "Valores em aberto",
+    "previewEmpty": "Não existem valores em aberto nesta data.",
+    "previewTotal": "Saldo em conta corrente",
+    "issue": "Emitir certidão",
+    "issuing": "A emitir...",
+    "print": "Imprimir certidão",
+    "close": "Fechar",
+    "back": "Voltar",
+    "documentTitle": "Certidão de dívida",
+    "number": "Certidão n.º {number}",
+    "intro": "A administração do condomínio {condominium}, gerida por {administrator}{adminTax}, com sede em {adminAddress}, certifica que, com referência à data de {asOfDate}:",
+    "ownerLine": "{name}, NIF {taxId}, titular da(s) fração/ões {fractions}, apresenta os seguintes valores em dívida:",
+    "noDebt": "Não existem valores em aberto nesta data.",
+    "itemQuota": "Quota mensal — {period}",
+    "total": "Total em dívida",
+    "legal": "A presente certidão destina-se a fazer prova da dívida do condómino para os efeitos legais aplicáveis, incluindo o disposto na legislação portuguesa sobre propriedade horizontal.",
+    "issued": "Emitida em {issuedAt}.",
+    "signature": "A administração",
+    "unknownTaxId": "não indicado",
+    "unknownAddress": "morada não indicada",
+    "noFractions": "sem frações associadas"
+  }
+}

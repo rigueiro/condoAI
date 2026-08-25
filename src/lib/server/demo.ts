@@ -14,6 +14,7 @@ import {
 } from "@/fixtures/domain";
 import type { Organization } from "@/app/[locale]/account/types";
 import type { Portfolio } from "@/lib/portfolio/types";
+import { emptyLedgerFields, normalizeLedger } from "@/lib/collections/ledger";
 import type { CollectionsState } from "@/lib/collections/types";
 import type { FinanceState } from "@/lib/finance/types";
 import type { ComplianceState } from "@/lib/compliance/types";
@@ -47,10 +48,11 @@ export function buildDemoPortfolio(): Portfolio {
 }
 
 export function buildDemoCollections(): CollectionsState {
-  return {
+  return normalizeLedger({
     quotas: mockQuotaPayments.map((q) => ({ ...q })),
     details: {},
-  };
+    ...emptyLedgerFields(),
+  });
 }
 
 export function buildDemoFinance(): FinanceState {
