@@ -21,12 +21,14 @@
   "source": {
     "quota": "Monthly quota — {period}",
     "charge": "Charge",
-    "receipt": "Receipt {number}"
+    "receipt": "Receipt {number}",
+    "extraordinary": "Extraordinary quota — {description}"
   },
   "kinds": {
     "opening": "Opening balance",
     "charge": "Charge",
-    "credit": "Credit note"
+    "credit": "Credit note",
+    "extraordinary": "Extraordinary quota"
   },
   "chargeModal": {
     "title": "Add charge",

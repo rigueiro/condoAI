@@ -63,6 +63,7 @@ export function buildDemoFinance(): FinanceState {
     })),
     expenses: mockExpenses.map((e) => ({ ...e })),
     accounts: mockBankAccounts.map((a) => ({ ...a })),
+    extraordinaryQuotas: [],
   };
 }
 

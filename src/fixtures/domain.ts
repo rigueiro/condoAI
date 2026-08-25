@@ -12,7 +12,8 @@ import type {
   Summons,
   Unit,
 } from "@/types";
-import { calculateMonthlyQuota, sumBudgetCategories } from "@/lib/quota";
+import { calculateMonthlyQuota } from "@/lib/quota";
+import { collectableBudgetTotal } from "@/lib/finance/budget";
 
 export const mockCondominiums: Condominium[] = [
   {
@@ -245,8 +246,8 @@ export const mockAnnualBudgets: AnnualBudget[] = [
       electricity: 14_400,
       insurance: 9_600,
       maintenance: 24_000,
-      reserve: 12_000,
     },
+    reserveFund: 12_000,
     status: "approved",
   },
   {
@@ -259,8 +260,8 @@ export const mockAnnualBudgets: AnnualBudget[] = [
       insurance: 14_400,
       maintenance: 36_000,
       concierge: 24_000,
-      reserve: 19_200,
     },
+    reserveFund: 19_200,
     status: "approved",
   },
   {
@@ -273,8 +274,8 @@ export const mockAnnualBudgets: AnnualBudget[] = [
       insurance: 3_600,
       maintenance: 9_600,
       garden: 4_800,
-      reserve: 3_600,
     },
+    reserveFund: 3_600,
     status: "approved",
   },
   {
@@ -287,8 +288,8 @@ export const mockAnnualBudgets: AnnualBudget[] = [
       insurance: 19_200,
       maintenance: 48_000,
       concierge: 36_000,
-      reserve: 28_800,
     },
+    reserveFund: 28_800,
     status: "approved",
   },
   {
@@ -300,8 +301,8 @@ export const mockAnnualBudgets: AnnualBudget[] = [
       electricity: 7_200,
       insurance: 6_000,
       maintenance: 14_400,
-      reserve: 7_200,
     },
+    reserveFund: 7_200,
     status: "approved",
   },
   {
@@ -313,8 +314,8 @@ export const mockAnnualBudgets: AnnualBudget[] = [
       electricity: 15_600,
       insurance: 10_200,
       maintenance: 26_400,
-      reserve: 13_200,
     },
+    reserveFund: 13_200,
     status: "draft",
   },
   {
@@ -327,8 +328,8 @@ export const mockAnnualBudgets: AnnualBudget[] = [
       insurance: 15_000,
       maintenance: 38_400,
       concierge: 25_200,
-      reserve: 20_400,
     },
+    reserveFund: 20_400,
     status: "draft",
   },
 ];
@@ -341,10 +342,7 @@ export function approvedBudgetsForYear(year = 2026): AnnualBudget[] {
 }
 
 const annualTotalByCondoId = new Map(
-  approvedBudgetsForYear().map((b) => [
-    b.condominiumId,
-    sumBudgetCategories(b.valuesByCategory),
-  ]),
+  approvedBudgetsForYear().map((b) => [b.condominiumId, collectableBudgetTotal(b)]),
 );
 
 function monthlyQuotaForUnit(unit: Unit): number {

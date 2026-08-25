@@ -4,6 +4,7 @@ import {
   deleteBudget,
   deleteExpense,
   getFinance,
+  issueExtraordinaryQuota,
   markBudgetApproved,
   putAccount,
   putBudget,
@@ -11,6 +12,7 @@ import {
 } from "@/lib/server/finance";
 import { requireSessionEmail } from "@/lib/server/session";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
+import type { IssueExtraordinaryInput } from "@/lib/finance/types";
 
 function hasCondoEntity<T extends { id?: string; condominiumId?: string }>(
   entity: T | undefined,
@@ -36,6 +38,11 @@ export async function PATCH(request: Request) {
       expense?: Expense;
       account?: BankAccount;
       id?: string;
+      condominiumId?: string;
+      description?: string;
+      totalAmount?: number | string;
+      date?: string;
+      dueDate?: string;
     };
 
     switch (body.action) {
@@ -67,6 +74,18 @@ export async function PATCH(request: Request) {
         return body.id
           ? jsonOk({ state: deleteAccount(email, body.id) })
           : jsonError("badRequest");
+      case "issueExtraordinary": {
+        const extra: IssueExtraordinaryInput = {
+          condominiumId: body.condominiumId ?? "",
+          description: body.description ?? "",
+          totalAmount: body.totalAmount ?? 0,
+          date: body.date,
+          dueDate: body.dueDate,
+        };
+        return extra.condominiumId && extra.description
+          ? jsonOk({ state: issueExtraordinaryQuota(email, extra) })
+          : jsonError("badRequest");
+      }
       default:
         return jsonError("badRequest");
     }

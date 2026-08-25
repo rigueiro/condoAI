@@ -1,5 +1,6 @@
 import type { Condominium, QuotaPayment } from "@/types";
-import { roundCurrency, sumBudgetCategories } from "@/lib/quota";
+import { roundCurrency } from "@/lib/quota";
+import { collectableBudgetTotal } from "@/lib/finance/budget";
 import type { Portfolio } from "@/lib/portfolio/types";
 import {
   breakdownFromStats,
@@ -72,7 +73,7 @@ export function mockCondoStats(condo: Condominium): CondoStats {
     const average =
       budget != null
         ? roundCurrency(
-            sumBudgetCategories(budget.valuesByCategory) /
+            collectableBudgetTotal(budget) /
               12 /
               (condo.numberOfUnits || 1),
           )

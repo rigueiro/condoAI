@@ -1,15 +1,45 @@
 import type { AnnualBudget, BankAccount, Expense } from "@/types";
 
+export interface ExtraordinaryAllocation {
+  ownerId: string;
+  unitId: string;
+  unitLabel: string;
+  permillage: number;
+  amount: number;
+}
+
+export interface ExtraordinaryQuota {
+  id: string;
+  condominiumId: string;
+  date: string;
+  dueDate: string;
+  description: string;
+  totalAmount: number;
+  ownerCount: number;
+  issuedAt: string;
+  allocations: ExtraordinaryAllocation[];
+}
+
+export type IssueExtraordinaryInput = {
+  condominiumId: string;
+  description: string;
+  totalAmount: number | string;
+  date?: string;
+  dueDate?: string;
+};
+
 export interface FinanceState {
   budgets: AnnualBudget[];
   expenses: Expense[];
   accounts: BankAccount[];
+  extraordinaryQuotas: ExtraordinaryQuota[];
 }
 
 export const EMPTY_FINANCE: FinanceState = {
   budgets: [],
   expenses: [],
   accounts: [],
+  extraordinaryQuotas: [],
 };
 
 export type FinanceKind = "budget" | "expense" | "bank";
@@ -22,6 +52,7 @@ export type DraftBudgetItem = {
   year: number;
   total: number;
   categoryCount: number;
+  reserveShortfall: number;
 };
 
-export type FinanceTab = "attention" | FinanceKind;
+export type FinanceTab = "attention" | FinanceKind | "extraordinary";

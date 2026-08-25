@@ -1,10 +1,12 @@
 {
   "title": "Finanças",
-  "subtitle": "Orçamentos anuais de rascunho a aprovado, registo de despesas e saldos bancários do condomínio.",
+  "subtitle": "Orçamentos anuais de rascunho a aprovado, fundo de reserva, quotas extraordinárias, despesas e saldos bancários.",
   "add": "Adicionar registo",
+  "addExtraordinary": "Emitir quota extraordinária",
   "tabs": {
     "attention": "Requer atenção",
     "budget": "Orçamentos",
+    "extraordinary": "Quotas extraordinárias",
     "expense": "Despesas",
     "bank": "Contas bancárias"
   },
@@ -20,7 +22,8 @@
     "draft": "Rascunho",
     "yearLabel": "Orçamento {year}",
     "categories": "{count, plural, one {# categoria} other {# categorias}}",
-    "approve": "Aprovar orçamento"
+    "approve": "Aprovar orçamento",
+    "reserveShort": "Reserva abaixo de 10%"
   },
   "filters": {
     "allProperties": "Todos os condomínios",
@@ -32,6 +35,9 @@
     "status": "Estado",
     "total": "Total",
     "categories": "Categorias",
+    "description": "Descrição",
+    "owners": "Condóminos cobrados",
+    "reserveShort": "Abaixo de 10%",
     "date": "Data",
     "amount": "Montante",
     "category": "Categoria",
@@ -60,8 +66,17 @@
     "condominium": "Condomínio",
     "year": "Ano",
     "status": "Estado",
-    "categories": "Categorias (uma por linha: cleaning: 18000)",
-    "categoriesHint": "Use categoria: montante em cada linha.",
+    "categories": "Categorias ordinárias (uma por linha: cleaning: 18000)",
+    "categoriesHint": "Apenas linhas de exploração. Não inclua o fundo de reserva aqui.",
+    "reserveFund": "Fundo de reserva",
+    "reserveHint": "A lei portuguesa exige pelo menos 10% do orçamento ordinário de exploração.",
+    "reserveIgnored": "Linhas de reserva na lista de categorias são ignoradas — use o campo fundo de reserva.",
+    "useMinimumReserve": "Usar o mínimo de 10%",
+    "ordinaryTotal": "Orçamento ordinário",
+    "minimumReserve": "Mínimo legal (10%)",
+    "annualTotal": "Total anual a cobrar",
+    "monthlyTotal": "Total mensal do edifício",
+    "reserveWarning": "O fundo de reserva está {amount} abaixo do mínimo legal de 10%. Pode ainda assim guardar o rascunho.",
     "date": "Data",
     "amount": "Montante",
     "category": "Categoria",
@@ -74,7 +89,8 @@
     "validation": {
       "condominiumRequired": "Selecione um condomínio.",
       "yearRequired": "Indique o ano.",
-      "categoriesRequired": "Adicione pelo menos uma categoria.",
+      "categoriesRequired": "Adicione pelo menos uma categoria ordinária.",
+      "reserveRequired": "Indique o montante do fundo de reserva.",
       "dateRequired": "Indique a data.",
       "amountRequired": "Indique o montante.",
       "categoryRequired": "Indique a categoria.",
@@ -87,7 +103,31 @@
   "flash": {
     "saved": "Registo guardado.",
     "deleted": "Registo eliminado.",
-    "approved": "Orçamento aprovado."
+    "approved": "Orçamento aprovado.",
+    "issued": "Quota extraordinária lançada nas contas correntes dos condóminos.",
+    "issueFailed": "Não foi possível emitir a quota extraordinária.",
+    "noBilledOwners": "Não existem condóminos a cobrar neste condomínio."
+  },
+  "extraordinary": {
+    "modalTitle": "Emitir quota extraordinária",
+    "modalSubtitle": "Repartir por permilagem e lançar um débito na conta corrente de cada condómino cobrado.",
+    "description": "Descrição",
+    "descriptionPlaceholder": "ex.: Reparação do telhado, substituição do elevador",
+    "total": "Montante total",
+    "date": "Data do lançamento",
+    "dueDate": "Data de vencimento",
+    "preview": "Pré-visualização da repartição",
+    "previewEmpty": "Indique um montante para pré-visualizar a repartição por permilagem.",
+    "billedOwners": "{count, plural, one {# condómino} other {# condóminos}}",
+    "unit": "Fração",
+    "owner": "Condómino",
+    "amount": "Montante",
+    "issue": "Emitir quota",
+    "issuing": "A emitir…",
+    "validation": {
+      "descriptionRequired": "Indique uma descrição.",
+      "noOwners": "Este condomínio não tem condóminos a cobrar."
+    }
   },
   "confirmDelete": "Eliminar este registo? Esta ação não pode ser anulada."
 }

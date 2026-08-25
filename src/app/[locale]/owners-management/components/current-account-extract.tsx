@@ -31,6 +31,9 @@ function movementLabel(
       number: movement.receiptNumber ?? movement.description,
     });
   }
+  if (movement.chargeKind === "extraordinary") {
+    return t("source.extraordinary", { description: movement.description });
+  }
   if (
     movement.chargeKind &&
     isChargeKind(movement.chargeKind) &&

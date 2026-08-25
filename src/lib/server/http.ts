@@ -23,6 +23,7 @@ const ERROR_STATUS: Record<string, number> = {
   condominiumNotFound: 404,
   unitNotFound: 404,
   invalidAmount: 400,
+  noBilledOwners: 400,
 };
 
 export function handleRouteError(err: unknown): NextResponse {

@@ -41,6 +41,11 @@ function DraftsPanel({
                 <span className="inline-flex items-center rounded-md bg-warning-50 px-2 py-0.5 text-xs font-medium text-warning">
                   {t("attention.draft")}
                 </span>
+                {item.reserveShortfall > 0 && (
+                  <span className="inline-flex items-center rounded-md bg-error-50 px-2 py-0.5 text-xs font-medium text-error">
+                    {t("attention.reserveShort")}
+                  </span>
+                )}
                 <span className="text-sm font-medium text-text-primary">
                   {t("attention.yearLabel", { year: item.year })}
                 </span>

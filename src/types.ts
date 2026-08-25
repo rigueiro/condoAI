@@ -73,7 +73,10 @@ export interface AnnualBudget {
     id: string;
     condominiumId: string;
     year: number; // Ex.: 2025
+    /** Ordinary operating lines. Fundo de reserva is `reserveFund`, not a category. */
     valuesByCategory: Record<string, number>; // Ex.: { 'cleaning': 1200, 'electricity': 800 }
+    /** Legal reserve fund (minimum 10% of the ordinary operating total). */
+    reserveFund: number;
     status: 'draft' | 'approved';
 }
 

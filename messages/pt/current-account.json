@@ -21,12 +21,14 @@
   "source": {
     "quota": "Quota mensal — {period}",
     "charge": "Lançamento",
-    "receipt": "Recibo {number}"
+    "receipt": "Recibo {number}",
+    "extraordinary": "Quota extraordinária — {description}"
   },
   "kinds": {
     "opening": "Saldo de abertura",
     "charge": "Lançamento",
-    "credit": "Nota de crédito"
+    "credit": "Nota de crédito",
+    "extraordinary": "Quota extraordinária"
   },
   "chargeModal": {
     "title": "Adicionar lançamento",

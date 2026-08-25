@@ -8,7 +8,7 @@ export interface PaymentDetails {
   timestamp?: string;
 }
 
-export type ChargeKind = "opening" | "charge" | "credit";
+export type ChargeKind = "opening" | "charge" | "credit" | "extraordinary";
 
 export interface AccountCharge {
   id: string;

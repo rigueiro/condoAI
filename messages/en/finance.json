@@ -1,10 +1,12 @@
 {
   "title": "Finance",
-  "subtitle": "Annual budgets from draft to approved, expense ledger, and condominium bank balances.",
+  "subtitle": "Annual budgets from draft to approved, fundo de reserva, extraordinary quotas, expenses, and bank balances.",
   "add": "Add record",
+  "addExtraordinary": "Issue extraordinary quota",
   "tabs": {
     "attention": "Needs attention",
     "budget": "Budgets",
+    "extraordinary": "Extraordinary quotas",
     "expense": "Expenses",
     "bank": "Bank accounts"
   },
@@ -20,7 +22,8 @@
     "draft": "Draft",
     "yearLabel": "Budget {year}",
     "categories": "{count, plural, one {# category} other {# categories}}",
-    "approve": "Approve budget"
+    "approve": "Approve budget",
+    "reserveShort": "Reserve below 10%"
   },
   "filters": {
     "allProperties": "All condominiums",
@@ -32,6 +35,9 @@
     "status": "Status",
     "total": "Total",
     "categories": "Categories",
+    "description": "Description",
+    "owners": "Owners billed",
+    "reserveShort": "Below 10%",
     "date": "Date",
     "amount": "Amount",
     "category": "Category",
@@ -60,8 +66,17 @@
     "condominium": "Condominium",
     "year": "Year",
     "status": "Status",
-    "categories": "Categories (one per line: cleaning: 18000)",
-    "categoriesHint": "Use category: amount on each line.",
+    "categories": "Operating categories (one per line: cleaning: 18000)",
+    "categoriesHint": "Ordinary operating lines only. Do not include fundo de reserva here.",
+    "reserveFund": "Fundo de reserva",
+    "reserveHint": "Portuguese law requires at least 10% of the ordinary operating budget.",
+    "reserveIgnored": "Reserve lines in the category list are ignored — use the fundo de reserva field.",
+    "useMinimumReserve": "Use 10% minimum",
+    "ordinaryTotal": "Ordinary budget",
+    "minimumReserve": "Legal minimum (10%)",
+    "annualTotal": "Annual total to collect",
+    "monthlyTotal": "Monthly building total",
+    "reserveWarning": "Fundo de reserva is {amount} below the 10% legal minimum. You can still save a draft.",
     "date": "Date",
     "amount": "Amount",
     "category": "Category",
@@ -74,7 +89,8 @@
     "validation": {
       "condominiumRequired": "Select a condominium.",
       "yearRequired": "Enter a year.",
-      "categoriesRequired": "Add at least one budget category.",
+      "categoriesRequired": "Add at least one ordinary budget category.",
+      "reserveRequired": "Enter the fundo de reserva amount.",
       "dateRequired": "Enter a date.",
       "amountRequired": "Enter an amount.",
       "categoryRequired": "Enter a category.",
@@ -87,7 +103,31 @@
   "flash": {
     "saved": "Record saved.",
     "deleted": "Record deleted.",
-    "approved": "Budget approved."
+    "approved": "Budget approved.",
+    "issued": "Extraordinary quota posted to owner current accounts.",
+    "issueFailed": "Could not issue the extraordinary quota.",
+    "noBilledOwners": "No billed owners found for this condominium."
+  },
+  "extraordinary": {
+    "modalTitle": "Issue extraordinary quota",
+    "modalSubtitle": "Split by unit permillage and post a debit on each billed owner’s current account.",
+    "description": "Description",
+    "descriptionPlaceholder": "e.g. Roof repair, elevator replacement",
+    "total": "Total amount",
+    "date": "Charge date",
+    "dueDate": "Due date",
+    "preview": "Allocation preview",
+    "previewEmpty": "Enter a total to preview the permillage split.",
+    "billedOwners": "{count, plural, one {# owner} other {# owners}}",
+    "unit": "Fraction",
+    "owner": "Owner",
+    "amount": "Amount",
+    "issue": "Issue quota",
+    "issuing": "Issuing…",
+    "validation": {
+      "descriptionRequired": "Enter a description.",
+      "noOwners": "This condominium has no billed owners."
+    }
   },
   "confirmDelete": "Delete this record? This cannot be undone."
 }

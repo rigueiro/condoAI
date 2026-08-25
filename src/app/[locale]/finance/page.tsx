@@ -8,15 +8,17 @@ import Button from "@/components/ui/button";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
-import { sumBudgetCategories } from "@/lib/quota";
 import { usePortfolio } from "@/lib/portfolio";
 import {
+  summarizeBudget,
   useFinance,
   type DraftBudgetItem,
   type FinanceKind,
   type FinanceTab,
+  type IssueExtraordinaryInput,
 } from "@/lib/finance";
 import DraftsPanel from "./components/drafts-panel";
+import ExtraordinaryQuotaModal from "./components/extraordinary-quota-modal";
 import FinanceModal, {
   type FinanceRecord,
 } from "./components/finance-modal";
@@ -54,6 +56,7 @@ function FinancePage() {
     budgets,
     expenses,
     accounts,
+    extraordinaryQuotas,
     draftItems,
     upsertAnnualBudget,
     removeAnnualBudget,
@@ -62,14 +65,17 @@ function FinancePage() {
     removeExpenseRecord,
     upsertBankAccount,
     removeBankAccount,
+    issueExtraordinaryQuota,
   } = useFinance();
 
   const [tab, setTab] = useState<FinanceTab>("attention");
   const [condoFilter, setCondoFilter] = useState("");
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [extraOpen, setExtraOpen] = useState(false);
   const [editing, setEditing] = useState<FinanceRecord | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [flashTone, setFlashTone] = useState<"success" | "error">("success");
 
   useEffect(() => {
     if (!flash) return;
@@ -86,6 +92,11 @@ function FinancePage() {
     () => new Map(condoOptions.map((c) => [c.id, c.name])),
     [condoOptions],
   );
+
+  const showFlash = (text: string, tone: "success" | "error" = "success") => {
+    setFlashTone(tone);
+    setFlash(text);
+  };
 
   const nameOf = (id: string) => condoNameById.get(id) ?? id;
   const searchLower = search.trim().toLowerCase();
@@ -132,14 +143,29 @@ function FinancePage() {
     );
   }, [accounts, condoFilter, searchLower, tab, condoNameById]);
 
+  const filteredExtras = useMemo(() => {
+    if (tab !== "extraordinary") return byCondo(extraordinaryQuotas, condoFilter);
+    return filterByCondoAndSearch(
+      extraordinaryQuotas,
+      condoFilter,
+      searchLower,
+      (item) => `${item.description} ${nameOf(item.condominiumId)}`,
+    );
+  }, [extraordinaryQuotas, condoFilter, searchLower, tab, condoNameById]);
+
   const tabs: { key: FinanceTab; count: number }[] = [
     { key: "attention", count: filteredDrafts.length },
     { key: "budget", count: filteredBudgets.length },
+    { key: "extraordinary", count: filteredExtras.length },
     { key: "expense", count: filteredExpenses.length },
     { key: "bank", count: filteredAccounts.length },
   ];
 
   const openAdd = () => {
+    if (tab === "extraordinary") {
+      setExtraOpen(true);
+      return;
+    }
     setEditing(null);
     setModalOpen(true);
   };
@@ -155,7 +181,7 @@ function FinancePage() {
     else upsertBankAccount(record.data);
     setModalOpen(false);
     setEditing(null);
-    setFlash(t("flash.saved"));
+    showFlash(t("flash.saved"));
     if (tab === "attention" && record.kind !== "budget") {
       setTab(record.kind);
     }
@@ -166,15 +192,31 @@ function FinancePage() {
     if (kind === "budget") removeAnnualBudget(id);
     else if (kind === "expense") removeExpenseRecord(id);
     else removeBankAccount(id);
-    setFlash(t("flash.deleted"));
+    showFlash(t("flash.deleted"));
   };
 
   const handleApprove = (item: DraftBudgetItem) => {
     markBudgetApproved(item.id);
-    setFlash(t("flash.approved"));
+    showFlash(t("flash.approved"));
   };
 
-  const defaultKind: FinanceKind = tab === "attention" ? "budget" : tab;
+  const handleIssueExtra = async (input: IssueExtraordinaryInput) => {
+    const result = await issueExtraordinaryQuota(input);
+    if (result.ok) {
+      showFlash(t("flash.issued"));
+      return true;
+    }
+    showFlash(
+      result.code === "noBilledOwners"
+        ? t("flash.noBilledOwners")
+        : t("flash.issueFailed"),
+      "error",
+    );
+    return false;
+  };
+
+  const defaultKind: FinanceKind =
+    tab === "attention" || tab === "extraordinary" ? "budget" : tab;
 
   const actionCell = (record: FinanceRecord) => (
     <td className="px-4 py-3 text-right">
@@ -215,13 +257,23 @@ function FinancePage() {
                 {t("subtitle")}
               </p>
             </div>
-            <Button variant="primary" iconName="Plus" onClick={openAdd}>
-              {t("add")}
+            <Button
+              variant="primary"
+              iconName="Plus"
+              onClick={openAdd}
+            >
+              {tab === "extraordinary" ? t("addExtraordinary") : t("add")}
             </Button>
           </div>
 
           {flash && (
-            <div className="mb-4 rounded-lg border border-success-100 bg-success-50 px-4 py-2 text-sm text-success">
+            <div
+              className={`mb-4 rounded-lg border px-4 py-2 text-sm ${
+                flashTone === "error"
+                  ? "border-error-100 bg-error-50 text-error"
+                  : "border-success-100 bg-success-50 text-success"
+              }`}
+            >
               {flash}
             </div>
           )}
@@ -332,30 +384,70 @@ function FinancePage() {
               colSpan={6}
               empty={filteredBudgets.length === 0}
             >
-              {filteredBudgets.map((b) => (
-                <tr key={b.id}>
+              {filteredBudgets.map((b) => {
+                const summary = summarizeBudget(b);
+                return (
+                  <tr key={b.id}>
+                    <td className="px-4 py-3 text-text-primary">
+                      {nameOf(b.condominiumId)}
+                    </td>
+                    <td className="px-4 py-3">{b.year}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ${
+                          b.status === "approved"
+                            ? "bg-success-50 text-success"
+                            : "bg-warning-50 text-warning"
+                        }`}
+                      >
+                        {t(`status.${b.status}`)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span>{formatCurrency(summary.collectable)}</span>
+                        {summary.shortfall > 0 && (
+                          <span className="inline-flex rounded-md bg-error-50 px-2 py-0.5 text-xs font-medium text-error">
+                            {t("table.reserveShort")}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-text-secondary">
+                      {Object.keys(b.valuesByCategory).length}
+                    </td>
+                    {actionCell({ kind: "budget", data: b })}
+                  </tr>
+                );
+              })}
+            </RecordsTable>
+          )}
+
+          {tab === "extraordinary" && (
+            <RecordsTable
+              headers={[
+                t("table.condominium"),
+                t("table.date"),
+                t("table.description"),
+                t("table.total"),
+                t("table.owners"),
+              ]}
+              colSpan={5}
+              empty={filteredExtras.length === 0}
+            >
+              {filteredExtras.map((item) => (
+                <tr key={item.id}>
                   <td className="px-4 py-3 text-text-primary">
-                    {nameOf(b.condominiumId)}
+                    {nameOf(item.condominiumId)}
                   </td>
-                  <td className="px-4 py-3">{b.year}</td>
+                  <td className="px-4 py-3">{item.date.slice(0, 10)}</td>
+                  <td className="px-4 py-3">{item.description}</td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ${
-                        b.status === "approved"
-                          ? "bg-success-50 text-success"
-                          : "bg-warning-50 text-warning"
-                      }`}
-                    >
-                      {t(`status.${b.status}`)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {formatCurrency(sumBudgetCategories(b.valuesByCategory))}
+                    {formatCurrency(item.totalAmount)}
                   </td>
                   <td className="px-4 py-3 text-text-secondary">
-                    {Object.keys(b.valuesByCategory).length}
+                    {item.ownerCount}
                   </td>
-                  {actionCell({ kind: "budget", data: b })}
                 </tr>
               ))}
             </RecordsTable>
@@ -427,6 +519,16 @@ function FinancePage() {
             setEditing(null);
           }}
           onSave={handleSave}
+        />
+      )}
+
+      {extraOpen && (
+        <ExtraordinaryQuotaModal
+          condominiums={condoOptions}
+          units={portfolio.units}
+          owners={portfolio.owners}
+          onClose={() => setExtraOpen(false)}
+          onIssue={handleIssueExtra}
         />
       )}
     </div>

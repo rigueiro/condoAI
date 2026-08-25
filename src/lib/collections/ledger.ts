@@ -12,7 +12,12 @@ import type {
   LedgerMovement,
 } from "./types";
 
-export const CHARGE_KINDS: ChargeKind[] = ["opening", "charge", "credit"];
+export const CHARGE_KINDS: ChargeKind[] = [
+  "opening",
+  "charge",
+  "credit",
+  "extraordinary",
+];
 
 const CHARGE_KIND_SET = new Set<string>(CHARGE_KINDS);
 
@@ -196,11 +201,19 @@ export function issueReceipt(
   };
 }
 
+export function addChargesToState(
+  state: CollectionsState,
+  charges: AccountCharge[],
+): CollectionsState {
+  if (charges.length === 0) return state;
+  return { ...state, charges: [...state.charges, ...charges] };
+}
+
 export function addChargeToState(
   state: CollectionsState,
   charge: AccountCharge,
 ): CollectionsState {
-  return { ...state, charges: [...state.charges, charge] };
+  return addChargesToState(state, [charge]);
 }
 
 export function buildExtract(

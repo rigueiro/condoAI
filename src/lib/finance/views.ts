@@ -1,5 +1,5 @@
 import type { AnnualBudget, Condominium } from "@/types";
-import { sumBudgetCategories } from "@/lib/quota";
+import { summarizeBudget } from "./budget";
 import type { DraftBudgetItem } from "./types";
 
 export function buildDraftBudgetItems(
@@ -10,14 +10,18 @@ export function buildDraftBudgetItems(
 
   return budgets
     .filter((b) => b.status === "draft")
-    .map((b) => ({
-      id: b.id,
-      condominiumId: b.condominiumId,
-      condominiumName: nameById.get(b.condominiumId) ?? b.condominiumId,
-      year: b.year,
-      total: sumBudgetCategories(b.valuesByCategory),
-      categoryCount: Object.keys(b.valuesByCategory).length,
-    }))
+    .map((b) => {
+      const summary = summarizeBudget(b);
+      return {
+        id: b.id,
+        condominiumId: b.condominiumId,
+        condominiumName: nameById.get(b.condominiumId) ?? b.condominiumId,
+        year: b.year,
+        total: summary.collectable,
+        categoryCount: Object.keys(summary.ordinary).length,
+        reserveShortfall: summary.shortfall,
+      };
+    })
     .sort(
       (a, b) =>
         a.year - b.year || a.condominiumName.localeCompare(b.condominiumName),

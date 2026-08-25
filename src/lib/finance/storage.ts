@@ -1,5 +1,5 @@
 import type { AnnualBudget, BankAccount, Expense } from "@/types";
-import type { FinanceState } from "./types";
+import type { ExtraordinaryQuota, FinanceState } from "./types";
 
 function upsertById<T extends { id: string }>(items: T[], item: T): T[] {
   const index = items.findIndex((i) => i.id === item.id);
@@ -64,4 +64,14 @@ export function approveBudget(
       b.id === id ? { ...b, status: "approved" as const } : b,
     ),
   );
+}
+
+export function appendExtraordinary(
+  state: FinanceState,
+  item: ExtraordinaryQuota,
+): FinanceState {
+  return {
+    ...state,
+    extraordinaryQuotas: [item, ...(state.extraordinaryQuotas ?? [])],
+  };
 }
