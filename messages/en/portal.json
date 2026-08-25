@@ -3,6 +3,9 @@
     "home": "Home",
     "extract": "Account extract",
     "documents": "Documents",
+    "occurrences": "Occurrences",
+    "announcements": "Announcements",
+    "budget": "Budget",
     "portal": "My condo"
   },
   "roles": {
@@ -17,12 +20,19 @@
   "noAccess": "You do not have access to any condominium yet. Ask your administrator for an invite.",
   "home": {
     "title": "Owner & board portal",
-    "subtitle": "View your extract and building documents without calling the office.",
+    "subtitle": "View your extract, building documents, occurrence status, and board notices without calling the office.",
     "extractCard": "Current account",
     "extractHint": "Extract for {name}",
     "extractUnavailable": "No owner account is linked to your access yet.",
     "documentsCard": "Documents",
     "documentsHint": "Regulations, certificates, insurance, and minutes for this building.",
+    "occurrencesCard": "Occurrences",
+    "occurrencesHint": "Track maintenance and complaint status for your unit.",
+    "announcementsCard": "Announcements",
+    "announcementsHint": "Circulars, works notices, and updates from the administrator.",
+    "budgetCard": "Budget approval",
+    "budgetHint": "Review and approve the draft annual budget.",
+    "budgetUnavailable": "Budget approval is available to board members only.",
     "role": "Your role",
     "units": "Fractions",
     "linkedOwner": "Linked owner"
@@ -45,5 +55,43 @@
       "certificate": "Certificate",
       "assembly-minutes": "Assembly minutes"
     }
+  },
+  "occurrences": {
+    "title": "Occurrences",
+    "subtitle": "Status of reported issues for your unit or building.",
+    "empty": "No occurrences to show for your access level.",
+    "unit": "Location",
+    "lastUpdate": "Last update",
+    "reported": "Reported"
+  },
+  "announcements": {
+    "title": "Announcements",
+    "subtitle": "Circulars and notices sent by the administrator.",
+    "empty": "No announcements for this condominium yet.",
+    "sentOn": "Sent on {date}",
+    "audience": {
+      "all": "All residents",
+      "owners": "Owners",
+      "board": "Board"
+    }
+  },
+  "budget": {
+    "title": "Budget approval",
+    "subtitle": "Review the draft annual budget before it is finalized.",
+    "empty": "No draft budget is waiting for approval.",
+    "unavailable": "Budget approval is available to board members only.",
+    "year": "Budget {year}",
+    "draft": "Draft",
+    "approved": "Approved",
+    "ordinaryTotal": "Operating total",
+    "reserveFund": "Reserve fund",
+    "minimumReserve": "Legal minimum (10%)",
+    "collectable": "Total collectable",
+    "monthlyTotal": "Monthly quota base",
+    "shortfall": "Reserve fund below legal minimum",
+    "categories": "Operating categories",
+    "approve": "Approve budget",
+    "approving": "Approving…",
+    "approveFailed": "Could not approve the budget."
   }
 }

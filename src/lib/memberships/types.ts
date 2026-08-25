@@ -1,4 +1,9 @@
 import { UserRole } from "@/app/types";
+import type {
+  OccurrenceCategory,
+  OccurrencePriority,
+  OccurrenceStatus,
+} from "@/types";
 
 /** Login roles that can be granted per condomínio (not org-wide manager). */
 export const CONDO_ASSIGNABLE_ROLES = [
@@ -63,6 +68,35 @@ export type PortalMembershipView = {
 export type PortalContext = {
   mode: "manager" | "portal";
   memberships: PortalMembershipView[];
+};
+
+export type PortalOccurrence = {
+  id: string;
+  title: string;
+  category: OccurrenceCategory;
+  unit: string | null;
+  status: OccurrenceStatus;
+  priority: OccurrencePriority;
+  dateTime: string;
+  lastUpdate: string | null;
+};
+
+export type PortalBudgetLine = {
+  key: string;
+  amount: number;
+};
+
+export type PortalBudget = {
+  id: string;
+  year: number;
+  status: "draft" | "approved";
+  ordinary: PortalBudgetLine[];
+  ordinaryTotal: number;
+  reserveFund: number;
+  minimumReserve: number;
+  collectable: number;
+  monthlyTotal: number;
+  shortfall: number;
 };
 
 export function isCondoAssignableRole(

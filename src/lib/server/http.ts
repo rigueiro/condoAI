@@ -37,6 +37,7 @@ const ERROR_STATUS: Record<string, number> = {
   quorumRequired: 409,
   minutesRequired: 400,
   vendorInUse: 409,
+  noRecipients: 400,
 };
 
 export function handleRouteError(err: unknown): NextResponse {

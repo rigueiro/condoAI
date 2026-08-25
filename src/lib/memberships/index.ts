@@ -8,6 +8,9 @@ export {
   type PortalDocument,
   type PortalDocumentKind,
   type PortalMembershipView,
+  type PortalOccurrence,
+  type PortalBudget,
+  type PortalBudgetLine,
 } from "./types";
 export {
   canPortal,

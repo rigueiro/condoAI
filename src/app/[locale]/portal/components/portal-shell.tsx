@@ -1,12 +1,16 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Select from "@/components/ui/select";
 import { Link, usePathname } from "@/i18n/navigation";
-import { roleDisplayKey, useMemberships } from "@/lib/memberships";
+import {
+  canPortal,
+  roleDisplayKey,
+  useMemberships,
+} from "@/lib/memberships";
 import { usePortalCondo } from "./use-portal-condo";
 
 type Props = {
@@ -23,19 +27,49 @@ function PortalShell({ children, title, subtitle }: Props) {
   const { selected, setCondominiumId } = usePortalCondo();
 
   const condoQs = selected ? `?condo=${selected.condominiumId}` : "";
-  const nav = [
-    { href: "/portal", label: t("nav.home"), match: pathname === "/portal" },
-    {
-      href: `/portal/extract${condoQs}`,
-      label: t("nav.extract"),
-      match: pathname.startsWith("/portal/extract"),
-    },
-    {
-      href: `/portal/documents${condoQs}`,
-      label: t("nav.documents"),
-      match: pathname.startsWith("/portal/documents"),
-    },
-  ];
+
+  const nav = useMemo(() => {
+    const role = selected?.role;
+    const items = [
+      { href: "/portal", label: t("nav.home"), match: pathname === "/portal" },
+    ];
+    if (role && canPortal(role, "readExtract") && selected?.ownerId) {
+      items.push({
+        href: `/portal/extract${condoQs}`,
+        label: t("nav.extract"),
+        match: pathname.startsWith("/portal/extract"),
+      });
+    }
+    if (role && canPortal(role, "readDocuments")) {
+      items.push({
+        href: `/portal/documents${condoQs}`,
+        label: t("nav.documents"),
+        match: pathname.startsWith("/portal/documents"),
+      });
+    }
+    if (role && canPortal(role, "readOccurrences")) {
+      items.push({
+        href: `/portal/occurrences${condoQs}`,
+        label: t("nav.occurrences"),
+        match: pathname.startsWith("/portal/occurrences"),
+      });
+    }
+    if (role && canPortal(role, "readAnnouncements")) {
+      items.push({
+        href: `/portal/announcements${condoQs}`,
+        label: t("nav.announcements"),
+        match: pathname.startsWith("/portal/announcements"),
+      });
+    }
+    if (role && canPortal(role, "readBudget")) {
+      items.push({
+        href: `/portal/budget${condoQs}`,
+        label: t("nav.budget"),
+        match: pathname.startsWith("/portal/budget"),
+      });
+    }
+    return items;
+  }, [condoQs, pathname, selected, t]);
 
   return (
     <div className="min-h-screen bg-background">

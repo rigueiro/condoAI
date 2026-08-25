@@ -1,11 +1,14 @@
 import { UserRole } from "@/app/types";
+import type { AnnualBudget, Occurrence } from "@/types";
 import {
   isCondoAssignableRole,
   type CondoAssignableRole,
   type CondoMembership,
+  type PortalBudget,
   type PortalContext,
   type PortalDocument,
   type PortalMembershipView,
+  type PortalOccurrence,
 } from "@/lib/memberships/types";
 import { canPortal } from "@/lib/memberships/permissions";
 import { buildExtract } from "@/lib/collections/ledger";
@@ -14,11 +17,20 @@ import { formatPortugueseAddress } from "@/lib/address";
 import { occupanciesForOwner } from "@/lib/portfolio/occupancy";
 import { DEMO_EMAIL } from "@/lib/auth/constants";
 import type { Portfolio } from "@/lib/portfolio/types";
+import type { Announcement } from "@/lib/announcements/types";
+import { announcementMatchesAudience } from "@/lib/announcements/audience";
+import {
+  getAnnouncements,
+} from "@/lib/server/announcements";
+import { summarizeBudget } from "@/lib/finance/budget";
+import { getFinance, markBudgetApproved } from "@/lib/server/finance";
+import { getOccurrences } from "@/lib/server/occurrences";
 import { getAssemblies } from "./assemblies";
 import { getCollections } from "./collections";
 import { getCompliance } from "./compliance";
 import { getPortfolio } from "./portfolio";
 import { readStore, updateStore } from "./store";
+import { readMembershipsForHost } from "./membership-store";
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -34,7 +46,7 @@ function isoDate(value: string | Date | null | undefined): string | null {
 }
 
 export function listMembershipsForHost(hostEmail: string): CondoMembership[] {
-  return [...(readStore().membershipsByHost[normalizeEmail(hostEmail)] ?? [])];
+  return readMembershipsForHost(hostEmail);
 }
 
 export function listMembershipsForMember(
@@ -368,4 +380,136 @@ export function portalDocuments(
   }
 
   return { documents };
+}
+
+function isoDateTime(value: string | Date | null | undefined): string | null {
+  if (!value) return null;
+  return String(value);
+}
+
+function toPortalOccurrence(occurrence: Occurrence): PortalOccurrence {
+  const history = occurrence.history ?? [];
+  const last = history.length > 0 ? history[history.length - 1] : null;
+  return {
+    id: occurrence.id,
+    title: occurrence.title,
+    category: occurrence.category,
+    unit: occurrence.unit,
+    status: occurrence.status,
+    priority: occurrence.priority,
+    dateTime: isoDateTime(occurrence.dateTime) ?? "",
+    lastUpdate: last ? isoDateTime(last.date) : null,
+  };
+}
+
+export function portalOccurrences(
+  memberEmail: string,
+  condominiumId: string,
+): { occurrences: PortalOccurrence[] } {
+  const membership = requireMembership(memberEmail, condominiumId);
+  if (!canPortal(membership.role, "readOccurrences")) {
+    throw new Error("forbidden");
+  }
+
+  const { occurrences } = getOccurrences(membership.hostEmail);
+  const seesAll =
+    membership.role === UserRole.BoardMember ||
+    membership.role === UserRole.Staff;
+
+  const filtered = occurrences.filter((occ) => {
+    if (occ.condominiumId !== condominiumId) return false;
+    if (seesAll) return true;
+    if (!membership.ownerId) return false;
+    return occ.ownerId === membership.ownerId || occ.ownerId === null;
+  });
+
+  return {
+    occurrences: filtered
+      .map(toPortalOccurrence)
+      .sort((a, b) => b.dateTime.localeCompare(a.dateTime)),
+  };
+}
+
+export function portalAnnouncements(
+  memberEmail: string,
+  condominiumId: string,
+): { announcements: Announcement[] } {
+  const membership = requireMembership(memberEmail, condominiumId);
+  if (!canPortal(membership.role, "readAnnouncements")) {
+    throw new Error("forbidden");
+  }
+
+  const { announcements } = getAnnouncements(membership.hostEmail);
+  return {
+    announcements: announcements
+      .filter(
+        (a) =>
+          a.sentAt &&
+          a.condominiumId === condominiumId &&
+          announcementMatchesAudience(a.audience, membership.role),
+      )
+      .sort((a, b) => String(b.sentAt).localeCompare(String(a.sentAt))),
+  };
+}
+
+function toPortalBudget(budget: AnnualBudget): PortalBudget {
+  const summary = summarizeBudget(budget);
+  return {
+    id: budget.id,
+    year: budget.year,
+    status: budget.status,
+    ordinary: Object.entries(summary.ordinary).map(([key, amount]) => ({
+      key,
+      amount,
+    })),
+    ordinaryTotal: summary.ordinaryTotal,
+    reserveFund: summary.reserveFund,
+    minimumReserve: summary.minimumReserve,
+    collectable: summary.collectable,
+    monthlyTotal: summary.monthlyTotal,
+    shortfall: summary.shortfall,
+  };
+}
+
+export function portalBudget(
+  memberEmail: string,
+  condominiumId: string,
+): { budget: PortalBudget | null } {
+  const membership = requireMembership(memberEmail, condominiumId);
+  if (!canPortal(membership.role, "readBudget")) throw new Error("forbidden");
+
+  const state = getFinance(membership.hostEmail);
+  const drafts = state.budgets
+    .filter(
+      (b) => b.condominiumId === condominiumId && b.status === "draft",
+    )
+    .sort((a, b) => b.year - a.year);
+
+  const latest = drafts[0];
+  return { budget: latest ? toPortalBudget(latest) : null };
+}
+
+export function portalApproveBudget(
+  memberEmail: string,
+  condominiumId: string,
+  budgetId: string,
+): { budget: PortalBudget } {
+  const membership = requireMembership(memberEmail, condominiumId);
+  if (!canPortal(membership.role, "approveBudget")) {
+    throw new Error("forbidden");
+  }
+
+  const state = getFinance(membership.hostEmail);
+  const target = state.budgets.find(
+    (b) =>
+      b.id === budgetId &&
+      b.condominiumId === condominiumId &&
+      b.status === "draft",
+  );
+  if (!target) throw new Error("notFound");
+
+  const next = markBudgetApproved(membership.hostEmail, budgetId);
+  const approved = next.budgets.find((b) => b.id === budgetId);
+  if (!approved) throw new Error("notFound");
+  return { budget: toPortalBudget(approved) };
 }

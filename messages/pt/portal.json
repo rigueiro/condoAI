@@ -3,6 +3,9 @@
     "home": "Início",
     "extract": "Extrato de conta",
     "documents": "Documentos",
+    "occurrences": "Ocorrências",
+    "announcements": "Comunicações",
+    "budget": "Orçamento",
     "portal": "O meu condomínio"
   },
   "roles": {
@@ -17,12 +20,19 @@
   "noAccess": "Ainda não tem acesso a nenhum condomínio. Peça um convite ao administrador.",
   "home": {
     "title": "Portal de proprietários e administração",
-    "subtitle": "Consulte o extrato e os documentos do edifício sem contactar o escritório.",
+    "subtitle": "Consulte o extrato, documentos, estado das ocorrências e avisos da administração sem contactar o escritório.",
     "extractCard": "Conta corrente",
     "extractHint": "Extrato de {name}",
     "extractUnavailable": "Ainda não há conta de proprietário ligada ao seu acesso.",
     "documentsCard": "Documentos",
     "documentsHint": "Regulamento, certificados, seguros e atas deste edifício.",
+    "occurrencesCard": "Ocorrências",
+    "occurrencesHint": "Acompanhe o estado de manutenção e reclamações da sua fração.",
+    "announcementsCard": "Comunicações",
+    "announcementsHint": "Circulares, avisos de obras e atualizações do administrador.",
+    "budgetCard": "Aprovação de orçamento",
+    "budgetHint": "Reveja e aprove o orçamento anual em rascunho.",
+    "budgetUnavailable": "A aprovação de orçamento está disponível apenas para a administração.",
     "role": "A sua função",
     "units": "Frações",
     "linkedOwner": "Proprietário ligado"
@@ -45,5 +55,43 @@
       "certificate": "Certificado",
       "assembly-minutes": "Ata de assembleia"
     }
+  },
+  "occurrences": {
+    "title": "Ocorrências",
+    "subtitle": "Estado dos problemas reportados na sua fração ou edifício.",
+    "empty": "Não há ocorrências para mostrar com o seu nível de acesso.",
+    "unit": "Local",
+    "lastUpdate": "Última atualização",
+    "reported": "Reportado"
+  },
+  "announcements": {
+    "title": "Comunicações",
+    "subtitle": "Circulares e avisos enviados pelo administrador.",
+    "empty": "Ainda não há comunicações para este condomínio.",
+    "sentOn": "Enviado a {date}",
+    "audience": {
+      "all": "Todos os residentes",
+      "owners": "Proprietários",
+      "board": "Administração"
+    }
+  },
+  "budget": {
+    "title": "Aprovação de orçamento",
+    "subtitle": "Reveja o orçamento anual em rascunho antes de ser finalizado.",
+    "empty": "Não há orçamento em rascunho à espera de aprovação.",
+    "unavailable": "A aprovação de orçamento está disponível apenas para a administração.",
+    "year": "Orçamento {year}",
+    "draft": "Rascunho",
+    "approved": "Aprovado",
+    "ordinaryTotal": "Total de despesas correntes",
+    "reserveFund": "Fundo de reserva",
+    "minimumReserve": "Mínimo legal (10%)",
+    "collectable": "Total a arrecadar",
+    "monthlyTotal": "Base mensal de quotas",
+    "shortfall": "Fundo de reserva abaixo do mínimo legal",
+    "categories": "Categorias correntes",
+    "approve": "Aprovar orçamento",
+    "approving": "A aprovar…",
+    "approveFailed": "Não foi possível aprovar o orçamento."
   }
 }

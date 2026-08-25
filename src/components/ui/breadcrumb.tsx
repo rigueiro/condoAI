@@ -28,10 +28,23 @@ function Breadcrumb() {
       labelKey: "documentsArchive" as const,
       parent: "/dashboard",
     },
+    "/announcements": {
+      labelKey: "announcements" as const,
+      parent: "/dashboard",
+    },
     "/reports-analytics": { labelKey: "reports" as const, parent: "/dashboard" },
     "/portal": { labelKey: "portal" as const, parent: null },
     "/portal/extract": { labelKey: "extract" as const, parent: "/portal" },
     "/portal/documents": { labelKey: "documents" as const, parent: "/portal" },
+    "/portal/occurrences": {
+      labelKey: "occurrences" as const,
+      parent: "/portal",
+    },
+    "/portal/announcements": {
+      labelKey: "announcements" as const,
+      parent: "/portal",
+    },
+    "/portal/budget": { labelKey: "budget" as const, parent: "/portal" },
     "/profile": { labelKey: "profile" as const, parent: "/dashboard" },
     "/account": { labelKey: "account" as const, parent: "/dashboard" },
     "/help": { labelKey: "help" as const, parent: "/dashboard" },

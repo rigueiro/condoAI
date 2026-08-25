@@ -32,6 +32,17 @@ function Header() {
           path: "/portal/documents",
           icon: "FolderOpen",
         },
+        {
+          label: t("nav.occurrences"),
+          path: "/portal/occurrences",
+          icon: "ClipboardList",
+        },
+        {
+          label: t("nav.announcements"),
+          path: "/portal/announcements",
+          icon: "Mail",
+        },
+        { label: t("nav.budget"), path: "/portal/budget", icon: "Wallet" },
       ];
     }
     return [
@@ -56,6 +67,11 @@ function Header() {
         label: t("nav.documentsArchive"),
         path: "/documents",
         icon: "FolderOpen",
+      },
+      {
+        label: t("nav.announcements"),
+        path: "/announcements",
+        icon: "Mail",
       },
       { label: t("nav.reports"), path: "/reports-analytics", icon: "BarChart3" },
     ];

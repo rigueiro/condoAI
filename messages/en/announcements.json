@@ -1,0 +1,29 @@
+{
+  "title": "Owner mailings",
+  "subtitle": "Send circulars, works notices, and regulation updates to every unit.",
+  "compose": "New mailing",
+  "empty": "No mailings sent for this condominium yet.",
+  "sentTo": "{count, plural, one {# recipient} other {# recipients}}",
+  "audience": {
+    "label": "Audience",
+    "all": "All portal members",
+    "owners": "Owners only",
+    "board": "Board only"
+  },
+  "form": {
+    "subject": "Subject",
+    "subjectPlaceholder": "Elevator maintenance — 28 September",
+    "body": "Message",
+    "bodyPlaceholder": "Describe the notice for owners and residents…",
+    "send": "Send mailing",
+    "cancel": "Cancel",
+    "sending": "Sending…",
+    "subjectRequired": "Subject is required.",
+    "bodyRequired": "Message body is required.",
+    "noRecipients": "No recipients match this audience.",
+    "sendFailed": "Could not send the mailing."
+  },
+  "modal": {
+    "title": "Compose owner mailing"
+  }
+}

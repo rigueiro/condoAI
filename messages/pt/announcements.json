@@ -1,0 +1,29 @@
+{
+  "title": "Comunicações a proprietários",
+  "subtitle": "Envie circulares, avisos de obras e atualizações regulamentares a todas as frações.",
+  "compose": "Nova comunicação",
+  "empty": "Ainda não foram enviadas comunicações para este condomínio.",
+  "sentTo": "{count, plural, one {# destinatário} other {# destinatários}}",
+  "audience": {
+    "label": "Destinatários",
+    "all": "Todos os membros do portal",
+    "owners": "Apenas proprietários",
+    "board": "Apenas administração"
+  },
+  "form": {
+    "subject": "Assunto",
+    "subjectPlaceholder": "Manutenção do elevador — 28 de setembro",
+    "body": "Mensagem",
+    "bodyPlaceholder": "Descreva o aviso para proprietários e residentes…",
+    "send": "Enviar comunicação",
+    "cancel": "Cancelar",
+    "sending": "A enviar…",
+    "subjectRequired": "O assunto é obrigatório.",
+    "bodyRequired": "A mensagem é obrigatória.",
+    "noRecipients": "Não há destinatários para este grupo.",
+    "sendFailed": "Não foi possível enviar a comunicação."
+  },
+  "modal": {
+    "title": "Nova comunicação a proprietários"
+  }
+}
