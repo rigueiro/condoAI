@@ -1,9 +1,4 @@
-import type {
-  AssemblyMinutes,
-  Certificate,
-  InsurancePolicy,
-  Summons,
-} from "@/types";
+import type { Certificate, InsurancePolicy } from "@/types";
 import type { ComplianceState } from "./types";
 
 function upsertById<T extends { id: string }>(items: T[], item: T): T[] {
@@ -55,34 +50,6 @@ export function removeCertificate(
   id: string,
 ): ComplianceState {
   return { ...state, certificates: removeById(state.certificates, id) };
-}
-
-export function upsertAssembly(
-  state: ComplianceState,
-  assembly: AssemblyMinutes,
-): ComplianceState {
-  return { ...state, assemblies: upsertById(state.assemblies, assembly) };
-}
-
-export function removeAssembly(
-  state: ComplianceState,
-  id: string,
-): ComplianceState {
-  return { ...state, assemblies: removeById(state.assemblies, id) };
-}
-
-export function upsertSummons(
-  state: ComplianceState,
-  summons: Summons,
-): ComplianceState {
-  return { ...state, summons: upsertById(state.summons, summons) };
-}
-
-export function removeSummons(
-  state: ComplianceState,
-  id: string,
-): ComplianceState {
-  return { ...state, summons: removeById(state.summons, id) };
 }
 
 /** Roll insurance renewal forward by one year from the current renewal date. */

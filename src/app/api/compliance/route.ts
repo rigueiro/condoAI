@@ -1,21 +1,12 @@
-import type {
-  AssemblyMinutes,
-  Certificate,
-  InsurancePolicy,
-  Summons,
-} from "@/types";
+import type { Certificate, InsurancePolicy } from "@/types";
 import {
-  deleteAssembly,
   deleteCertificate,
   deletePolicy,
-  deleteSummons,
   getCompliance,
   markCertificateRenewed,
   markPolicyRenewed,
-  putAssembly,
   putCertificate,
   putPolicy,
-  putSummons,
 } from "@/lib/server/compliance";
 import { requireSessionEmail } from "@/lib/server/session";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
@@ -42,8 +33,6 @@ export async function PATCH(request: Request) {
       action?: string;
       policy?: InsurancePolicy;
       certificate?: Certificate;
-      assembly?: AssemblyMinutes;
-      summons?: Summons;
       id?: string;
     };
 
@@ -71,22 +60,6 @@ export async function PATCH(request: Request) {
       case "renewCertificate":
         return body.id
           ? jsonOk({ state: markCertificateRenewed(email, body.id) })
-          : jsonError("badRequest");
-      case "upsertAssembly":
-        return hasCondoEntity(body.assembly)
-          ? jsonOk({ state: putAssembly(email, body.assembly) })
-          : jsonError("badRequest");
-      case "removeAssembly":
-        return body.id
-          ? jsonOk({ state: deleteAssembly(email, body.id) })
-          : jsonError("badRequest");
-      case "upsertSummons":
-        return hasCondoEntity(body.summons)
-          ? jsonOk({ state: putSummons(email, body.summons) })
-          : jsonError("badRequest");
-      case "removeSummons":
-        return body.id
-          ? jsonOk({ state: deleteSummons(email, body.id) })
           : jsonError("badRequest");
       default:
         return jsonError("badRequest");

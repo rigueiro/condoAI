@@ -1,0 +1,167 @@
+{
+  "title": "Assembleias",
+  "subtitle": "Convocar condóminos, passar lista, votar por permilagem e lavrar a acta.",
+  "add": "Nova assembleia",
+  "empty": "Ainda não há assembleias.",
+  "emptyHint": "Marque uma assembleia ordinária ou extraordinária para um condomínio.",
+  "confirmDelete": "Eliminar esta assembleia? Esta acção não pode ser anulada.",
+  "stats": {
+    "upcoming": "Próximas",
+    "inSession": "Em sessão",
+    "drafts": "Rascunhos",
+    "closed": "Encerradas"
+  },
+  "table": {
+    "condominium": "Condomínio",
+    "title": "Reunião",
+    "date": "Data",
+    "type": "Tipo",
+    "status": "Estado",
+    "notice": "Prazo",
+    "actions": "Acções",
+    "open": "Abrir",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "types": {
+    "ordinary": "Ordinária",
+    "extraordinary": "Extraordinária"
+  },
+  "statuses": {
+    "draft": "Rascunho",
+    "summoned": "Convocada",
+    "in_session": "Em sessão",
+    "closed": "Encerrada"
+  },
+  "notice": {
+    "ok": "{days} dias",
+    "short": "{days} dias (abaixo do mínimo legal de {min} dias)",
+    "pending": "Não enviada",
+    "legalMin": "A lei exige convocatória escrita com antecedência mínima de {days} dias."
+  },
+  "call": {
+    "first": "Primeira convocatória",
+    "second": "Segunda convocatória"
+  },
+  "majority": {
+    "simple": "Maioria simples (a favor > contra)",
+    "absolute-present": "Maioria da permilagem presente",
+    "qualified-total": "2/3 da permilagem total (1000‰)"
+  },
+  "attendanceStatus": {
+    "present": "Presente",
+    "represented": "Representado",
+    "absent": "Ausente"
+  },
+  "vote": {
+    "for": "A favor",
+    "against": "Contra",
+    "abstain": "Abstenção"
+  },
+  "methods": {
+    "email": "Email",
+    "mail": "Correio registado"
+  },
+  "modal": {
+    "addTitle": "Marcar assembleia",
+    "editTitle": "Editar assembleia",
+    "condominium": "Condomínio",
+    "type": "Tipo",
+    "title": "Título",
+    "titlePlaceholder": "ex. Assembleia ordinária 2026",
+    "date": "Data",
+    "time": "Hora",
+    "location": "Local",
+    "locationPlaceholder": "Salão, escritório da administração…",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "validation": {
+      "condoRequired": "Escolha um condomínio",
+      "titleRequired": "O título é obrigatório",
+      "dateRequired": "A data é obrigatória",
+      "locationRequired": "O local é obrigatório"
+    }
+  },
+  "detail": {
+    "notFound": "Esta assembleia não foi encontrada.",
+    "back": "Todas as assembleias",
+    "when": "{date} às {time}",
+    "sendSummons": "Enviar convocatória",
+    "openSession": "Abrir sessão",
+    "openSecondCall": "Abrir em segunda convocatória",
+    "close": "Encerrar e lavrar deliberações",
+    "closedHint": "Esta assembleia está encerrada. As deliberações estão bloqueadas.",
+    "draftHint": "Feche a ordem de trabalhos e envie a convocatória com pelo menos {days} dias de antecedência.",
+    "summonedHint": "Os condóminos já foram convocados. No dia da reunião, abra a sessão para passar lista e votar.",
+    "sessionHint": "Registe presenças, vote cada ponto por permilagem e redija a acta."
+  },
+  "summons": {
+    "title": "Convocatória e prazo legal",
+    "sentOn": "Enviada em {date}",
+    "method": "Canal",
+    "body": "Texto da convocatória",
+    "bodyHint": "A ordem de trabalhos tem de constar da convocatória. A cláusula de segunda convocatória é incluída por omissão.",
+    "legalOk": "Prazo legal cumprido ({days} dias antes da reunião).",
+    "legalShort": "Apenas {days} dias de antecedência. O mínimo legal é {min} dias (art. 1432.º CC)."
+  },
+  "agenda": {
+    "title": "Ordem de trabalhos",
+    "add": "Adicionar ponto",
+    "item": "Ponto {n}",
+    "itemTitle": "Título",
+    "description": "Descrição",
+    "majority": "Maioria",
+    "empty": "Adicione a ordem de trabalhos antes de enviar a convocatória.",
+    "remove": "Remover",
+    "locked": "A ordem de trabalhos fica bloqueada depois de enviada a convocatória."
+  },
+  "attendance": {
+    "title": "Presenças",
+    "quorum": "Quórum",
+    "attending": "{amount} presentes",
+    "needed": "A primeira convocatória exige mais de {amount}",
+    "met": "Quórum atingido",
+    "notMet": "Sem quórum na primeira convocatória — use a segunda (os presentes).",
+    "secondCall": "Segunda convocatória: os presentes podem deliberar.",
+    "owner": "Condómino",
+    "units": "Frações",
+    "share": "Permilagem",
+    "status": "Presença",
+    "proxy": "Representado por",
+    "none": "Não há condóminos com voto nas frações deste edifício."
+  },
+  "voting": {
+    "title": "Votação por permilagem",
+    "resultPass": "Aprovado",
+    "resultFail": "Não aprovado",
+    "for": "A favor {amount}",
+    "against": "Contra {amount}",
+    "abstain": "Abstenção {amount}",
+    "unvoted": "Sem voto {amount}",
+    "needQuorum": "É preciso quórum para a deliberação ser válida.",
+    "closed": "A votação está encerrada."
+  },
+  "minutes": {
+    "title": "Acta",
+    "body": "Texto da acta",
+    "placeholder": "Registe a discussão, as votações e as aprovações. A acta é a memória legal da reunião.",
+    "required": "Redija a acta antes de encerrar a assembleia."
+  },
+  "resolutions": {
+    "title": "Deliberações",
+    "empty": "As deliberações aparecem quando a assembleia é encerrada.",
+    "passed": "Aprovada",
+    "rejected": "Rejeitada",
+    "tally": "{for} a favor · {against} contra · {abstain} abstenção"
+  },
+  "errors": {
+    "requestFailed": "Não foi possível guardar. Tente de novo.",
+    "badRequest": "Verifique os campos obrigatórios.",
+    "assemblyClosed": "Esta assembleia já está encerrada.",
+    "agendaRequired": "Adicione pelo menos um ponto à ordem de trabalhos antes de enviar a convocatória.",
+    "summonsRequired": "Envie a convocatória antes de abrir a sessão.",
+    "notInSession": "Abra a sessão antes de encerrar.",
+    "minutesRequired": "A acta não pode ficar vazia.",
+    "notFound": "Assembleia não encontrada."
+  }
+}

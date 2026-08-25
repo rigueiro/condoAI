@@ -4,20 +4,13 @@ import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
-import type {
-  AssemblyMinutes,
-  Certificate,
-  InsurancePolicy,
-  Summons,
-} from "@/types";
+import type { Certificate, InsurancePolicy } from "@/types";
 import type { ComplianceKind } from "@/lib/compliance";
 import DocumentUpload from "./document-upload";
 
 export type ComplianceRecord =
   | { kind: "insurance"; data: InsurancePolicy }
-  | { kind: "certificate"; data: Certificate }
-  | { kind: "assembly"; data: AssemblyMinutes }
-  | { kind: "summons"; data: Summons };
+  | { kind: "certificate"; data: Certificate };
 
 type CondoOption = { id: string; name: string };
 
@@ -77,32 +70,9 @@ function ComplianceModal({
       ? String(record.data.validity).slice(0, 10)
       : "",
   );
-  const [assemblyDate, setAssemblyDate] = useState(
-    record?.kind === "assembly" ? String(record.data.date).slice(0, 10) : "",
+  const [documentFile, setDocumentFile] = useState<string | null>(
+    record?.kind === "certificate" ? record.data.file : null,
   );
-  const [assemblyType, setAssemblyType] = useState<AssemblyMinutes["type"]>(
-    record?.kind === "assembly" ? record.data.type : "ordinary",
-  );
-  const [summonsTitle, setSummonsTitle] = useState(
-    record?.kind === "summons" ? record.data.title : "",
-  );
-  const [summonsContent, setSummonsContent] = useState(
-    record?.kind === "summons" ? record.data.content : "",
-  );
-  const [sentDate, setSentDate] = useState(
-    record?.kind === "summons"
-      ? String(record.data.sentDate).slice(0, 10)
-      : "",
-  );
-  const [method, setMethod] = useState<Summons["method"]>(
-    record?.kind === "summons" ? record.data.method : "email",
-  );
-  const [documentFile, setDocumentFile] = useState<string | null>(() => {
-    if (record?.kind === "certificate") return record.data.file;
-    if (record?.kind === "assembly") return record.data.file;
-    if (record?.kind === "summons") return record.data.proof;
-    return null;
-  });
   const [errors, setErrors] = useState<Errors>({});
 
   const validate = (): boolean => {
@@ -116,14 +86,6 @@ function ComplianceModal({
       if (!renewalDate) next.renewalDate = t("modal.validation.renewalRequired");
     } else if (kind === "certificate") {
       if (!validity) next.validity = t("modal.validation.validityRequired");
-    } else if (kind === "assembly") {
-      if (!assemblyDate) next.assemblyDate = t("modal.validation.dateRequired");
-    } else {
-      if (!summonsTitle.trim())
-        next.summonsTitle = t("modal.validation.titleRequired");
-      if (!summonsContent.trim())
-        next.summonsContent = t("modal.validation.contentRequired");
-      if (!sentDate) next.sentDate = t("modal.validation.dateRequired");
     }
 
     setErrors(next);
@@ -167,37 +129,7 @@ function ComplianceModal({
           file: documentFile,
         },
       });
-      return;
     }
-
-    if (kind === "assembly") {
-      onSave({
-        kind,
-        data: {
-          id,
-          condominiumId,
-          date: assemblyDate,
-          type: assemblyType,
-          file: documentFile,
-          participants:
-            record?.kind === "assembly" ? record.data.participants : [],
-        },
-      });
-      return;
-    }
-
-    onSave({
-      kind,
-      data: {
-        id,
-        condominiumId,
-        sentDate,
-        title: summonsTitle.trim(),
-        content: summonsContent.trim(),
-        method,
-        proof: documentFile,
-      },
-    });
   };
 
   const fieldClass =
@@ -241,8 +173,6 @@ function ComplianceModal({
               >
                 <option value="insurance">{t("kinds.insurance")}</option>
                 <option value="certificate">{t("kinds.certificate")}</option>
-                <option value="assembly">{t("kinds.assembly")}</option>
-                <option value="summons">{t("kinds.summons")}</option>
               </Select>
             </div>
           )}
@@ -372,106 +302,6 @@ function ComplianceModal({
               </div>
               <DocumentUpload
                 label={t("modal.file.document")}
-                value={documentFile}
-                onChange={setDocumentFile}
-              />
-            </>
-          )}
-
-          {kind === "assembly" && (
-            <>
-              <div>
-                <label className={labelClass}>{t("modal.assemblyDate")}</label>
-                <input
-                  type="date"
-                  className={fieldClass}
-                  value={assemblyDate}
-                  onChange={(e) => setAssemblyDate(e.target.value)}
-                />
-                {errors.assemblyDate && (
-                  <p className="mt-1 text-xs text-error">{errors.assemblyDate}</p>
-                )}
-              </div>
-              <div>
-                <label className={labelClass}>{t("modal.assemblyType")}</label>
-                <Select
-                  value={assemblyType}
-                  onChange={(e) =>
-                    setAssemblyType(e.target.value as AssemblyMinutes["type"])
-                  }
-                >
-                  <option value="ordinary">
-                    {t("assemblyTypes.ordinary")}
-                  </option>
-                  <option value="extraordinary">
-                    {t("assemblyTypes.extraordinary")}
-                  </option>
-                </Select>
-              </div>
-              <DocumentUpload
-                label={t("modal.file.minutes")}
-                value={documentFile}
-                onChange={setDocumentFile}
-              />
-            </>
-          )}
-
-          {kind === "summons" && (
-            <>
-              <div>
-                <label className={labelClass}>{t("modal.summonsTitle")}</label>
-                <input
-                  className={fieldClass}
-                  value={summonsTitle}
-                  onChange={(e) => setSummonsTitle(e.target.value)}
-                />
-                {errors.summonsTitle && (
-                  <p className="mt-1 text-xs text-error">{errors.summonsTitle}</p>
-                )}
-              </div>
-              <div>
-                <label className={labelClass}>
-                  {t("modal.summonsContent")}
-                </label>
-                <textarea
-                  className={`${fieldClass} min-h-24`}
-                  value={summonsContent}
-                  onChange={(e) => setSummonsContent(e.target.value)}
-                />
-                {errors.summonsContent && (
-                  <p className="mt-1 text-xs text-error">
-                    {errors.summonsContent}
-                  </p>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass}>{t("modal.sentDate")}</label>
-                  <input
-                    type="date"
-                    className={fieldClass}
-                    value={sentDate}
-                    onChange={(e) => setSentDate(e.target.value)}
-                  />
-                  {errors.sentDate && (
-                    <p className="mt-1 text-xs text-error">{errors.sentDate}</p>
-                  )}
-                </div>
-                <div>
-                  <label className={labelClass}>{t("modal.method")}</label>
-                  <Select
-                    value={method}
-                    onChange={(e) =>
-                      setMethod(e.target.value as Summons["method"])
-                    }
-                  >
-                    <option value="email">{t("summonsMethods.email")}</option>
-                    <option value="mail">{t("summonsMethods.mail")}</option>
-                  </Select>
-                </div>
-              </div>
-              <DocumentUpload
-                label={t("modal.file.proof")}
                 value={documentFile}
                 onChange={setDocumentFile}
               />

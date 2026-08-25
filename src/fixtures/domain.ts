@@ -1,6 +1,5 @@
 import type {
   AnnualBudget,
-  AssemblyMinutes,
   BankAccount,
   Certificate,
   Condominium,
@@ -9,7 +8,6 @@ import type {
   Occurrence,
   Owner,
   QuotaPayment,
-  Summons,
   Unit,
 } from "@/types";
 import { calculateMonthlyQuota } from "@/lib/quota";
@@ -634,71 +632,6 @@ export const mockCertificates: Certificate[] = [
     type: "usage-license",
     validity: "2028-01-20",
     file: null,
-  },
-];
-
-export const mockAssemblyMinutes: AssemblyMinutes[] = [
-  {
-    id: "asm1",
-    condominiumId: "1",
-    date: "2026-03-12",
-    type: "ordinary",
-    file: null,
-    participants: ["1", "2"],
-  },
-  {
-    id: "asm2",
-    condominiumId: "2",
-    date: "2026-02-20",
-    type: "ordinary",
-    file: null,
-    participants: ["3"],
-  },
-  {
-    id: "asm3",
-    condominiumId: "4",
-    date: "2025-11-08",
-    type: "extraordinary",
-    file: null,
-    participants: ["5"],
-  },
-  {
-    id: "asm4",
-    condominiumId: "3",
-    date: "2025-09-30",
-    type: "ordinary",
-    file: null,
-    participants: ["4"],
-  },
-];
-
-export const mockSummons: Summons[] = [
-  {
-    id: "sum1",
-    condominiumId: "1",
-    sentDate: "2026-02-20",
-    title: "Assembleia ordinária 2026",
-    content: "Convocatória para assembleia ordinária de 12 de março de 2026.",
-    method: "email",
-    proof: null,
-  },
-  {
-    id: "sum2",
-    condominiumId: "2",
-    sentDate: "2026-01-28",
-    title: "Assembleia ordinária Torre do Tejo",
-    content: "Convocatória e ordem de trabalhos enviadas aos condóminos.",
-    method: "email",
-    proof: null,
-  },
-  {
-    id: "sum3",
-    condominiumId: "4",
-    sentDate: "2025-10-22",
-    title: "Assembleia extraordinária — obras de fachada",
-    content: "Convocatória para deliberação sobre obras de conservação.",
-    method: "mail",
-    proof: null,
   },
 ];
 

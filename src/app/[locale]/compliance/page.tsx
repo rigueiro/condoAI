@@ -44,8 +44,6 @@ function CompliancePage() {
   const {
     policies,
     certificates,
-    assemblies,
-    summons,
     attentionItems,
     digestSentToday,
     upsertInsurance,
@@ -54,10 +52,6 @@ function CompliancePage() {
     upsertCert,
     removeCert,
     markCertificateRenewed,
-    upsertAssemblyMinutes,
-    removeAssemblyMinutes,
-    upsertSummonsDoc,
-    removeSummonsDoc,
     sendDeadlineDigest,
   } = useCompliance();
   const digestCopy = useDigestCopy();
@@ -106,32 +100,10 @@ function CompliancePage() {
     [certificates, searchLower, condoNameById],
   );
 
-  const filteredAssemblies = useMemo(
-    () =>
-      filterBySearch(
-        assemblies,
-        searchLower,
-        (a) => `${a.type} ${nameOf(a.condominiumId)}`,
-      ),
-    [assemblies, searchLower, condoNameById],
-  );
-
-  const filteredSummons = useMemo(
-    () =>
-      filterBySearch(
-        summons,
-        searchLower,
-        (s) => `${s.title} ${s.content} ${nameOf(s.condominiumId)}`,
-      ),
-    [summons, searchLower, condoNameById],
-  );
-
   const tabs: { key: ComplianceTab; count: number }[] = [
     { key: "attention", count: attentionItems.length },
     { key: "insurance", count: filteredPolicies.length },
     { key: "certificate", count: filteredCertificates.length },
-    { key: "assembly", count: filteredAssemblies.length },
-    { key: "summons", count: filteredSummons.length },
   ];
 
   const openAdd = () => {
@@ -146,27 +118,16 @@ function CompliancePage() {
 
   const handleSave = (record: ComplianceRecord) => {
     if (record.kind === "insurance") upsertInsurance(record.data);
-    else if (record.kind === "certificate") upsertCert(record.data);
-    else if (record.kind === "assembly") upsertAssemblyMinutes(record.data);
-    else upsertSummonsDoc(record.data);
+    else upsertCert(record.data);
     setModalOpen(false);
     setEditing(null);
     setFlash({ message: t("flash.saved"), tone: "success" });
-    if (
-      tab === "attention" &&
-      record.kind !== "insurance" &&
-      record.kind !== "certificate"
-    ) {
-      setTab(record.kind);
-    }
   };
 
   const handleDelete = (kind: ComplianceKind, id: string) => {
     if (!window.confirm(t("confirmDelete"))) return;
     if (kind === "insurance") removeInsurance(id);
-    else if (kind === "certificate") removeCert(id);
-    else if (kind === "assembly") removeAssemblyMinutes(id);
-    else removeSummonsDoc(id);
+    else removeCert(id);
     setFlash({ message: t("flash.deleted"), tone: "success" });
   };
 
@@ -195,7 +156,7 @@ function CompliancePage() {
   };
 
   const defaultKind: ComplianceKind =
-    tab === "attention" ? "insurance" : tab;
+    tab === "certificate" ? "certificate" : "insurance";
 
   const actionCell = (record: ComplianceRecord) => (
     <td className="px-4 py-3 text-right">
@@ -240,7 +201,7 @@ function CompliancePage() {
             </Button>
           </div>
 
-          <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
             {[
               {
                 label: t("stats.attention"),
@@ -256,11 +217,6 @@ function CompliancePage() {
                 label: t("stats.certificates"),
                 value: filteredCertificates.length,
                 icon: "BadgeCheck",
-              },
-              {
-                label: t("stats.assemblies"),
-                value: filteredAssemblies.length,
-                icon: "Users",
               },
             ].map((stat) => (
               <div
@@ -381,60 +337,6 @@ function CompliancePage() {
                   </td>
                   <DocumentCell value={c.file} />
                   {actionCell({ kind: "certificate", data: c })}
-                </tr>
-              ))}
-            </RecordsTable>
-          )}
-
-          {tab === "assembly" && (
-            <RecordsTable
-              headers={[
-                t("table.condominium"),
-                t("table.date"),
-                t("table.assemblyType"),
-                t("table.document"),
-                t("table.actions"),
-              ]}
-              colSpan={5}
-              empty={filteredAssemblies.length === 0}
-            >
-              {filteredAssemblies.map((a) => (
-                <tr key={a.id}>
-                  <td className="px-4 py-3">{nameOf(a.condominiumId)}</td>
-                  <td className="px-4 py-3">{String(a.date).slice(0, 10)}</td>
-                  <td className="px-4 py-3">{t(`assemblyTypes.${a.type}`)}</td>
-                  <DocumentCell value={a.file} />
-                  {actionCell({ kind: "assembly", data: a })}
-                </tr>
-              ))}
-            </RecordsTable>
-          )}
-
-          {tab === "summons" && (
-            <RecordsTable
-              headers={[
-                t("table.condominium"),
-                t("table.title"),
-                t("table.sent"),
-                t("table.method"),
-                t("table.document"),
-                t("table.actions"),
-              ]}
-              colSpan={6}
-              empty={filteredSummons.length === 0}
-            >
-              {filteredSummons.map((s) => (
-                <tr key={s.id}>
-                  <td className="px-4 py-3">{nameOf(s.condominiumId)}</td>
-                  <td className="max-w-xs truncate px-4 py-3">{s.title}</td>
-                  <td className="px-4 py-3">
-                    {String(s.sentDate).slice(0, 10)}
-                  </td>
-                  <td className="px-4 py-3">
-                    {t(`summonsMethods.${s.method}`)}
-                  </td>
-                  <DocumentCell value={s.proof} />
-                  {actionCell({ kind: "summons", data: s })}
                 </tr>
               ))}
             </RecordsTable>

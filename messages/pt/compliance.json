@@ -1,19 +1,16 @@
 {
   "title": "Conformidade",
-  "subtitle": "Assembleias, convocatórias, renovações de seguro e certificados — prazos que precisam de atenção.",
+  "subtitle": "Renovações de seguro e certificados — prazos que precisam de atenção.",
   "add": "Adicionar registo",
   "tabs": {
     "attention": "Atenção",
     "insurance": "Seguros",
-    "certificate": "Certificados",
-    "assembly": "Assembleias",
-    "summons": "Convocatórias"
+    "certificate": "Certificados"
   },
   "stats": {
     "attention": "A vencer / em atraso",
     "policies": "Apólices de seguro",
-    "certificates": "Certificados",
-    "assemblies": "Assembleias"
+    "certificates": "Certificados"
   },
   "attention": {
     "title": "Renovações e validade",
@@ -51,11 +48,6 @@
     "renewal": "Renovação",
     "type": "Tipo",
     "validity": "Validade",
-    "date": "Data",
-    "assemblyType": "Tipo",
-    "sent": "Enviada",
-    "title": "Título",
-    "method": "Método",
     "document": "Documento",
     "noFile": "—",
     "viewFile": "Ver {type}",
@@ -66,22 +58,12 @@
   },
   "kinds": {
     "insurance": "Seguro",
-    "certificate": "Certificado",
-    "assembly": "Assembleia",
-    "summons": "Convocatória"
+    "certificate": "Certificado"
   },
   "certificateTypes": {
     "energy": "Certificado energético",
     "technical-inspection": "Inspeção técnica",
     "usage-license": "Licença de utilização"
-  },
-  "assemblyTypes": {
-    "ordinary": "Ordinária",
-    "extraordinary": "Extraordinária"
-  },
-  "summonsMethods": {
-    "email": "Email",
-    "mail": "Correio"
   },
   "modal": {
     "addTitle": "Adicionar {kind}",
@@ -96,16 +78,8 @@
     "renewalDate": "Data de renovação",
     "certificateType": "Tipo de certificado",
     "validity": "Válido até",
-    "assemblyDate": "Data da assembleia",
-    "assemblyType": "Tipo de assembleia",
-    "summonsTitle": "Título",
-    "summonsContent": "Conteúdo",
-    "sentDate": "Data de envio",
-    "method": "Método de envio",
     "file": {
       "document": "Documento",
-      "minutes": "Ata (PDF)",
-      "proof": "Comprovativo de envio",
       "hint": "PDF ou imagem, máx. 2 MB. Guardado localmente até os uploads terem API.",
       "upload": "Carregar",
       "replace": "Substituir",
@@ -123,10 +97,7 @@
       "insurerRequired": "A seguradora é obrigatória",
       "policyRequired": "O número da apólice é obrigatório",
       "renewalRequired": "A data de renovação é obrigatória",
-      "validityRequired": "A data de validade é obrigatória",
-      "dateRequired": "A data é obrigatória",
-      "titleRequired": "O título é obrigatório",
-      "contentRequired": "O conteúdo é obrigatório"
+      "validityRequired": "A data de validade é obrigatória"
     }
   },
   "confirmDelete": "Eliminar este registo?",

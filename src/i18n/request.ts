@@ -21,6 +21,7 @@ const messageNamespaces = [
   "account",
   "help",
   "currentAccount",
+  "assemblies",
 ] as const;
 
 const messageFiles: Record<(typeof messageNamespaces)[number], string> = {
@@ -42,6 +43,7 @@ const messageFiles: Record<(typeof messageNamespaces)[number], string> = {
   account: "account",
   help: "help",
   currentAccount: "current-account",
+  assemblies: "assemblies",
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {

@@ -44,6 +44,11 @@ function Header() {
         icon: "Wallet",
       },
       {
+        label: t("nav.assemblies"),
+        path: "/assemblies",
+        icon: "Gavel",
+      },
+      {
         label: t("nav.occurrences"),
         path: "/occurrences",
         icon: "ClipboardList",

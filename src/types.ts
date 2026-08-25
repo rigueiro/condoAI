@@ -159,25 +159,6 @@ export interface Claim {
     documents: string[]; // URLs for reports
 }
 
-export interface AssemblyMinutes {
-    id: string;
-    condominiumId: string;
-    date: Date | string;
-    type: 'ordinary' | 'extraordinary';
-    file: string | null; // URL/path PDF
-    participants: string[]; // Owner IDs
-}
-
-export interface Summons {
-    id: string;
-    condominiumId: string;
-    sentDate: Date | string;
-    title: string;
-    content: string;
-    method: 'email' | 'mail';
-    proof: string | null; // URL/path
-}
-
 export interface LegalProcess {
     id: string;
     condominiumId: string;

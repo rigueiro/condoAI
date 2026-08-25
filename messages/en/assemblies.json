@@ -1,0 +1,167 @@
+{
+  "title": "Assemblies",
+  "subtitle": "Summon owners, take attendance, vote by permillage, and record the minutes.",
+  "add": "New assembly",
+  "empty": "No assemblies yet.",
+  "emptyHint": "Schedule an ordinary or extraordinary meeting for a condominium.",
+  "confirmDelete": "Delete this assembly? This cannot be undone.",
+  "stats": {
+    "upcoming": "Upcoming",
+    "inSession": "In session",
+    "drafts": "Drafts",
+    "closed": "Closed"
+  },
+  "table": {
+    "condominium": "Condominium",
+    "title": "Meeting",
+    "date": "Date",
+    "type": "Type",
+    "status": "Status",
+    "notice": "Notice",
+    "actions": "Actions",
+    "open": "Open",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "types": {
+    "ordinary": "Ordinary",
+    "extraordinary": "Extraordinary"
+  },
+  "statuses": {
+    "draft": "Draft",
+    "summoned": "Summoned",
+    "in_session": "In session",
+    "closed": "Closed"
+  },
+  "notice": {
+    "ok": "{days} days",
+    "short": "{days} days (below {min}-day legal minimum)",
+    "pending": "Not sent",
+    "legalMin": "Portuguese law requires at least {days} days’ written notice."
+  },
+  "call": {
+    "first": "First call",
+    "second": "Second call"
+  },
+  "majority": {
+    "simple": "Simple majority (for > against)",
+    "absolute-present": "Majority of permillage present",
+    "qualified-total": "2/3 of total permillage (1000‰)"
+  },
+  "attendanceStatus": {
+    "present": "Present",
+    "represented": "Represented",
+    "absent": "Absent"
+  },
+  "vote": {
+    "for": "For",
+    "against": "Against",
+    "abstain": "Abstain"
+  },
+  "methods": {
+    "email": "Email",
+    "mail": "Registered mail"
+  },
+  "modal": {
+    "addTitle": "Schedule assembly",
+    "editTitle": "Edit assembly",
+    "condominium": "Condominium",
+    "type": "Type",
+    "title": "Title",
+    "titlePlaceholder": "e.g. Ordinary assembly 2026",
+    "date": "Date",
+    "time": "Time",
+    "location": "Location",
+    "locationPlaceholder": "Hall, administration office…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "validation": {
+      "condoRequired": "Choose a condominium",
+      "titleRequired": "Title is required",
+      "dateRequired": "Date is required",
+      "locationRequired": "Location is required"
+    }
+  },
+  "detail": {
+    "notFound": "This assembly was not found.",
+    "back": "All assemblies",
+    "when": "{date} at {time}",
+    "sendSummons": "Send summons",
+    "openSession": "Open session",
+    "openSecondCall": "Open on second call",
+    "close": "Close and record resolutions",
+    "closedHint": "This assembly is closed. Resolutions are locked.",
+    "draftHint": "Finish the agenda, then send the summons with at least {days} days’ notice.",
+    "summonedHint": "Owners have been summoned. Open the session on the meeting day to take attendance and vote.",
+    "sessionHint": "Record who is present, vote each agenda item by permillage, then write the minutes."
+  },
+  "summons": {
+    "title": "Summons & legal notice",
+    "sentOn": "Sent {date}",
+    "method": "Channel",
+    "body": "Notice text",
+    "bodyHint": "The agenda must be in the convocatória. A second-call clause is included by default.",
+    "legalOk": "Legal notice met ({days} days before the meeting).",
+    "legalShort": "Only {days} days’ notice. The legal minimum is {min} days (art. 1432.º CC)."
+  },
+  "agenda": {
+    "title": "Agenda",
+    "add": "Add item",
+    "item": "Item {n}",
+    "itemTitle": "Title",
+    "description": "Description",
+    "majority": "Majority",
+    "empty": "Add the ordem de trabalhos before sending the summons.",
+    "remove": "Remove",
+    "locked": "The agenda is locked after the summons is sent."
+  },
+  "attendance": {
+    "title": "Attendance",
+    "quorum": "Quorum",
+    "attending": "{amount} present",
+    "needed": "First call needs more than {amount}",
+    "met": "Quorum met",
+    "notMet": "No quorum on first call — use second call (those present).",
+    "secondCall": "Second call: those present may deliberate.",
+    "owner": "Owner",
+    "units": "Fractions",
+    "share": "Permillage",
+    "status": "Attendance",
+    "proxy": "Represented by",
+    "none": "No voting owners on this building’s fractions."
+  },
+  "voting": {
+    "title": "Votes by permillage",
+    "resultPass": "Passed",
+    "resultFail": "Not passed",
+    "for": "For {amount}",
+    "against": "Against {amount}",
+    "abstain": "Abstain {amount}",
+    "unvoted": "Not voted {amount}",
+    "needQuorum": "Quorum is required before votes count toward a valid deliberation.",
+    "closed": "Voting is closed."
+  },
+  "minutes": {
+    "title": "Minutes",
+    "body": "Acta",
+    "placeholder": "Record the discussion, votes, and approvals. The acta is the legal memory of the meeting.",
+    "required": "Write the minutes before closing the assembly."
+  },
+  "resolutions": {
+    "title": "Resolutions",
+    "empty": "Resolutions appear when the assembly is closed.",
+    "passed": "Approved",
+    "rejected": "Rejected",
+    "tally": "{for} for · {against} against · {abstain} abstain"
+  },
+  "errors": {
+    "requestFailed": "Could not save. Try again.",
+    "badRequest": "Check the required fields.",
+    "assemblyClosed": "This assembly is already closed.",
+    "agendaRequired": "Add at least one agenda item before sending the summons.",
+    "summonsRequired": "Send the summons before opening the session.",
+    "notInSession": "Open the session before closing it.",
+    "minutesRequired": "The minutes cannot be empty.",
+    "notFound": "Assembly not found."
+  }
+}

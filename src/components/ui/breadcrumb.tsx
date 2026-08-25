@@ -20,6 +20,7 @@ function Breadcrumb() {
     "/owners-management": { labelKey: "owners" as const, parent: "/dashboard" },
     "/payment-tracking": { labelKey: "payments" as const, parent: "/dashboard" },
     "/finance": { labelKey: "finance" as const, parent: "/dashboard" },
+    "/assemblies": { labelKey: "assemblies" as const, parent: "/dashboard" },
     "/occurrences": { labelKey: "occurrences" as const, parent: "/dashboard" },
     "/compliance": { labelKey: "compliance" as const, parent: "/dashboard" },
     "/reports-analytics": { labelKey: "reports" as const, parent: "/dashboard" },
@@ -69,6 +70,17 @@ function Breadcrumb() {
           isActive: false,
         },
         { label: t("occurrenceDetail"), path, isActive: true },
+      ];
+    }
+
+    if (path.startsWith("/assemblies/") && path !== "/assemblies") {
+      return [
+        {
+          label: t("assemblies"),
+          path: "/assemblies",
+          isActive: false,
+        },
+        { label: t("assemblyDetail"), path, isActive: true },
       ];
     }
 

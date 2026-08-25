@@ -1,21 +1,12 @@
-import type {
-  AssemblyMinutes,
-  Certificate,
-  InsurancePolicy,
-  Summons,
-} from "@/types";
+import type { Certificate, InsurancePolicy } from "@/types";
 import { isDemoEmail } from "@/lib/auth/constants";
 import {
-  removeAssembly,
   removeCertificate,
   removePolicy,
-  removeSummons,
   renewCertificate,
   renewPolicy,
-  upsertAssembly,
   upsertCertificate,
   upsertPolicy,
-  upsertSummons,
 } from "@/lib/compliance/storage";
 import {
   EMPTY_COMPLIANCE,
@@ -30,8 +21,6 @@ function normalizeCompliance(parsed: ComplianceState): ComplianceState {
     certificates: Array.isArray(parsed.certificates)
       ? parsed.certificates
       : [],
-    assemblies: Array.isArray(parsed.assemblies) ? parsed.assemblies : [],
-    summons: Array.isArray(parsed.summons) ? parsed.summons : [],
   };
 }
 
@@ -116,28 +105,4 @@ export function markCertificateRenewed(
   id: string,
 ): ComplianceState {
   return mutateCompliance(email, (current) => renewCertificate(current, id));
-}
-
-export function putAssembly(
-  email: string,
-  assembly: AssemblyMinutes,
-): ComplianceState {
-  return mutateCompliance(email, (current) =>
-    upsertAssembly(current, assembly),
-  );
-}
-
-export function deleteAssembly(email: string, id: string): ComplianceState {
-  return mutateCompliance(email, (current) => removeAssembly(current, id));
-}
-
-export function putSummons(
-  email: string,
-  summons: Summons,
-): ComplianceState {
-  return mutateCompliance(email, (current) => upsertSummons(current, summons));
-}
-
-export function deleteSummons(email: string, id: string): ComplianceState {
-  return mutateCompliance(email, (current) => removeSummons(current, id));
 }

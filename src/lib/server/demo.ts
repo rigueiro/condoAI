@@ -1,6 +1,5 @@
 import {
   mockAnnualBudgets,
-  mockAssemblyMinutes,
   mockBankAccounts,
   mockCertificates,
   mockCondominiums,
@@ -9,7 +8,6 @@ import {
   mockInsurancePolicies,
   mockOccurrences,
   mockQuotaPayments,
-  mockSummons,
   mockUnits,
 } from "@/fixtures/domain";
 import type { Organization } from "@/app/[locale]/account/types";
@@ -19,6 +17,8 @@ import type { CollectionsState } from "@/lib/collections/types";
 import type { FinanceState } from "@/lib/finance/types";
 import type { ComplianceState } from "@/lib/compliance/types";
 import type { OccurrencesState } from "@/lib/occurrences/types";
+import type { AssembliesState } from "@/lib/assemblies/types";
+import { mockAssemblies } from "@/fixtures/assemblies";
 
 export const DEMO_ORGANIZATION: Organization = {
   name: "CondoAI Lda.",
@@ -71,8 +71,6 @@ export function buildDemoCompliance(): ComplianceState {
   return {
     policies: mockInsurancePolicies.map((p) => ({ ...p })),
     certificates: mockCertificates.map((c) => ({ ...c })),
-    assemblies: mockAssemblyMinutes.map((a) => ({ ...a })),
-    summons: mockSummons.map((s) => ({ ...s })),
   };
 }
 
@@ -83,6 +81,23 @@ export function buildDemoOccurrences(): OccurrencesState {
       photos: [...o.photos],
       comments: o.comments.map((c) => ({ ...c })),
       history: o.history.map((h) => ({ ...h })),
+    })),
+  };
+}
+
+export function buildDemoAssemblies(): AssembliesState {
+  return {
+    assemblies: mockAssemblies.map((assembly) => ({
+      ...assembly,
+      agenda: assembly.agenda.map((item) => ({ ...item })),
+      summons: assembly.summons ? { ...assembly.summons } : null,
+      attendance: assembly.attendance.map((row) => ({ ...row })),
+      votes: assembly.votes.map((row) => ({
+        ...row,
+        ballots: { ...row.ballots },
+      })),
+      minutes: { ...assembly.minutes },
+      resolutions: assembly.resolutions.map((row) => ({ ...row })),
     })),
   };
 }

@@ -55,8 +55,8 @@
       "description": "Registe ocorrências, acompanhe o progresso e guarde o histórico por condomínio."
     },
     "compliance": {
-      "title": "Assembleias e conformidade",
-      "description": "Assembleias, convocatórias, renovações de seguro e certificados—conceitos de primeira classe, não notas improvisadas."
+      "title": "Seguros e certificados",
+      "description": "Renovações e validades que precisam de atenção—registos de primeira classe, não notas improvisadas."
     },
     "reports": {
       "title": "Relatórios e clareza",
@@ -91,12 +91,12 @@
     },
     "local": {
       "title": "Nativo de condomínios, não um CRM genérico",
-      "description": "Assembleias, convocatórias, renovações de seguro e certificados fazem parte do modelo—o produto fala a sua linguagem, não a do imobiliário genérico."
+      "description": "Assembleias, renovações de seguro e certificados fazem parte do modelo—o produto fala a sua linguagem, não a do imobiliário genérico."
     }
   },
   "cta": {
     "title": "Reúna os seus condomínios num só lugar",
-    "subtitle": "Comece com edifícios, proprietários e a finança completa do condomínio—com os conceitos de conformidade que a administração realmente precisa.",
+    "subtitle": "Comece com edifícios, proprietários e a finança completa do condomínio—mais assembleias, seguros e certificados que a administração realmente precisa.",
     "button": "Criar conta",
     "login": "Entrar",
     "dashboard": "Continuar para o painel"

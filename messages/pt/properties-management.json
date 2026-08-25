@@ -168,6 +168,7 @@
     "paymentHistory": "Histórico de pagamentos (este condomínio)",
     "occurrences": "Ocorrências",
     "noOccurrences": "Sem ocorrências para este condomínio.",
+    "noAssemblies": "Sem assembleias para este condomínio.",
     "summary": "Resumo",
     "propertyInfo": "Informação do condomínio",
     "address": "Morada",
@@ -209,6 +210,7 @@
       "units": "Frações",
       "owners": "Condóminos",
       "finance": "Finanças",
+      "assemblies": "Assembleias",
       "occurrences": "Ocorrências"
     }
   },

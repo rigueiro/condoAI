@@ -13,12 +13,7 @@ import {
 import { useUser } from "@/lib/auth";
 import { usePortfolio } from "@/lib/portfolio";
 import { apiFetch } from "@/lib/api/client";
-import type {
-  AssemblyMinutes,
-  Certificate,
-  InsurancePolicy,
-  Summons,
-} from "@/types";
+import type { Certificate, InsurancePolicy } from "@/types";
 import {
   sendDeadlineDigestMessage,
   readDigestSentToday,
@@ -36,8 +31,6 @@ interface ComplianceContextValue {
   isReady: boolean;
   policies: InsurancePolicy[];
   certificates: Certificate[];
-  assemblies: AssemblyMinutes[];
-  summons: Summons[];
   attentionItems: AttentionItem[];
   digestSentToday: boolean;
   upsertInsurance: (policy: InsurancePolicy) => void;
@@ -46,10 +39,6 @@ interface ComplianceContextValue {
   upsertCert: (certificate: Certificate) => void;
   removeCert: (id: string) => void;
   markCertificateRenewed: (id: string) => void;
-  upsertAssemblyMinutes: (assembly: AssemblyMinutes) => void;
-  removeAssemblyMinutes: (id: string) => void;
-  upsertSummonsDoc: (summons: Summons) => void;
-  removeSummonsDoc: (id: string) => void;
   sendDeadlineDigest: (
     items: AttentionItem[],
     copy: DigestCopy,
@@ -170,8 +159,6 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
       isReady,
       policies: state.policies,
       certificates: state.certificates,
-      assemblies: state.assemblies,
-      summons: state.summons,
       attentionItems,
       digestSentToday,
       upsertInsurance: (policy) => {
@@ -192,18 +179,6 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
       markCertificateRenewed: (id) => {
         void patchCompliance({ action: "renewCertificate", id });
       },
-      upsertAssemblyMinutes: (assembly) => {
-        void patchCompliance({ action: "upsertAssembly", assembly });
-      },
-      removeAssemblyMinutes: (id) => {
-        void patchCompliance({ action: "removeAssembly", id });
-      },
-      upsertSummonsDoc: (summons) => {
-        void patchCompliance({ action: "upsertSummons", summons });
-      },
-      removeSummonsDoc: (id) => {
-        void patchCompliance({ action: "removeSummons", id });
-      },
       sendDeadlineDigest,
       refresh,
     }),
@@ -211,8 +186,6 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
       isReady,
       state.policies,
       state.certificates,
-      state.assemblies,
-      state.summons,
       attentionItems,
       digestSentToday,
       patchCompliance,

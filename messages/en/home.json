@@ -55,8 +55,8 @@
       "description": "Log occurrences, follow progress, and keep a clear history per property."
     },
     "compliance": {
-      "title": "Assemblies & compliance",
-      "description": "Assemblies, summons, insurance renewals, and certificates—first-class concepts, not bolted-on notes."
+      "title": "Insurance & certificates",
+      "description": "Renewals and validity dates that need attention—first-class records, not bolted-on notes."
     },
     "reports": {
       "title": "Reports & clarity",
@@ -91,12 +91,12 @@
     },
     "local": {
       "title": "Condo-native, not a property CRM",
-      "description": "Assemblies, summons, insurance renewals, and certificates live in the domain model—so the product speaks your work, not generic real estate."
+      "description": "Assemblies, insurance renewals, and certificates live in the domain model—so the product speaks your work, not generic real estate."
     }
   },
   "cta": {
     "title": "Bring your condominiums into one place",
-    "subtitle": "Start with properties, owners, and full condo finance—backed by the compliance concepts administrators actually need.",
+    "subtitle": "Start with properties, owners, and full condo finance—plus assemblies, insurance, and certificates administrators actually need.",
     "button": "Create your account",
     "login": "Log in",
     "dashboard": "Continue to dashboard"

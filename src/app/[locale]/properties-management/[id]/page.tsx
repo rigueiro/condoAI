@@ -24,6 +24,7 @@ import {
 import type { Condominium } from "@/types";
 import { useCollections, type AccountReceipt } from "@/lib/collections";
 import { useOccurrences } from "@/lib/occurrences";
+import { useAssemblies } from "@/lib/assemblies";
 import {
   buildingTypeI18nKey,
   buildingWorkspaceHref,
@@ -64,6 +65,7 @@ function PropertyDetailContent() {
   const tOccCategory = useTranslations("occurrences.categories");
   const tOccState = useTranslations("occurrences.states");
   const tOccPriority = useTranslations("occurrences.priorities");
+  const tAsm = useTranslations("assemblies");
   const { formatPriceString } = useFormatCurrency();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -75,6 +77,7 @@ function PropertyDetailContent() {
   const { quotas, payments, recordPayment, ownersWithBalances, receiptForQuota } =
     useCollections();
   const { occurrences } = useOccurrences();
+  const { assemblies } = useAssemblies();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
@@ -139,6 +142,12 @@ function PropertyDetailContent() {
       portfolio.owners,
     );
   }, [condo, occurrences, portfolio.owners]);
+
+  const propertyAssemblies = useMemo(
+    () =>
+      id ? assemblies.filter((row) => row.condominiumId === id) : [],
+    [assemblies, id],
+  );
 
   const propertyUnits = useMemo(() => {
     if (!id) return [];
@@ -435,6 +444,57 @@ function PropertyDetailContent() {
                   onSendReminder={() => {}}
                   onMarkDisputed={() => {}}
                 />
+              </div>
+            </section>
+          )}
+
+          {tab === "assemblies" && (
+            <section>
+              <div className="mb-4 flex justify-end">
+                <Link
+                  href={id ? `/assemblies?new=1&condo=${id}` : "/assemblies"}
+                  className="text-sm font-medium text-primary hover:underline"
+                >
+                  {tAsm("add")}
+                </Link>
+              </div>
+              <div className="overflow-hidden rounded-lg border border-border-light bg-surface">
+                {propertyAssemblies.length === 0 ? (
+                  <div className="p-8 text-center text-text-secondary">
+                    <Icon
+                      name="Gavel"
+                      size={40}
+                      className="mx-auto mb-2 text-secondary-300"
+                    />
+                    <p>{t("noAssemblies")}</p>
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-border-light">
+                    {propertyAssemblies.map((assembly) => (
+                      <li key={assembly.id}>
+                        <Link
+                          href={`/assemblies/${assembly.id}`}
+                          className="block px-6 py-4 transition-smooth hover:bg-secondary-50"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                              <p className="font-medium text-text-primary">
+                                {assembly.title}
+                              </p>
+                              <p className="text-sm text-text-secondary">
+                                {tAsm(`types.${assembly.type}`)} ·{" "}
+                                {assembly.scheduledDate} {assembly.scheduledTime}
+                              </p>
+                            </div>
+                            <span className="inline-flex items-center rounded-full bg-secondary-100 px-2 py-0.5 text-xs font-medium text-text-primary">
+                              {tAsm(`statuses.${assembly.status}`)}
+                            </span>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </section>
           )}

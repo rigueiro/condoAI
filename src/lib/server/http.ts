@@ -24,6 +24,11 @@ const ERROR_STATUS: Record<string, number> = {
   unitNotFound: 404,
   invalidAmount: 400,
   noBilledOwners: 400,
+  assemblyClosed: 409,
+  agendaRequired: 400,
+  summonsRequired: 400,
+  notInSession: 409,
+  minutesRequired: 400,
 };
 
 export function handleRouteError(err: unknown): NextResponse {

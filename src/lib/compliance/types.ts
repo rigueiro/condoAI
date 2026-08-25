@@ -1,29 +1,16 @@
-import type {
-  AssemblyMinutes,
-  Certificate,
-  InsurancePolicy,
-  Summons,
-} from "@/types";
+import type { Certificate, InsurancePolicy } from "@/types";
 
 export interface ComplianceState {
   policies: InsurancePolicy[];
   certificates: Certificate[];
-  assemblies: AssemblyMinutes[];
-  summons: Summons[];
 }
 
 export const EMPTY_COMPLIANCE: ComplianceState = {
   policies: [],
   certificates: [],
-  assemblies: [],
-  summons: [],
 };
 
-export type ComplianceKind =
-  | "insurance"
-  | "certificate"
-  | "assembly"
-  | "summons";
+export type ComplianceKind = "insurance" | "certificate";
 
 /** Deadline row for the compliance daily job (renewals / validity). */
 export type AttentionItem = {
