@@ -1,177 +1,148 @@
 {
-  "title": "Relatórios e Análises",
-  "subtitle": "Gerar insights e exportar relatórios financeiros",
-  "controlPanel": {
-    "dateRange": "Intervalo de datas",
-    "selectDateRange": "Seleccionar intervalo",
-    "quickSelect": "Selecção rápida",
-    "last30Days": "Últimos 30 dias",
-    "last3Months": "Últimos 3 meses",
-    "last6Months": "Últimos 6 meses",
-    "lastYear": "Último ano",
-    "yearToDate": "Ano até à data",
-    "reportType": "Tipo de relatório",
-    "properties": "Condomínios",
-    "allProperties": "Todos os condomínios",
-    "reset": "Repor",
-    "apply": "Aplicar",
-    "reportTypes": {
-      "financialSummary": "Resumo financeiro",
-      "collectionRates": "Taxas de cobrança",
-      "ownerStatements": "Extratos de proprietários",
-      "outstandingBalances": "Saldos em dívida",
-      "propertyPerformance": "Desempenho por condomínio",
-      "paymentTrends": "Tendências de pagamento"
-    }
+  "title": "Relatórios",
+  "subtitle": "Mapa de rateio, prestação de contas e aging de cobranças com dados reais do portefólio.",
+  "tabs": {
+    "mapaRateio": "Mapa de rateio",
+    "prestacaoContas": "Prestação de contas",
+    "collectionAging": "Aging de cobranças"
   },
-  "reportTemplates": {
-    "title": "Modelos de relatório",
-    "subtitle": "Acesso rápido a relatórios frequentes",
-    "createCustom": "Criar modelo personalizado",
-    "templates": {
-      "monthlyCollection": {
-        "name": "Resumo mensal de cobranças",
-        "description": "Visão completa do desempenho de cobrança mensal"
-      },
-      "annualOwnerStatements": {
-        "name": "Extratos anuais de proprietários",
-        "description": "Extratos anuais completos para todos os proprietários"
-      },
-      "propertyPerformance": {
-        "name": "Análise de desempenho por condomínio",
-        "description": "Métricas detalhadas de desempenho por condomínio"
-      },
-      "outstandingBalances": {
-        "name": "Relatório de saldos em dívida",
-        "description": "Pagamentos pendentes e análise de antiguidade"
-      },
-      "paymentTrends": {
-        "name": "Análise de tendências de pagamento",
-        "description": "Padrões históricos e previsão de pagamentos"
-      },
-      "boardSummary": {
-        "name": "Resumo para reunião de administração",
-        "description": "Resumo executivo para apresentações à administração"
-      }
-    }
+  "filters": {
+    "condominium": "Condomínio",
+    "allCondominiums": "Todos os condomínios",
+    "year": "Ano",
+    "noCondominiums": "Adicione um condomínio para gerar relatórios."
   },
-  "chartsSection": {
-    "title": "Painel de análises",
-    "subtitle": "Gráficos interactivos e métricas de desempenho",
-    "tabs": {
-      "collectionTrends": "Tendências de cobrança",
-      "propertyPerformance": "Desempenho por condomínio",
-      "paymentDistribution": "Distribuição de pagamentos"
+  "actions": {
+    "print": "Imprimir",
+    "exportCsv": "Exportar CSV"
+  },
+  "empty": {
+    "noCondo": "Seleccione um condomínio para ver este relatório.",
+    "noUnits": "Sem frações registadas neste condomínio.",
+    "noBudget": "Sem orçamento anual para {year}. As quotas mensais ordinárias aparecem a zero até existir orçamento.",
+    "noAging": "Sem quotas em aberto no âmbito seleccionado.",
+    "noData": "Ainda sem dados para mostrar."
+  },
+  "mapaRateio": {
+    "title": "Mapa de rateio",
+    "subtitle": "Quota ordinária por permilagem das frações — {year}.",
+    "subtitleNoBudget": "Permilagem das frações de {name} — adicione um orçamento anual para calcular quotas.",
+    "stats": {
+      "collectable": "Total anual a cobrar",
+      "monthly": "Total mensal do edifício",
+      "units": "Frações",
+      "permillage": "Permilagem alocada"
     },
-    "collectionTrendsAria": "Gráfico de tendências de cobrança",
-    "propertyPerformanceAria": "Gráfico de desempenho por condomínio",
-    "paymentDistributionAria": "Gráfico circular de distribuição de pagamentos",
-    "methodBreakdown": "Distribuição por método de pagamento",
-    "paymentsCount": "{count} pagamentos",
-    "dataUpdated": "Dados actualizados há 5 minutos",
-    "tooltipCollected": "Cobrado",
-    "tooltipTarget": "Meta",
-    "tooltipOutstanding": "Em dívida",
-    "tooltipCollectionRate": "Taxa de cobrança",
-    "tooltipPayments": "Pagamentos"
-  },
-  "dataTables": {
-    "title": "Relatórios detalhados",
-    "subtitle": "Tabelas de apoio com capacidade de exportação",
-    "excel": "Excel",
-    "pdf": "PDF",
-    "tabs": {
-      "propertyPerformance": "Desempenho por condomínio",
-      "collectionSummary": "Resumo de cobranças",
-      "paymentMethods": "Métodos de pagamento"
+    "budgetStatus": {
+      "approved": "Orçamento aprovado",
+      "draft": "Orçamento em rascunho",
+      "missing": "Sem orçamento"
     },
     "columns": {
-      "property": "Condomínio",
-      "units": "Frações",
-      "collected": "Cobrado",
-      "outstanding": "Em dívida",
-      "collectionRate": "Taxa de cobrança",
-      "status": "Estado",
-      "period": "Período",
-      "target": "Meta",
-      "variance": "Variação",
-      "achievement": "Cumprimento",
-      "paymentMethod": "Método de pagamento",
-      "transactions": "Transacções",
-      "totalAmount": "Valor total",
-      "percentage": "Percentagem",
-      "average": "Média"
+      "unit": "Fração",
+      "type": "Tipo",
+      "floor": "Andar",
+      "owners": "Proprietários",
+      "permillage": "Permilagem",
+      "share": "Quota-parte",
+      "monthly": "Quota mensal",
+      "annual": "Quota anual"
     },
-    "status": {
-      "excellent": "Excelente",
-      "good": "Bom",
-      "needsAttention": "Requer atenção"
+    "total": "Total",
+    "types": {
+      "apartment": "Apartamento",
+      "shop": "Loja",
+      "garage": "Garagem",
+      "parking": "Estacionamento",
+      "other": "Outro"
     }
   },
-  "generateReportSection": {
-    "title": "Gerar relatório personalizado",
-    "subtitle": "Crie e agende relatórios personalizados com campos seleccionados",
-    "collapse": "Recolher",
-    "expand": "Expandir",
-    "reportName": "Nome do relatório *",
-    "reportNamePlaceholder": "Introduza o nome do relatório",
-    "description": "Descrição",
-    "descriptionPlaceholder": "Breve descrição do relatório",
-    "reportFormat": "Formato do relatório",
-    "deliveryMethod": "Método de entrega",
-    "schedule": "Agendamento",
-    "recipients": "Destinatários",
-    "emailPlaceholder": "Introduza o endereço de email",
-    "dataFields": "Campos de dados a incluir *",
-    "additionalOptions": "Opções adicionais",
-    "includeCharts": "Incluir gráficos",
-    "includeRawData": "Incluir tabelas de dados brutos",
-    "fieldsSelected": "{count} campos seleccionados",
-    "saveTemplate": "Guardar modelo",
-    "generateReport": "Gerar relatório",
-    "collapsedHint": "Gere relatórios rapidamente com modelos predefinidos ou crie relatórios personalizados",
-    "quickFinancial": "Relatório financeiro rápido",
-    "customReport": "Relatório personalizado",
-    "formats": {
-      "pdf": "Documento PDF",
-      "excel": "Folha Excel",
-      "csv": "Dados CSV",
-      "html": "Relatório web"
+  "prestacaoContas": {
+    "title": "Prestação de contas",
+    "subtitle": "Pacote para assembleia — {name}, {year}.",
+    "stats": {
+      "collectable": "Orçamento a cobrar",
+      "expenses": "Despesas",
+      "variance": "Orçamento vs despesas",
+      "bank": "Saldo bancário"
     },
-    "delivery": {
-      "manual": "Descarregar manualmente",
-      "email": "Entrega por email",
-      "scheduled": "Entrega agendada"
+    "budget": {
+      "title": "Orçamento ordinário",
+      "ordinary": "Exploração ordinária",
+      "reserve": "Fundo de reserva",
+      "minimumReserve": "Mínimo legal (10%)",
+      "collectable": "Total a cobrar",
+      "category": "Categoria",
+      "amount": "Montante",
+      "empty": "Sem categorias de orçamento para este ano."
     },
-    "schedules": {
-      "daily": "Diário",
-      "weekly": "Semanal",
-      "monthly": "Mensal",
-      "quarterly": "Trimestral",
-      "annually": "Anual"
+    "expenses": {
+      "title": "Despesas por categoria",
+      "category": "Categoria",
+      "amount": "Montante",
+      "total": "Total de despesas",
+      "empty": "Sem despesas registadas neste ano."
     },
-    "fieldCategories": {
-      "Basic": "Básico",
-      "Financial": "Financeiro",
-      "Operations": "Operações",
-      "Governance": "Governança",
-      "Legal": "Legal"
+    "bank": {
+      "title": "Contas bancárias",
+      "bank": "Banco",
+      "iban": "IBAN",
+      "balance": "Saldo",
+      "total": "Saldo total",
+      "empty": "Sem contas bancárias neste condomínio."
     },
-    "fields": {
-      "propertyInfo": "Informação do condomínio",
-      "ownerDetails": "Dados do proprietário",
-      "unitInfo": "Informação da fração",
-      "paymentHistory": "Histórico de pagamentos",
-      "outstandingBalances": "Saldos em dívida",
-      "collectionRates": "Taxas de cobrança",
-      "maintenanceRequests": "Pedidos de manutenção",
-      "boardMinutes": "Actas de administração",
-      "budgetVariance": "Variação orçamental",
-      "complianceStatus": "Estado de conformidade"
+    "extraordinary": {
+      "title": "Quotas extraordinárias",
+      "description": "Descrição",
+      "date": "Data",
+      "owners": "Condóminos cobrados",
+      "amount": "Montante",
+      "total": "Total extraordinário",
+      "empty": "Sem quotas extraordinárias emitidas neste ano."
     },
-    "validation": {
-      "nameRequired": "Introduza um nome para o relatório",
-      "fieldsRequired": "Seleccione pelo menos um campo para incluir no relatório"
+    "collections": {
+      "title": "Cobrança de quotas ({year})",
+      "paid": "Pagas",
+      "pending": "Pendentes",
+      "overdue": "Em atraso",
+      "paidAmount": "Cobrado",
+      "outstanding": "Em aberto"
+    },
+    "budgetStatus": {
+      "approved": "Aprovado",
+      "draft": "Rascunho",
+      "missing": "Sem orçamento"
+    }
+  },
+  "aging": {
+    "title": "Aging de cobranças",
+    "subtitle": "Quotas em aberto por dias de atraso — à data de {date}.",
+    "subtitleCondo": "Quotas em aberto de {name} — à data de {date}.",
+    "stats": {
+      "total": "Total em aberto",
+      "items": "Itens em aberto"
+    },
+    "buckets": {
+      "current": "Não vencido / corrente",
+      "1-30": "1–30 dias",
+      "31-60": "31–60 dias",
+      "61-90": "61–90 dias",
+      "90+": "Mais de 90 dias"
+    },
+    "columns": {
+      "owner": "Proprietário",
+      "unit": "Fração",
+      "property": "Condomínio",
+      "period": "Período",
+      "dueDate": "Vencimento",
+      "days": "Dias em atraso",
+      "amount": "Montante",
+      "status": "Estado",
+      "bucket": "Escalão"
+    },
+    "status": {
+      "pending": "Pendente",
+      "overdue": "Em atraso"
     }
   }
 }

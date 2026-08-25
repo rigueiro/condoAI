@@ -1,177 +1,148 @@
 {
-  "title": "Reports & Analytics",
-  "subtitle": "Generate insights and export financial reports",
-  "controlPanel": {
-    "dateRange": "Date Range",
-    "selectDateRange": "Select Date Range",
-    "quickSelect": "Quick Select",
-    "last30Days": "Last 30 Days",
-    "last3Months": "Last 3 Months",
-    "last6Months": "Last 6 Months",
-    "lastYear": "Last Year",
-    "yearToDate": "Year to Date",
-    "reportType": "Report Type",
-    "properties": "Properties",
-    "allProperties": "All Properties",
-    "reset": "Reset",
-    "apply": "Apply",
-    "reportTypes": {
-      "financialSummary": "Financial Summary",
-      "collectionRates": "Collection Rates",
-      "ownerStatements": "Owner Statements",
-      "outstandingBalances": "Outstanding Balances",
-      "propertyPerformance": "Property Performance",
-      "paymentTrends": "Payment Trends"
-    }
+  "title": "Reports",
+  "subtitle": "Live allocation map, annual accounts pack, and collection aging from your portfolio.",
+  "tabs": {
+    "mapaRateio": "Allocation map",
+    "prestacaoContas": "Annual accounts",
+    "collectionAging": "Collection aging"
   },
-  "reportTemplates": {
-    "title": "Report Templates",
-    "subtitle": "Quick access to commonly used reports",
-    "createCustom": "Create Custom Template",
-    "templates": {
-      "monthlyCollection": {
-        "name": "Monthly Collection Summary",
-        "description": "Complete overview of monthly collection performance"
-      },
-      "annualOwnerStatements": {
-        "name": "Annual Owner Statements",
-        "description": "Comprehensive yearly statements for all property owners"
-      },
-      "propertyPerformance": {
-        "name": "Property Performance Analysis",
-        "description": "Detailed performance metrics for each property"
-      },
-      "outstandingBalances": {
-        "name": "Outstanding Balances Report",
-        "description": "Current outstanding payments and aging analysis"
-      },
-      "paymentTrends": {
-        "name": "Payment Trends Analysis",
-        "description": "Historical payment patterns and forecasting"
-      },
-      "boardSummary": {
-        "name": "Board Meeting Summary",
-        "description": "Executive summary for board presentations"
-      }
-    }
+  "filters": {
+    "condominium": "Condominium",
+    "allCondominiums": "All condominiums",
+    "year": "Year",
+    "noCondominiums": "Add a condominium to generate reports."
   },
-  "chartsSection": {
-    "title": "Analytics Dashboard",
-    "subtitle": "Interactive charts and performance metrics",
-    "tabs": {
-      "collectionTrends": "Collection Trends",
-      "propertyPerformance": "Property Performance",
-      "paymentDistribution": "Payment Distribution"
+  "actions": {
+    "print": "Print",
+    "exportCsv": "Export CSV"
+  },
+  "empty": {
+    "noCondo": "Select a condominium to view this report.",
+    "noUnits": "No fractions registered for this condominium.",
+    "noBudget": "No annual budget for {year}. Ordinary monthly quotas will show as zero until a budget exists.",
+    "noAging": "No outstanding quotas in the selected scope.",
+    "noData": "Nothing to show yet."
+  },
+  "mapaRateio": {
+    "title": "Allocation map (mapa de rateio)",
+    "subtitle": "Ordinary quota share by fraction permillage for {year}.",
+    "subtitleNoBudget": "Fraction permillage for {name} — add an annual budget to compute quotas.",
+    "stats": {
+      "collectable": "Annual collectable",
+      "monthly": "Monthly building total",
+      "units": "Fractions",
+      "permillage": "Permillage allocated"
     },
-    "collectionTrendsAria": "Collection Trends Chart",
-    "propertyPerformanceAria": "Property Performance Chart",
-    "paymentDistributionAria": "Payment Distribution Pie Chart",
-    "methodBreakdown": "Payment Method Breakdown",
-    "paymentsCount": "{count} payments",
-    "dataUpdated": "Data updated 5 minutes ago",
-    "tooltipCollected": "Collected",
-    "tooltipTarget": "Target",
-    "tooltipOutstanding": "Outstanding",
-    "tooltipCollectionRate": "Collection Rate",
-    "tooltipPayments": "Payments"
-  },
-  "dataTables": {
-    "title": "Detailed Reports",
-    "subtitle": "Supporting data tables with export capabilities",
-    "excel": "Excel",
-    "pdf": "PDF",
-    "tabs": {
-      "propertyPerformance": "Property Performance",
-      "collectionSummary": "Collection Summary",
-      "paymentMethods": "Payment Methods"
+    "budgetStatus": {
+      "approved": "Approved budget",
+      "draft": "Draft budget",
+      "missing": "No budget"
     },
     "columns": {
-      "property": "Property",
-      "units": "Units",
-      "collected": "Collected",
-      "outstanding": "Outstanding",
-      "collectionRate": "Collection Rate",
-      "status": "Status",
-      "period": "Period",
-      "target": "Target",
-      "variance": "Variance",
-      "achievement": "Achievement",
-      "paymentMethod": "Payment Method",
-      "transactions": "Transactions",
-      "totalAmount": "Total Amount",
-      "percentage": "Percentage",
-      "average": "Average"
+      "unit": "Fraction",
+      "type": "Type",
+      "floor": "Floor",
+      "owners": "Owners",
+      "permillage": "Permillage",
+      "share": "Share",
+      "monthly": "Monthly quota",
+      "annual": "Annual share"
     },
-    "status": {
-      "excellent": "Excellent",
-      "good": "Good",
-      "needsAttention": "Needs Attention"
+    "total": "Total",
+    "types": {
+      "apartment": "Apartment",
+      "shop": "Shop",
+      "garage": "Garage",
+      "parking": "Parking",
+      "other": "Other"
     }
   },
-  "generateReportSection": {
-    "title": "Generate Custom Report",
-    "subtitle": "Create and schedule custom reports with selected data fields",
-    "collapse": "Collapse",
-    "expand": "Expand",
-    "reportName": "Report Name *",
-    "reportNamePlaceholder": "Enter report name",
-    "description": "Description",
-    "descriptionPlaceholder": "Brief description of the report",
-    "reportFormat": "Report Format",
-    "deliveryMethod": "Delivery Method",
-    "schedule": "Schedule",
-    "recipients": "Recipients",
-    "emailPlaceholder": "Enter email address",
-    "dataFields": "Data Fields to Include *",
-    "additionalOptions": "Additional Options",
-    "includeCharts": "Include charts and graphs",
-    "includeRawData": "Include raw data tables",
-    "fieldsSelected": "{count} fields selected",
-    "saveTemplate": "Save Template",
-    "generateReport": "Generate Report",
-    "collapsedHint": "Quickly generate reports using predefined templates or create custom reports",
-    "quickFinancial": "Quick Financial Report",
-    "customReport": "Custom Report",
-    "formats": {
-      "pdf": "PDF Document",
-      "excel": "Excel Spreadsheet",
-      "csv": "CSV Data",
-      "html": "Web Report"
+  "prestacaoContas": {
+    "title": "Annual accounts (prestação de contas)",
+    "subtitle": "Assembly pack for {name} — {year}.",
+    "stats": {
+      "collectable": "Budget collectable",
+      "expenses": "Expenses",
+      "variance": "Budget vs expenses",
+      "bank": "Bank balance"
     },
-    "delivery": {
-      "manual": "Manual Download",
-      "email": "Email Delivery",
-      "scheduled": "Scheduled Delivery"
+    "budget": {
+      "title": "Ordinary budget",
+      "ordinary": "Ordinary operating",
+      "reserve": "Reserve fund",
+      "minimumReserve": "Legal minimum (10%)",
+      "collectable": "Total to collect",
+      "category": "Category",
+      "amount": "Amount",
+      "empty": "No budget categories for this year."
     },
-    "schedules": {
-      "daily": "Daily",
-      "weekly": "Weekly",
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
-      "annually": "Annually"
+    "expenses": {
+      "title": "Expenses by category",
+      "category": "Category",
+      "amount": "Amount",
+      "total": "Total expenses",
+      "empty": "No expenses recorded for this year."
     },
-    "fieldCategories": {
-      "Basic": "Basic",
-      "Financial": "Financial",
-      "Operations": "Operations",
-      "Governance": "Governance",
-      "Legal": "Legal"
+    "bank": {
+      "title": "Bank accounts",
+      "bank": "Bank",
+      "iban": "IBAN",
+      "balance": "Balance",
+      "total": "Total balance",
+      "empty": "No bank accounts for this condominium."
     },
-    "fields": {
-      "propertyInfo": "Property Information",
-      "ownerDetails": "Owner Details",
-      "unitInfo": "Unit Information",
-      "paymentHistory": "Payment History",
-      "outstandingBalances": "Outstanding Balances",
-      "collectionRates": "Collection Rates",
-      "maintenanceRequests": "Maintenance Requests",
-      "boardMinutes": "Board Minutes",
-      "budgetVariance": "Budget Variance",
-      "complianceStatus": "Compliance Status"
+    "extraordinary": {
+      "title": "Extraordinary quotas",
+      "description": "Description",
+      "date": "Date",
+      "owners": "Owners billed",
+      "amount": "Amount",
+      "total": "Total extraordinary",
+      "empty": "No extraordinary quotas issued this year."
     },
-    "validation": {
-      "nameRequired": "Please enter a report name",
-      "fieldsRequired": "Please select at least one field to include in the report"
+    "collections": {
+      "title": "Quota collection ({year})",
+      "paid": "Paid",
+      "pending": "Pending",
+      "overdue": "Overdue",
+      "paidAmount": "Collected",
+      "outstanding": "Outstanding"
+    },
+    "budgetStatus": {
+      "approved": "Approved",
+      "draft": "Draft",
+      "missing": "No budget"
+    }
+  },
+  "aging": {
+    "title": "Collection aging",
+    "subtitle": "Outstanding quotas by days past due — as of {date}.",
+    "subtitleCondo": "Outstanding quotas for {name} — as of {date}.",
+    "stats": {
+      "total": "Outstanding total",
+      "items": "Open items"
+    },
+    "buckets": {
+      "current": "Not due / current",
+      "1-30": "1–30 days",
+      "31-60": "31–60 days",
+      "61-90": "61–90 days",
+      "90+": "90+ days"
+    },
+    "columns": {
+      "owner": "Owner",
+      "unit": "Fraction",
+      "property": "Condominium",
+      "period": "Period",
+      "dueDate": "Due date",
+      "days": "Days overdue",
+      "amount": "Amount",
+      "status": "Status",
+      "bucket": "Bucket"
+    },
+    "status": {
+      "pending": "Pending",
+      "overdue": "Overdue"
     }
   }
 }
