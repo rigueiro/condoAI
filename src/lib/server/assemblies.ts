@@ -4,7 +4,10 @@ import {
   EMPTY_ASSEMBLIES,
   type Assembly,
   type AssembliesState,
+  type AttachProofInput,
   type CreateAssemblyInput,
+  type RecordDeliveryInput,
+  type ResendSummonsInput,
   type SendSummonsInput,
 } from "@/lib/assemblies/types";
 import {
@@ -204,12 +207,17 @@ export function sendAssemblySummons(
       throw new Error("agendaRequired");
     }
 
+    const method = input.method === "mail" ? "mail" : "email";
+    const proof = input.proof ?? null;
+    if (method === "mail" && !proof) throw new Error("proofRequired");
+
     const summons = buildSummons({
-      method: input.method === "mail" ? "mail" : "email",
+      method,
       title: input.title || assembly.title,
       content: input.content.trim() || defaultSummonsContent(assembly),
       sentDate: input.sentDate,
-      proof: input.proof,
+      proof,
+      delivery: null,
     });
     if (!noticeMeetsLegalMinimum(assembly.scheduledDate, summons.sentDate)) {
       throw new Error("noticeTooShort");
@@ -219,6 +227,71 @@ export function sendAssemblySummons(
       ...assembly,
       summons,
       status: "summoned",
+    });
+  });
+}
+
+/** Re-deliver / refresh text without changing legal notice date. */
+export function resendAssemblySummons(
+  email: string,
+  input: ResendSummonsInput,
+): AssembliesState {
+  return mutate(email, (current) => {
+    const assembly = requireAssembly(current, input.id);
+    if (assembly.status === "closed") throw new Error("assemblyClosed");
+    if (assembly.status === "draft" || !assembly.summons) {
+      throw new Error("summonsRequired");
+    }
+    const title = (input.title ?? assembly.summons.title).trim();
+    const content = (input.content ?? assembly.summons.content).trim();
+    if (!title || !content) throw new Error("badRequest");
+
+    return upsertAssembly(current, {
+      ...assembly,
+      summons: {
+        ...assembly.summons,
+        title,
+        content,
+      },
+    });
+  });
+}
+
+export function attachAssemblyProof(
+  email: string,
+  input: AttachProofInput,
+): AssembliesState {
+  return mutate(email, (current) => {
+    const assembly = requireAssembly(current, input.id);
+    if (assembly.status === "closed") throw new Error("assemblyClosed");
+    if (!assembly.summons) throw new Error("summonsRequired");
+    return upsertAssembly(current, {
+      ...assembly,
+      summons: {
+        ...assembly.summons,
+        proof: input.proof,
+      },
+    });
+  });
+}
+
+export function recordAssemblyDelivery(
+  email: string,
+  input: RecordDeliveryInput,
+): AssembliesState {
+  return mutate(email, (current) => {
+    const assembly = requireAssembly(current, input.id);
+    if (!assembly.summons) throw new Error("summonsRequired");
+    return upsertAssembly(current, {
+      ...assembly,
+      summons: {
+        ...assembly.summons,
+        delivery: {
+          emailed: Math.max(0, Math.floor(input.emailed)),
+          skipped: Math.max(0, Math.floor(input.skipped)),
+          lastAt: input.lastAt ?? new Date().toISOString(),
+        },
+      },
     });
   });
 }

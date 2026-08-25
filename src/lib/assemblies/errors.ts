@@ -6,6 +6,7 @@ export const ASSEMBLY_ERROR_CODES = [
   "agendaRequired",
   "summonsRequired",
   "noticeTooShort",
+  "proofRequired",
   "notInSession",
   "quorumRequired",
   "minutesRequired",

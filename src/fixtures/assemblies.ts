@@ -41,6 +41,7 @@ export const mockAssemblies: Assembly[] = [
       content:
         "Convoca-se a assembleia de condóminos para o dia 12 de setembro de 2026, às 18:30, no salão do rés-do-chão.\n\nOrdem de trabalhos:\n1. Prestação de contas de 2025\n2. Orçamento ordinário de 2026\n3. Eleição do administrador\n\nNa falta de quórum, a assembleia reunirá em segunda convocatória 30 minutos depois, com os condóminos presentes.",
       proof: null,
+      delivery: null,
     },
     attendance: [],
     votes: [],
@@ -80,6 +81,7 @@ export const mockAssemblies: Assembly[] = [
       content:
         "Assembleia ordinária em 25 de agosto de 2026, às 19:00.\n\n1. Seguro do edifício\n2. Limpeza das partes comuns",
       proof: null,
+      delivery: null,
     },
     attendance: [
       {
@@ -129,6 +131,7 @@ export const mockAssemblies: Assembly[] = [
       content:
         "Assembleia extraordinária em 8 de novembro de 2025 para deliberar sobre as obras de fachada.",
       proof: null,
+      delivery: null,
     },
     attendance: [
       {

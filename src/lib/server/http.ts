@@ -29,6 +29,7 @@ const ERROR_STATUS: Record<string, number> = {
   agendaRequired: 400,
   summonsRequired: 400,
   noticeTooShort: 400,
+  proofRequired: 400,
   notInSession: 409,
   quorumRequired: 409,
   minutesRequired: 400,

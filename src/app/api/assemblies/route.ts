@@ -1,11 +1,14 @@
 import type { Assembly } from "@/lib/assemblies/types";
 import {
+  attachAssemblyProof,
   closeAssembly,
   createAssembly,
   deleteAssembly,
   getAssemblies,
   openAssemblySession,
   putAssembly,
+  recordAssemblyDelivery,
+  resendAssemblySummons,
   sendAssemblySummons,
 } from "@/lib/server/assemblies";
 import { requireSessionEmail } from "@/lib/server/session";
@@ -44,6 +47,9 @@ export async function PATCH(request: Request) {
       content?: string;
       sentDate?: string;
       proof?: string | null;
+      emailed?: number;
+      skipped?: number;
+      lastAt?: string | null;
     };
 
     switch (body.action) {
@@ -60,7 +66,8 @@ export async function PATCH(request: Request) {
           ? jsonOk({
               state: createAssembly(email, {
                 condominiumId: body.condominiumId,
-                type: body.type === "extraordinary" ? "extraordinary" : "ordinary",
+                type:
+                  body.type === "extraordinary" ? "extraordinary" : "ordinary",
                 title: body.title,
                 scheduledDate: body.scheduledDate,
                 scheduledTime: body.scheduledTime,
@@ -78,6 +85,38 @@ export async function PATCH(request: Request) {
                 content: body.content ?? "",
                 sentDate: body.sentDate,
                 proof: body.proof,
+              }),
+            })
+          : jsonError("badRequest");
+      case "resendSummons":
+        return hasId(body)
+          ? jsonOk({
+              state: resendAssemblySummons(email, {
+                id: body.id,
+                title: body.title,
+                content: body.content,
+              }),
+            })
+          : jsonError("badRequest");
+      case "attachProof":
+        return hasId(body)
+          ? jsonOk({
+              state: attachAssemblyProof(email, {
+                id: body.id,
+                proof: body.proof ?? null,
+              }),
+            })
+          : jsonError("badRequest");
+      case "recordDelivery":
+        return hasId(body) &&
+          typeof body.emailed === "number" &&
+          typeof body.skipped === "number"
+          ? jsonOk({
+              state: recordAssemblyDelivery(email, {
+                id: body.id,
+                emailed: body.emailed,
+                skipped: body.skipped,
+                lastAt: body.lastAt,
               }),
             })
           : jsonError("badRequest");

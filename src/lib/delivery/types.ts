@@ -6,7 +6,8 @@ export type DeliveryKind =
   | "payment-reminder"
   | "payment-escalation"
   | "collections-digest"
-  | "compliance-digest";
+  | "compliance-digest"
+  | "assembly-summons";
 
 export type OutboundMessage = {
   id: string;

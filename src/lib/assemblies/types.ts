@@ -36,12 +36,20 @@ export interface ItemVotes {
   ballots: Record<string, VoteChoice>;
 }
 
+export type SummonsDelivery = {
+  emailed: number;
+  skipped: number;
+  lastAt: string | null;
+};
+
 export interface AssemblySummons {
   sentDate: string;
   method: SummonsMethod;
   title: string;
   content: string;
   proof: string | null;
+  /** Client outbox fan-out summary after email delivery. */
+  delivery: SummonsDelivery | null;
 }
 
 export interface AssemblyMinutesRecord {
@@ -104,6 +112,24 @@ export type SendSummonsInput = {
   content: string;
   sentDate?: string;
   proof?: string | null;
+};
+
+export type ResendSummonsInput = {
+  id: string;
+  title?: string;
+  content?: string;
+};
+
+export type AttachProofInput = {
+  id: string;
+  proof: string | null;
+};
+
+export type RecordDeliveryInput = {
+  id: string;
+  emailed: number;
+  skipped: number;
+  lastAt?: string | null;
 };
 
 export type VotingShare = {

@@ -13,7 +13,13 @@ import {
 import { useUser } from "@/lib/auth";
 import { apiFetch, ApiError } from "@/lib/api/client";
 import { EMPTY_ASSEMBLIES, type Assembly, type AssembliesState } from "./types";
-import type { CreateAssemblyInput, SendSummonsInput } from "./types";
+import type {
+  AttachProofInput,
+  CreateAssemblyInput,
+  RecordDeliveryInput,
+  ResendSummonsInput,
+  SendSummonsInput,
+} from "./types";
 
 type ActionResult = { ok: true } | { ok: false; code: string };
 
@@ -24,6 +30,9 @@ interface AssembliesContextValue {
   removeAssembly: (id: string) => Promise<ActionResult>;
   createAssembly: (input: CreateAssemblyInput) => Promise<ActionResult>;
   sendSummons: (input: SendSummonsInput) => Promise<ActionResult>;
+  resendSummons: (input: ResendSummonsInput) => Promise<ActionResult>;
+  attachProof: (input: AttachProofInput) => Promise<ActionResult>;
+  recordDelivery: (input: RecordDeliveryInput) => Promise<ActionResult>;
   openSession: (id: string, call?: 1 | 2) => Promise<ActionResult>;
   closeSession: (id: string) => Promise<ActionResult>;
   refresh: () => void;
@@ -118,6 +127,10 @@ export function AssembliesProvider({ children }: { children: ReactNode }) {
       removeAssembly: (id) => runAction({ action: "remove", id }),
       createAssembly: (input) => runAction({ action: "create", ...input }),
       sendSummons: (input) => runAction({ action: "sendSummons", ...input }),
+      resendSummons: (input) => runAction({ action: "resendSummons", ...input }),
+      attachProof: (input) => runAction({ action: "attachProof", ...input }),
+      recordDelivery: (input) =>
+        runAction({ action: "recordDelivery", ...input }),
       openSession: (id, call) => runAction({ action: "openSession", id, call }),
       closeSession: (id) => runAction({ action: "close", id }),
       refresh,

@@ -22,5 +22,9 @@ export {
   votingRoll,
   withVote,
 } from "./rules";
+export {
+  deliverAssemblySummonsEmails,
+  summonsRecipients,
+} from "./delivery";
 export { assemblyErrorKey, isAssemblyErrorCode } from "./errors";
 export { AssembliesProvider, useAssemblies } from "./assemblies-provider";

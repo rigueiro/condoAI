@@ -9,7 +9,9 @@ import Button from "@/components/ui/button";
 import Icon from "@/components/icon";
 import Select from "@/components/ui/select";
 import { Link } from "@/i18n/navigation";
+import { useUser } from "@/lib/auth";
 import { formatPermillage, usePortfolio } from "@/lib/portfolio";
+import DocumentUpload from "@/app/[locale]/compliance/components/document-upload";
 import {
   LEGAL_NOTICE_DAYS,
   MAJORITY_RULES,
@@ -17,18 +19,19 @@ import {
   attendingPermillage,
   canVote,
   defaultSummonsContent,
+  deliverAssemblySummonsEmails,
   firstCallQuorum,
   noticeDays,
   noticeSatisfied,
   projectedNoticeDays,
   quorumMet,
+  summonsRecipients,
   tallyItem,
   useAssemblies,
   votingRoll,
   withVote,
   assemblyErrorKey,
   type AgendaItem,
-  type Assembly,
   type AttendanceStatus,
   type MajorityRule,
   type VoteChoice,
@@ -37,15 +40,30 @@ import {
 const fieldClass =
   "w-full rounded-lg border border-border-light bg-surface px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
 
-function errorMessage(
-  t: ReturnType<typeof useTranslations<"assemblies">>,
-  code: string,
-): string {
+type AssembliesT = ReturnType<typeof useTranslations<"assemblies">>;
+
+function errorMessage(t: AssembliesT, code: string): string {
   return t(`errors.${assemblyErrorKey(code)}`);
+}
+
+function deliveryFlash(
+  t: AssembliesT,
+  delivery: { emailed: number; skipped: number },
+  total: number,
+): string {
+  if (delivery.emailed === 0) return t("summons.deliveryNone");
+  if (delivery.skipped > 0) {
+    return t("summons.deliveryPartial", {
+      emailed: delivery.emailed,
+      skipped: delivery.skipped,
+    });
+  }
+  return t("summons.deliveryOk", { emailed: delivery.emailed, total });
 }
 
 function AssemblyDetailPage() {
   const t = useTranslations("assemblies");
+  const user = useUser();
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
   const { portfolio } = usePortfolio();
@@ -53,6 +71,9 @@ function AssemblyDetailPage() {
     assemblies,
     upsertAssembly,
     sendSummons,
+    resendSummons,
+    attachProof,
+    recordDelivery,
     openSession,
     closeSession,
     isReady,
@@ -61,6 +82,7 @@ function AssemblyDetailPage() {
   const [summonsTitle, setSummonsTitle] = useState<string | null>(null);
   const [summonsContent, setSummonsContent] = useState<string | null>(null);
   const [summonsMethod, setSummonsMethod] = useState<"email" | "mail">("email");
+  const [proofDraft, setProofDraft] = useState<string | null>(null);
 
   const assembly = assemblies.find((row) => row.id === id);
   const condo = portfolio.condominiums.find(
@@ -76,6 +98,17 @@ function AssemblyDetailPage() {
         ? votingRoll(portfolio.units, assembly.condominiumId)
         : [],
     [assembly, portfolio.units],
+  );
+  const recipients = useMemo(
+    () =>
+      assembly
+        ? summonsRecipients(
+            portfolio.units,
+            portfolio.owners,
+            assembly.condominiumId,
+          )
+        : [],
+    [assembly, portfolio.owners, portfolio.units],
   );
 
   if (!isReady) {
@@ -104,9 +137,11 @@ function AssemblyDetailPage() {
     );
   }
 
-  const locked = assembly.status !== "draft";
+  const agendaLocked = assembly.status !== "draft";
   const inSession = assembly.status === "in_session";
   const closed = assembly.status === "closed";
+  const summonsEditable = !closed;
+  const method = assembly.summons?.method ?? summonsMethod;
   const attending = attendingPermillage(assembly, roll);
   const hasQuorum = quorumMet(assembly, roll, condo?.totalPermillage);
   const votesOpen = inSession && hasQuorum;
@@ -114,6 +149,9 @@ function AssemblyDetailPage() {
   const daysFromToday = projectedNoticeDays(assembly.scheduledDate);
   const canSendByNotice =
     daysFromToday != null && daysFromToday >= LEGAL_NOTICE_DAYS;
+  const mailNeedsProof = method === "mail" && !(proofDraft || assembly.summons?.proof);
+  const canSendSummons =
+    assembly.status === "draft" && canSendByNotice && !mailNeedsProof;
   const draftContent =
     summonsContent ?? assembly.summons?.content ?? defaultSummonsContent(assembly);
   const draftTitle = summonsTitle ?? assembly.summons?.title ?? assembly.title;
@@ -130,6 +168,56 @@ function AssemblyDetailPage() {
 
   const save = async (next: Assembly) =>
     run(await upsertAssembly(next));
+
+  const fanOutEmails = async (title: string, content: string) => {
+    if (!user?.email) return;
+    const delivery = deliverAssemblySummonsEmails(
+      user.email,
+      { assemblyId: assembly.id, title, content },
+      recipients,
+    );
+    const recorded = await recordDelivery({
+      id: assembly.id,
+      emailed: delivery.emailed,
+      skipped: delivery.skipped,
+      lastAt: delivery.lastAt,
+    });
+    if (!recorded.ok) {
+      showFlash(recorded.code);
+      return;
+    }
+    setFlash(deliveryFlash(t, delivery, recipients.length));
+  };
+
+  const handleSendSummons = async () => {
+    const result = await sendSummons({
+      id: assembly.id,
+      method,
+      title: draftTitle,
+      content: draftContent,
+      proof: method === "mail" ? proofDraft : null,
+    });
+    if (!result.ok) {
+      showFlash(result.code);
+      return;
+    }
+    if (method === "email") await fanOutEmails(draftTitle, draftContent);
+    else setFlash(t("summons.deliveryMail"));
+  };
+
+  const handleResendSummons = async () => {
+    const result = await resendSummons({
+      id: assembly.id,
+      title: draftTitle,
+      content: draftContent,
+    });
+    if (!result.ok) {
+      showFlash(result.code);
+      return;
+    }
+    if (method === "email") await fanOutEmails(draftTitle, draftContent);
+    else setFlash(t("summons.resent"));
+  };
 
   const addAgendaItem = () => {
     const item: AgendaItem = {
@@ -219,21 +307,16 @@ function AssemblyDetailPage() {
           <div className="flex flex-wrap gap-2">
             {assembly.status === "draft" && (
               <Button
-                disabled={!canSendByNotice}
+                disabled={!canSendSummons}
                 title={
-                  canSendByNotice
-                    ? undefined
-                    : t("detail.sendBlockedNotice", { days: LEGAL_NOTICE_DAYS })
+                  !canSendByNotice
+                    ? t("detail.sendBlockedNotice", { days: LEGAL_NOTICE_DAYS })
+                    : mailNeedsProof
+                      ? t("summons.proofHint")
+                      : undefined
                 }
-                onClick={async () => {
-                  await run(
-                    await sendSummons({
-                      id: assembly.id,
-                      method: summonsMethod,
-                      title: draftTitle,
-                      content: draftContent,
-                    }),
-                  );
+                onClick={() => {
+                  void handleSendSummons();
                 }}
               >
                 {t("detail.sendSummons")}
@@ -286,7 +369,7 @@ function AssemblyDetailPage() {
             <h2 className="mb-3 text-lg font-semibold text-text-primary">
               {t("agenda.title")}
             </h2>
-            {locked && (
+            {agendaLocked && (
               <p className="mb-3 text-xs text-text-secondary">{t("agenda.locked")}</p>
             )}
             {assembly.agenda.length === 0 && (
@@ -301,7 +384,7 @@ function AssemblyDetailPage() {
                     <input
                       className={`${fieldClass} mb-2`}
                       value={item.title}
-                      disabled={locked}
+                      disabled={agendaLocked}
                       placeholder={t("agenda.itemTitle")}
                       onChange={(event) =>
                         updateAgenda(item.id, { title: event.target.value })
@@ -310,7 +393,7 @@ function AssemblyDetailPage() {
                     <textarea
                       className={`${fieldClass} mb-2 min-h-16`}
                       value={item.description}
-                      disabled={locked}
+                      disabled={agendaLocked}
                       placeholder={t("agenda.description")}
                       onChange={(event) =>
                         updateAgenda(item.id, { description: event.target.value })
@@ -320,7 +403,7 @@ function AssemblyDetailPage() {
                       <Select
                         selectSize="sm"
                         value={item.majority}
-                        disabled={locked}
+                        disabled={agendaLocked}
                         onChange={(event) =>
                           updateAgenda(item.id, {
                             majority: event.target.value as MajorityRule,
@@ -334,7 +417,7 @@ function AssemblyDetailPage() {
                           </option>
                         ))}
                       </Select>
-                      {!locked && (
+                      {!agendaLocked && (
                         <button
                           type="button"
                           className="text-sm text-error hover:underline"
@@ -347,7 +430,7 @@ function AssemblyDetailPage() {
                   </li>
                 ))}
             </ol>
-            {!locked && (
+            {!agendaLocked && (
               <button
                 type="button"
                 onClick={addAgendaItem}
@@ -392,13 +475,56 @@ function AssemblyDetailPage() {
                 {t(`methods.${assembly.summons.method}`)}
               </p>
             )}
+            {assembly.summons?.delivery && (
+              <p className="mb-3 text-sm text-text-secondary">
+                {deliveryFlash(
+                  t,
+                  assembly.summons.delivery,
+                  recipients.length,
+                )}
+              </p>
+            )}
+            {method === "email" && (
+              <p className="mb-3 text-xs text-text-secondary">
+                {t("summons.outboxHint")}
+              </p>
+            )}
+
+            <div className="mb-4">
+              <p className="mb-1 text-sm font-medium text-text-primary">
+                {t("summons.recipients")}
+              </p>
+              <p className="mb-2 text-xs text-text-secondary">
+                {t("summons.recipientsHint")}
+              </p>
+              {recipients.length === 0 ? (
+                <p className="text-sm text-text-secondary">
+                  {t("attendance.none")}
+                </p>
+              ) : (
+                <ul className="divide-y divide-border-light rounded-lg border border-border-light text-sm">
+                  {recipients.map((recipient) => (
+                    <li
+                      key={recipient.ownerId}
+                      className="flex flex-wrap items-center justify-between gap-2 px-3 py-2"
+                    >
+                      <span className="text-text-primary">{recipient.name}</span>
+                      <span className="text-text-secondary">
+                        {recipient.email || t("summons.noEmail")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
             <div className="mb-3 max-w-xs">
               <label className="mb-1 block text-sm font-medium text-text-primary">
                 {t("summons.method")}
               </label>
               <Select
-                value={assembly.summons?.method ?? summonsMethod}
-                disabled={locked}
+                value={method}
+                disabled={Boolean(assembly.summons) || !summonsEditable}
                 onChange={(event) =>
                   setSummonsMethod(event.target.value as "email" | "mail")
                 }
@@ -414,15 +540,53 @@ function AssemblyDetailPage() {
             <input
               className={`${fieldClass} mb-2`}
               value={draftTitle}
-              disabled={locked}
+              disabled={!summonsEditable}
               onChange={(event) => setSummonsTitle(event.target.value)}
             />
             <textarea
-              className={`${fieldClass} min-h-40`}
+              className={`${fieldClass} mb-4 min-h-40`}
               value={draftContent}
-              disabled={locked}
+              disabled={!summonsEditable}
               onChange={(event) => setSummonsContent(event.target.value)}
             />
+
+            {(method === "mail" || assembly.summons?.method === "mail") && (
+              <div className="mb-4">
+                <DocumentUpload
+                  label={t("summons.proof")}
+                  value={
+                    assembly.summons?.proof ?? proofDraft
+                  }
+                  onChange={(next) => {
+                    if (!assembly.summons) {
+                      setProofDraft(next);
+                      return;
+                    }
+                    void attachProof({ id: assembly.id, proof: next }).then(
+                      (result) => {
+                        if (!result.ok) showFlash(result.code);
+                      },
+                    );
+                  }}
+                />
+                {!assembly.summons && (
+                  <p className="mt-1 text-xs text-text-secondary">
+                    {t("summons.proofHint")}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {assembly.summons && !closed && (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  void handleResendSummons();
+                }}
+              >
+                {t("detail.resendSummons")}
+              </Button>
+            )}
           </section>
 
           {(inSession || closed) && (

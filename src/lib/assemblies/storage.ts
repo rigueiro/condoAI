@@ -1,4 +1,4 @@
-import type { Assembly, AssembliesState } from "./types";
+import type { Assembly, AssembliesState, AssemblySummons } from "./types";
 import { emptyMinutes } from "./rules";
 
 function upsertById<T extends { id: string }>(items: T[], item: T): T[] {
@@ -7,6 +7,26 @@ function upsertById<T extends { id: string }>(items: T[], item: T): T[] {
   const next = items.slice();
   next[index] = item;
   return next;
+}
+
+function normalizeSummons(
+  summons: AssemblySummons | null | undefined,
+): AssemblySummons | null {
+  if (!summons) return null;
+  return {
+    sentDate: String(summons.sentDate).slice(0, 10),
+    method: summons.method === "mail" ? "mail" : "email",
+    title: summons.title ?? "",
+    content: summons.content ?? "",
+    proof: summons.proof ?? null,
+    delivery: summons.delivery
+      ? {
+          emailed: Number(summons.delivery.emailed) || 0,
+          skipped: Number(summons.delivery.skipped) || 0,
+          lastAt: summons.delivery.lastAt ?? null,
+        }
+      : null,
+  };
 }
 
 export function emptyAssembly(
@@ -31,7 +51,7 @@ export function emptyAssembly(
     ...rest,
     call: call === 2 ? 2 : 1,
     agenda: Array.isArray(agenda) ? agenda : [],
-    summons: summons ?? null,
+    summons: normalizeSummons(summons),
     attendance: Array.isArray(attendance) ? attendance : [],
     votes: Array.isArray(votes) ? votes : [],
     minutes: minutes ?? emptyMinutes(),

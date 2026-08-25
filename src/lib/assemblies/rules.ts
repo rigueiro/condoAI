@@ -369,5 +369,6 @@ export function buildSummons(
     title: input.title.trim(),
     content: input.content.trim(),
     proof: input.proof ?? null,
+    delivery: input.delivery ?? null,
   };
 }
