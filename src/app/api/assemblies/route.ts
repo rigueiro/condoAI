@@ -11,7 +11,7 @@ import {
   resendAssemblySummons,
   sendAssemblySummons,
 } from "@/lib/server/assemblies";
-import { requireSessionEmail } from "@/lib/server/session";
+import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
 
 function hasId<T extends { id?: string }>(
@@ -22,8 +22,8 @@ function hasId<T extends { id?: string }>(
 
 export async function GET() {
   try {
-    const email = await requireSessionEmail();
-    return jsonOk({ state: getAssemblies(email) });
+    const { workspaceEmail } = await requireManagerAccess("readAssemblies");
+    return jsonOk({ state: getAssemblies(workspaceEmail) });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -31,7 +31,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("writeAssemblies");
     const body = (await request.json()) as {
       action?: string;
       assembly?: Assembly;
@@ -55,16 +55,16 @@ export async function PATCH(request: Request) {
     switch (body.action) {
       case "upsert":
         return body.assembly?.id && body.assembly.condominiumId
-          ? jsonOk({ state: putAssembly(email, body.assembly) })
+          ? jsonOk({ state: putAssembly(workspaceEmail, body.assembly) })
           : jsonError("badRequest");
       case "remove":
         return body.id
-          ? jsonOk({ state: deleteAssembly(email, body.id) })
+          ? jsonOk({ state: deleteAssembly(workspaceEmail, body.id) })
           : jsonError("badRequest");
       case "create":
         return body.condominiumId && body.title && body.scheduledDate
           ? jsonOk({
-              state: createAssembly(email, {
+              state: createAssembly(workspaceEmail, {
                 condominiumId: body.condominiumId,
                 type:
                   body.type === "extraordinary" ? "extraordinary" : "ordinary",
@@ -78,7 +78,7 @@ export async function PATCH(request: Request) {
       case "sendSummons":
         return hasId(body)
           ? jsonOk({
-              state: sendAssemblySummons(email, {
+              state: sendAssemblySummons(workspaceEmail, {
                 id: body.id,
                 method: body.method === "mail" ? "mail" : "email",
                 title: body.title ?? "",
@@ -91,7 +91,7 @@ export async function PATCH(request: Request) {
       case "resendSummons":
         return hasId(body)
           ? jsonOk({
-              state: resendAssemblySummons(email, {
+              state: resendAssemblySummons(workspaceEmail, {
                 id: body.id,
                 title: body.title,
                 content: body.content,
@@ -101,7 +101,7 @@ export async function PATCH(request: Request) {
       case "attachProof":
         return hasId(body)
           ? jsonOk({
-              state: attachAssemblyProof(email, {
+              state: attachAssemblyProof(workspaceEmail, {
                 id: body.id,
                 proof: body.proof ?? null,
               }),
@@ -112,7 +112,7 @@ export async function PATCH(request: Request) {
           typeof body.emailed === "number" &&
           typeof body.skipped === "number"
           ? jsonOk({
-              state: recordAssemblyDelivery(email, {
+              state: recordAssemblyDelivery(workspaceEmail, {
                 id: body.id,
                 emailed: body.emailed,
                 skipped: body.skipped,
@@ -123,12 +123,12 @@ export async function PATCH(request: Request) {
       case "openSession":
         return body.id
           ? jsonOk({
-              state: openAssemblySession(email, body.id, body.call),
+              state: openAssemblySession(workspaceEmail, body.id, body.call),
             })
           : jsonError("badRequest");
       case "close":
         return body.id
-          ? jsonOk({ state: closeAssembly(email, body.id) })
+          ? jsonOk({ state: closeAssembly(workspaceEmail, body.id) })
           : jsonError("badRequest");
       default:
         return jsonError("badRequest");

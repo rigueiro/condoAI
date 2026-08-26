@@ -26,4 +26,4 @@ export type AttentionItem = {
   urgency: "overdue" | "due-soon";
 };
 
-export type ComplianceTab = ComplianceKind | "attention";
+export type ComplianceTab = ComplianceKind | "attention" | "legal";

@@ -1,15 +1,15 @@
 import type { Unit } from "@/types";
 import { getUnit, removeUnit, upsertUnit } from "@/lib/server/portfolio";
-import { requireSessionEmail } from "@/lib/server/session";
+import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, context: Ctx) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("readPortfolio");
     const { id } = await context.params;
-    const unit = getUnit(email, id);
+    const unit = getUnit(workspaceEmail, id);
     if (!unit) {
       return jsonError("notFound", 404);
     }
@@ -21,13 +21,13 @@ export async function GET(_request: Request, context: Ctx) {
 
 export async function PUT(request: Request, context: Ctx) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("writePortfolio");
     const { id } = await context.params;
     const body = (await request.json()) as { unit?: Unit };
     if (!body.unit || body.unit.id !== id) {
       return jsonError("badRequest");
     }
-    const portfolio = upsertUnit(email, body.unit);
+    const portfolio = upsertUnit(workspaceEmail, body.unit);
     return jsonOk({ portfolio, unit: body.unit });
   } catch (err) {
     return handleRouteError(err);
@@ -36,9 +36,9 @@ export async function PUT(request: Request, context: Ctx) {
 
 export async function DELETE(_request: Request, context: Ctx) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("writePortfolio");
     const { id } = await context.params;
-    const portfolio = removeUnit(email, id);
+    const portfolio = removeUnit(workspaceEmail, id);
     return jsonOk({ portfolio });
   } catch (err) {
     return handleRouteError(err);

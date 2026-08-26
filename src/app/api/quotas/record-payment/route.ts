@@ -3,14 +3,14 @@ import {
   recordPayment,
   type RecordPaymentInput,
 } from "@/lib/server/collections";
-import { requireSessionEmail } from "@/lib/server/session";
+import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
 
 export async function POST(request: Request) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("recordPayment");
     const body = (await request.json()) as RecordPaymentInput;
-    const result = recordPayment(email, body);
+    const result = recordPayment(workspaceEmail, body);
     if (!result) {
       return NextResponse.json({ error: "badRequest" }, { status: 400 });
     }

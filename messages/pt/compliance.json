@@ -5,12 +5,14 @@
   "tabs": {
     "attention": "Atenção",
     "insurance": "Seguros",
-    "certificate": "Certificados"
+    "certificate": "Certificados",
+    "legal": "Processos legais"
   },
   "stats": {
     "attention": "A vencer / em atraso",
     "policies": "Apólices de seguro",
-    "certificates": "Certificados"
+    "certificates": "Certificados",
+    "legal": "Processos legais"
   },
   "attention": {
     "title": "Renovações e validade",
@@ -108,5 +110,24 @@
     "digestSent": "Resumo enviado para {count, plural, one {# prazo} other {# prazos}}",
     "digestEmpty": "Nada a incluir no resumo",
     "digestFailed": "Não foi possível enviar o email do resumo"
+  },
+  "legal": {
+    "intro": "Acompanhe ações judiciais e de execução abertas após certidões de dívida e cobranças escaladas.",
+    "linkedCertificate": "Cert. ligada",
+    "readOnlyHint": "Pode consultar processos legais mas não alterar o estado.",
+    "table": {
+      "number": "Processo nº",
+      "condominium": "Condomínio",
+      "owner": "Condómino",
+      "description": "Descrição",
+      "opened": "Aberto",
+      "status": "Estado",
+      "actions": "Ligações"
+    },
+    "status": {
+      "ongoing": "Em curso",
+      "resolved": "Resolvido",
+      "archived": "Arquivado"
+    }
   }
 }

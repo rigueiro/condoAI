@@ -5,13 +5,13 @@ import {
   upsertOwner,
 } from "@/lib/server/portfolio";
 import type { OccupancyLink } from "@/lib/portfolio/occupancy";
-import { requireSessionEmail } from "@/lib/server/session";
+import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
 
 export async function GET() {
   try {
-    const email = await requireSessionEmail();
-    const portfolio = getPortfolio(email);
+    const { workspaceEmail } = await requireManagerAccess("readPortfolio");
+    const portfolio = getPortfolio(workspaceEmail);
     return jsonOk({
       owners: portfolio.owners,
       units: portfolio.units,
@@ -23,7 +23,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("writePortfolio");
     const body = (await request.json()) as {
       owner?: Owner;
       occupancies?: OccupancyLink[];
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     if (!body.owner?.id) {
       return NextResponse.json({ error: "badRequest" }, { status: 400 });
     }
-    const portfolio = upsertOwner(email, body.owner, body.occupancies);
+    const portfolio = upsertOwner(workspaceEmail, body.owner, body.occupancies);
     return jsonOk({ portfolio, owner: body.owner }, { status: 201 });
   } catch (err) {
     return handleRouteError(err);

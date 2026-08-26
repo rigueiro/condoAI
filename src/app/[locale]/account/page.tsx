@@ -9,6 +9,7 @@ import SectionCard from "@/components/ui/section-card";
 import Button from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { usePortfolio } from "@/lib/portfolio";
+import { apiFetch } from "@/lib/api/client";
 import { useRouter } from "@/i18n/navigation";
 
 import OrganizationForm from "./components/organization-form";
@@ -128,6 +129,8 @@ function AccountPage() {
   const [invoices] = useState<Invoice[]>(DEFAULT_INVOICES);
   const [integrations] = useState<Integration[]>(DEFAULT_INTEGRATIONS);
   const [banner, setBanner] = useState<Banner>(null);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [canManageTeam, setCanManageTeam] = useState(false);
 
   const organization =
     organizationOverride ??
@@ -153,10 +156,13 @@ function AccountPage() {
             0,
           ),
         },
-        users: { ...DEFAULT_SUBSCRIPTION.usage.users, used: 1 },
+        users: {
+          ...DEFAULT_SUBSCRIPTION.usage.users,
+          used: teamMembers.filter((m) => m.status !== "inactive").length || 1,
+        },
       },
     };
-  }, [isDemo, portfolio]);
+  }, [isDemo, portfolio, teamMembers]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -170,54 +176,75 @@ function AccountPage() {
     return () => window.clearTimeout(timer);
   }, [banner]);
 
-  const teamMembers = useMemo<TeamMember[]>(() => {
-    const currentUserId = user?.id ?? "1";
-    return [
-      {
-        id: currentUserId,
-        name: user?.name ?? "Rafael Rigueiro",
-        email: user?.email ?? "admin@condoai.pt",
-        role: "owner",
-        status: "active",
-        lastActiveAt: new Date().toISOString(),
-        isCurrentUser: true,
-      },
-      {
-        id: "u-2",
-        name: "Sofia Almeida",
-        email: "sofia.almeida@condoai.pt",
-        role: "admin",
-        status: "active",
-        lastActiveAt: "2026-05-19T08:42:00Z",
-      },
-      {
-        id: "u-3",
-        name: "Tiago Carvalho",
-        email: "tiago.carvalho@condoai.pt",
-        role: "manager",
-        status: "active",
-        lastActiveAt: "2026-05-15T14:10:00Z",
-      },
-      {
-        id: "u-4",
-        name: "Marta Lopes",
-        email: "marta.lopes@condoai.pt",
-        role: "staff",
-        status: "invited",
-      },
-      {
-        id: "u-5",
-        name: "André Pinto",
-        email: "andre.pinto@condoai.pt",
-        role: "viewer",
-        status: "inactive",
-        lastActiveAt: "2026-02-02T11:00:00Z",
-      },
-    ];
-  }, [user]);
+  useEffect(() => {
+    if (!isAuthenticated || isLoading) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await apiFetch<{
+          members: TeamMember[];
+          canManageTeam?: boolean;
+        }>("/api/team");
+        if (cancelled) return;
+        setTeamMembers(data.members);
+        setCanManageTeam(Boolean(data.canManageTeam));
+      } catch {
+        if (cancelled) return;
+        setTeamMembers([]);
+        setCanManageTeam(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, isLoading, user?.id]);
 
   const showSuccess = (message: string) =>
     setBanner({ type: "success", message });
+
+  const refreshTeam = useCallback(async () => {
+    const data = await apiFetch<{
+      members: TeamMember[];
+      canManageTeam?: boolean;
+    }>("/api/team");
+    setTeamMembers(data.members);
+    setCanManageTeam(Boolean(data.canManageTeam));
+  }, []);
+
+  const handleInvite = useCallback(
+    async (input: { email: string; role: TeamRole }) => {
+      await apiFetch("/api/team", {
+        method: "POST",
+        body: JSON.stringify({ email: input.email, role: input.role }),
+      });
+      await refreshTeam();
+      showSuccess(t("saved"));
+    },
+    [t, refreshTeam],
+  );
+
+  const handleRemoveMember = useCallback(
+    async (member: TeamMember) => {
+      await apiFetch(`/api/team?id=${encodeURIComponent(member.id)}`, {
+        method: "DELETE",
+      });
+      await refreshTeam();
+      showSuccess(t("saved"));
+    },
+    [t, refreshTeam],
+  );
+
+  const handleChangeRole = useCallback(
+    async (member: TeamMember, role: TeamRole) => {
+      await apiFetch("/api/team", {
+        method: "PATCH",
+        body: JSON.stringify({ id: member.id, role }),
+      });
+      await refreshTeam();
+      showSuccess(t("saved"));
+    },
+    [t, refreshTeam],
+  );
 
   const handleSaveOrganization = useCallback(
     async (next: Organization) => {
@@ -235,14 +262,6 @@ function AccountPage() {
     async (email: string) => {
       await new Promise((resolve) => setTimeout(resolve, 300));
       setBillingEmailOverride(email);
-      showSuccess(t("saved"));
-    },
-    [t],
-  );
-
-  const handleInvite = useCallback(
-    async (_input: { email: string; role: TeamRole }) => {
-      await new Promise((resolve) => setTimeout(resolve, 400));
       showSuccess(t("saved"));
     },
     [t],
@@ -367,7 +386,9 @@ function AccountPage() {
             >
               <TeamMembersSection
                 members={teamMembers}
-                onInvite={handleInvite}
+                onInvite={canManageTeam ? handleInvite : undefined}
+                onRemove={canManageTeam ? handleRemoveMember : undefined}
+                onChangeRole={canManageTeam ? handleChangeRole : undefined}
               />
             </SectionCard>
 

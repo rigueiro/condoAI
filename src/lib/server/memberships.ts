@@ -30,6 +30,7 @@ import { getCollections } from "./collections";
 import { getCompliance } from "./compliance";
 import { getPortfolio } from "./portfolio";
 import { readStore, updateStore } from "./store";
+import { isOrgTeamMember } from "./org-team";
 import { readMembershipsForHost } from "./membership-store";
 
 function normalizeEmail(email: string): string {
@@ -75,6 +76,9 @@ export function isManagerAccount(email: string): boolean {
   const store = readStore();
   const portfolio = store.portfolios[key];
   if (portfolio?.organization || (portfolio?.condominiums?.length ?? 0) > 0) {
+    return true;
+  }
+  if (isOrgTeamMember(key)) {
     return true;
   }
   const roleCode = store.accounts[key]?.roleCode;

@@ -10,6 +10,8 @@ import type { AssembliesState } from "@/lib/assemblies/types";
 import type { OperationsState } from "@/lib/operations/types";
 import type { AnnouncementsState } from "@/lib/announcements/types";
 import type { CondoMembership } from "@/lib/memberships/types";
+import type { OrgTeamMember } from "@/lib/team/types";
+import type { LegalProcess } from "@/types";
 import { DEFAULT_PASSWORD } from "@/lib/auth/constants";
 
 export interface StoredAccount {
@@ -49,6 +51,10 @@ export interface StoreDocument {
   announcements: Record<string, AnnouncementsState>;
   /** Per-host invite list: manager email → condo memberships. */
   membershipsByHost: Record<string, CondoMembership[]>;
+  /** Organization staff invited by portfolio owner. */
+  orgTeamsByHost: Record<string, OrgTeamMember[]>;
+  /** Court / enforcement processes linked to debt certificates. */
+  legalProcessesByHost: Record<string, LegalProcess[]>;
 }
 
 const EMPTY_STORE: StoreDocument = {
@@ -65,6 +71,8 @@ const EMPTY_STORE: StoreDocument = {
   operations: {},
   announcements: {},
   membershipsByHost: {},
+  orgTeamsByHost: {},
+  legalProcessesByHost: {},
 };
 
 /** Process-local cache — avoids re-reading .data/store.json on every API call. */
@@ -103,6 +111,8 @@ function cloneEmpty(): StoreDocument {
     operations: {},
     announcements: {},
     membershipsByHost: {},
+    orgTeamsByHost: {},
+    legalProcessesByHost: {},
   };
 }
 
@@ -126,6 +136,8 @@ export function readStore(): StoreDocument {
       operations: parsed.operations ?? {},
       announcements: parsed.announcements ?? {},
       membershipsByHost: parsed.membershipsByHost ?? {},
+      orgTeamsByHost: parsed.orgTeamsByHost ?? {},
+      legalProcessesByHost: parsed.legalProcessesByHost ?? {},
     };
     return cache;
   } catch {

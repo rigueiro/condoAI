@@ -9,14 +9,22 @@ import {
   saveOrganization,
   updateOrganization,
 } from "@/lib/server/portfolio";
-import { requireSessionEmail } from "@/lib/server/session";
+import { requireManagerAccess } from "@/lib/server/manager-access";
+import type { ManagerAction } from "@/lib/team/permissions";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
+
+const PATCH_PERMISSION: Record<string, ManagerAction> = {
+  saveOrganization: "writeOrganization",
+  updateOrganization: "writeOrganization",
+  saveFirstCondominium: "writePortfolio",
+  applyImport: "writePortfolio",
+  completeOnboarding: "writePortfolio",
+};
 
 export async function GET() {
   try {
-    const email = await requireSessionEmail();
-    const portfolio = getPortfolio(email);
-    return jsonOk({ portfolio });
+    const { workspaceEmail } = await requireManagerAccess("readPortfolio");
+    return jsonOk({ portfolio: getPortfolio(workspaceEmail) });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -24,7 +32,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
-    const email = await requireSessionEmail();
+    const ctx = await requireManagerAccess();
     const body = (await request.json()) as {
       action?: string;
       organization?: Organization;
@@ -33,13 +41,20 @@ export async function PATCH(request: Request) {
       owners?: Owner[];
     };
 
+    const permission = body.action ? PATCH_PERMISSION[body.action] : undefined;
+    if (!permission || !ctx.can(permission)) {
+      throw new Error("forbidden");
+    }
+
+    const { workspaceEmail } = ctx;
+
     switch (body.action) {
       case "saveOrganization": {
         if (!body.organization) {
           return NextResponse.json({ error: "badRequest" }, { status: 400 });
         }
         return jsonOk({
-          portfolio: saveOrganization(email, body.organization),
+          portfolio: saveOrganization(workspaceEmail, body.organization),
         });
       }
       case "saveFirstCondominium": {
@@ -47,27 +62,25 @@ export async function PATCH(request: Request) {
           return NextResponse.json({ error: "badRequest" }, { status: 400 });
         }
         return jsonOk({
-          portfolio: saveFirstCondominium(email, body.condominium),
+          portfolio: saveFirstCondominium(workspaceEmail, body.condominium),
         });
       }
-      case "applyImport": {
+      case "applyImport":
         return jsonOk({
           portfolio: applyImport(
-            email,
+            workspaceEmail,
             body.units ?? [],
             body.owners ?? [],
           ),
         });
-      }
-      case "completeOnboarding": {
-        return jsonOk({ portfolio: completeOnboarding(email) });
-      }
+      case "completeOnboarding":
+        return jsonOk({ portfolio: completeOnboarding(workspaceEmail) });
       case "updateOrganization": {
         if (!body.organization) {
           return NextResponse.json({ error: "badRequest" }, { status: 400 });
         }
         return jsonOk({
-          portfolio: updateOrganization(email, body.organization),
+          portfolio: updateOrganization(workspaceEmail, body.organization),
         });
       }
       default:

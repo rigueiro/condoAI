@@ -5,16 +5,16 @@ import {
   removeCondominium,
   upsertCondominium,
 } from "@/lib/server/portfolio";
-import { requireSessionEmail } from "@/lib/server/session";
+import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, context: Ctx) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("readPortfolio");
     const { id } = await context.params;
-    const condominium = getCondominium(email, id);
+    const condominium = getCondominium(workspaceEmail, id);
     if (!condominium) {
       return NextResponse.json({ error: "notFound" }, { status: 404 });
     }
@@ -26,13 +26,13 @@ export async function GET(_request: Request, context: Ctx) {
 
 export async function PUT(request: Request, context: Ctx) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("writePortfolio");
     const { id } = await context.params;
     const body = (await request.json()) as { condominium?: Condominium };
     if (!body.condominium || body.condominium.id !== id) {
       return NextResponse.json({ error: "badRequest" }, { status: 400 });
     }
-    const portfolio = upsertCondominium(email, body.condominium);
+    const portfolio = upsertCondominium(workspaceEmail, body.condominium);
     return jsonOk({ portfolio, condominium: body.condominium });
   } catch (err) {
     return handleRouteError(err);
@@ -41,9 +41,9 @@ export async function PUT(request: Request, context: Ctx) {
 
 export async function DELETE(_request: Request, context: Ctx) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("writePortfolio");
     const { id } = await context.params;
-    const portfolio = removeCondominium(email, id);
+    const portfolio = removeCondominium(workspaceEmail, id);
     return jsonOk({ portfolio });
   } catch (err) {
     return handleRouteError(err);

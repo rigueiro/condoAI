@@ -13,7 +13,7 @@ import {
 import { useUser } from "@/lib/auth";
 import { usePortfolio } from "@/lib/portfolio";
 import { apiFetch } from "@/lib/api/client";
-import type { Certificate, InsurancePolicy } from "@/types";
+import type { Certificate, InsurancePolicy, LegalProcess } from "@/types";
 import {
   sendDeadlineDigestMessage,
   readDigestSentToday,
@@ -43,6 +43,18 @@ interface ComplianceContextValue {
     items: AttentionItem[],
     copy: DigestCopy,
   ) => { sent: boolean; count: number; reason?: "no-email" | "empty" };
+  legalProcesses: LegalProcess[];
+  canManageLegal: boolean;
+  openLegalProcess: (input: {
+    ownerId: string;
+    condominiumId?: string;
+    certificateId?: string | null;
+    description?: string;
+  }) => Promise<LegalProcess>;
+  updateLegalProcess: (
+    id: string,
+    patch: Partial<Pick<LegalProcess, "description" | "status" | "documents">>,
+  ) => Promise<LegalProcess>;
   refresh: () => void;
 }
 
@@ -56,6 +68,8 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
   const { portfolio } = usePortfolio();
 
   const [state, setState] = useState<ComplianceState>(EMPTY_COMPLIANCE);
+  const [legalProcesses, setLegalProcesses] = useState<LegalProcess[]>([]);
+  const [canManageLegal, setCanManageLegal] = useState(false);
   const [digestSentToday, setDigestSentToday] = useState(false);
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const [refreshNonce, setRefreshNonce] = useState(0);
@@ -64,6 +78,8 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
   if (email === null && loadedKey !== null) {
     setLoadedKey(null);
     setState(EMPTY_COMPLIANCE);
+    setLegalProcesses([]);
+    setCanManageLegal(false);
     setDigestSentToday(false);
   }
 
@@ -77,16 +93,21 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        const data = await apiFetch<{ state: ComplianceState }>(
-          "/api/compliance",
-        );
+        const data = await apiFetch<{
+          state: ComplianceState;
+          legalProcesses?: LegalProcess[];
+          canManageLegal?: boolean;
+        }>("/api/compliance");
         if (cancelled) return;
         setState(data.state);
+        setLegalProcesses(data.legalProcesses ?? []);
+        setCanManageLegal(Boolean(data.canManageLegal));
         setDigestSentToday(readDigestSentToday(email));
         setLoadedKey(key);
       } catch {
         if (cancelled) return;
         setState(EMPTY_COMPLIANCE);
+        setLegalProcesses([]);
         setLoadedKey(key);
       } finally {
         if (inFlightRef.current === key) {
@@ -102,6 +123,8 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(() => {
     if (!email) {
       setState(EMPTY_COMPLIANCE);
+      setLegalProcesses([]);
+      setCanManageLegal(false);
       setDigestSentToday(false);
       return;
     }
@@ -111,17 +134,62 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
   const patchCompliance = useCallback(
     async (body: Record<string, unknown>) => {
       try {
-        const data = await apiFetch<{ state: ComplianceState }>(
-          "/api/compliance",
-          {
-            method: "PATCH",
-            body: JSON.stringify(body),
-          },
-        );
-        setState(data.state);
+        const data = await apiFetch<{
+          state?: ComplianceState;
+          process?: LegalProcess;
+        }>("/api/compliance", {
+          method: "PATCH",
+          body: JSON.stringify(body),
+        });
+        if (data.state) setState(data.state);
+        if (data.process) {
+          setLegalProcesses((prev) => {
+            const index = prev.findIndex((p) => p.id === data.process!.id);
+            if (index < 0) return [...prev, data.process!];
+            return prev.map((p) => (p.id === data.process!.id ? data.process! : p));
+          });
+        }
       } catch {
         /* keep current state */
       }
+    },
+    [],
+  );
+
+  const openLegalProcess = useCallback(
+    async (input: {
+      ownerId: string;
+      condominiumId?: string;
+      certificateId?: string | null;
+      description?: string;
+    }) => {
+      const data = await apiFetch<{ process: LegalProcess }>("/api/compliance", {
+        method: "PATCH",
+        body: JSON.stringify({ action: "openLegalProcess", ...input }),
+      });
+      setLegalProcesses((prev) => [...prev, data.process]);
+      return data.process;
+    },
+    [],
+  );
+
+  const updateLegalProcess = useCallback(
+    async (
+      id: string,
+      patch: Partial<
+        Pick<LegalProcess, "description" | "status" | "documents">
+      >,
+    ) => {
+      const data = await apiFetch<{ process: LegalProcess }>("/api/compliance", {
+        method: "PATCH",
+        body: JSON.stringify({ action: "updateLegalProcess", id, ...patch }),
+      });
+      setLegalProcesses((prev) =>
+        prev.map((process) =>
+          process.id === id ? data.process : process,
+        ),
+      );
+      return data.process;
     },
     [],
   );
@@ -180,6 +248,10 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
         void patchCompliance({ action: "renewCertificate", id });
       },
       sendDeadlineDigest,
+      legalProcesses,
+      canManageLegal,
+      openLegalProcess,
+      updateLegalProcess,
       refresh,
     }),
     [
@@ -188,7 +260,11 @@ export function ComplianceProvider({ children }: { children: ReactNode }) {
       state.certificates,
       attentionItems,
       digestSentToday,
+      legalProcesses,
+      canManageLegal,
       patchCompliance,
+      openLegalProcess,
+      updateLegalProcess,
       sendDeadlineDigest,
       refresh,
     ],

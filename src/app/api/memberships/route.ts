@@ -1,29 +1,20 @@
 import { NextResponse } from "next/server";
-import { requireSessionEmail } from "@/lib/server/session";
+import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
 import {
   inviteMembership,
-  isManagerAccount,
   listMembershipsForHost,
   revokeMembership,
 } from "@/lib/server/memberships";
 import { isCondoAssignableRole } from "@/lib/memberships/types";
 
-async function requireManagerEmail(): Promise<string> {
-  const email = await requireSessionEmail();
-  if (!isManagerAccount(email)) {
-    throw new Error("forbidden");
-  }
-  return email;
-}
-
 export async function GET(request: Request) {
   try {
-    const email = await requireManagerEmail();
+    const { workspaceEmail } = await requireManagerAccess("managePortalAccess");
     const condominiumId = new URL(request.url).searchParams.get(
       "condominiumId",
     );
-    let memberships = listMembershipsForHost(email).filter(
+    let memberships = listMembershipsForHost(workspaceEmail).filter(
       (m) => m.status !== "inactive",
     );
     if (condominiumId) {
@@ -37,7 +28,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const email = await requireManagerEmail();
+    const { workspaceEmail } = await requireManagerAccess("managePortalAccess");
     const body = (await request.json()) as {
       memberEmail?: string;
       condominiumId?: string;
@@ -54,7 +45,7 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json({ error: "badRequest" }, { status: 400 });
     }
-    const membership = inviteMembership(email, {
+    const membership = inviteMembership(workspaceEmail, {
       memberEmail: body.memberEmail,
       condominiumId: body.condominiumId,
       role: body.role,
@@ -69,12 +60,12 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const email = await requireManagerEmail();
+    const { workspaceEmail } = await requireManagerAccess("managePortalAccess");
     const id = new URL(request.url).searchParams.get("id");
     if (!id) {
       return NextResponse.json({ error: "badRequest" }, { status: 400 });
     }
-    revokeMembership(email, id);
+    revokeMembership(workspaceEmail, id);
     return new NextResponse(null, { status: 204 });
   } catch (err) {
     return handleRouteError(err);

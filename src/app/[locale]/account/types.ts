@@ -51,9 +51,9 @@ export interface Invoice {
   status: InvoiceStatus;
 }
 
-export type TeamRole = "owner" | "admin" | "manager" | "staff" | "viewer";
+import type { TeamRole, TeamStatus } from "@/lib/team/types";
 
-export type TeamStatus = "active" | "invited" | "inactive";
+export type { TeamRole, TeamStatus };
 
 export interface TeamMember {
   id: string;

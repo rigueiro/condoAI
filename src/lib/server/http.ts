@@ -37,6 +37,8 @@ const ERROR_STATUS: Record<string, number> = {
   quorumRequired: 409,
   minutesRequired: 400,
   vendorInUse: 409,
+  teamMemberExists: 409,
+  cannotInviteSelf: 400,
   noRecipients: 400,
 };
 

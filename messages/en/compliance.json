@@ -5,12 +5,14 @@
   "tabs": {
     "attention": "Needs attention",
     "insurance": "Insurance",
-    "certificate": "Certificates"
+    "certificate": "Certificates",
+    "legal": "Legal processes"
   },
   "stats": {
     "attention": "Due soon / overdue",
     "policies": "Insurance policies",
-    "certificates": "Certificates"
+    "certificates": "Certificates",
+    "legal": "Legal processes"
   },
   "attention": {
     "title": "Renewals & validity",
@@ -108,5 +110,24 @@
     "digestSent": "Digest sent for {count, plural, one {# deadline} other {# deadlines}}",
     "digestEmpty": "Nothing to include in the digest",
     "digestFailed": "Could not send the digest email"
+  },
+  "legal": {
+    "intro": "Track court and enforcement actions opened after debt certificates and escalated collections.",
+    "linkedCertificate": "Linked cert.",
+    "readOnlyHint": "You can view legal processes but cannot change their status.",
+    "table": {
+      "number": "Process nº",
+      "condominium": "Condominium",
+      "owner": "Owner",
+      "description": "Description",
+      "opened": "Opened",
+      "status": "Status",
+      "actions": "Links"
+    },
+    "status": {
+      "ongoing": "Ongoing",
+      "resolved": "Resolved",
+      "archived": "Archived"
+    }
   }
 }

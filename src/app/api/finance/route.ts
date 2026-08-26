@@ -10,7 +10,7 @@ import {
   putBudget,
   putExpense,
 } from "@/lib/server/finance";
-import { requireSessionEmail } from "@/lib/server/session";
+import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
 import type { IssueExtraordinaryInput } from "@/lib/finance/types";
 
@@ -22,8 +22,8 @@ function hasCondoEntity<T extends { id?: string; condominiumId?: string }>(
 
 export async function GET() {
   try {
-    const email = await requireSessionEmail();
-    return jsonOk({ state: getFinance(email) });
+    const { workspaceEmail } = await requireManagerAccess("readFinance");
+    return jsonOk({ state: getFinance(workspaceEmail) });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -31,7 +31,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("writeFinance");
     const body = (await request.json()) as {
       action?: string;
       budget?: AnnualBudget;
@@ -48,31 +48,31 @@ export async function PATCH(request: Request) {
     switch (body.action) {
       case "upsertBudget":
         return hasCondoEntity(body.budget)
-          ? jsonOk({ state: putBudget(email, body.budget) })
+          ? jsonOk({ state: putBudget(workspaceEmail, body.budget) })
           : jsonError("badRequest");
       case "removeBudget":
         return body.id
-          ? jsonOk({ state: deleteBudget(email, body.id) })
+          ? jsonOk({ state: deleteBudget(workspaceEmail, body.id) })
           : jsonError("badRequest");
       case "approveBudget":
         return body.id
-          ? jsonOk({ state: markBudgetApproved(email, body.id) })
+          ? jsonOk({ state: markBudgetApproved(workspaceEmail, body.id) })
           : jsonError("badRequest");
       case "upsertExpense":
         return hasCondoEntity(body.expense)
-          ? jsonOk({ state: putExpense(email, body.expense) })
+          ? jsonOk({ state: putExpense(workspaceEmail, body.expense) })
           : jsonError("badRequest");
       case "removeExpense":
         return body.id
-          ? jsonOk({ state: deleteExpense(email, body.id) })
+          ? jsonOk({ state: deleteExpense(workspaceEmail, body.id) })
           : jsonError("badRequest");
       case "upsertAccount":
         return hasCondoEntity(body.account)
-          ? jsonOk({ state: putAccount(email, body.account) })
+          ? jsonOk({ state: putAccount(workspaceEmail, body.account) })
           : jsonError("badRequest");
       case "removeAccount":
         return body.id
-          ? jsonOk({ state: deleteAccount(email, body.id) })
+          ? jsonOk({ state: deleteAccount(workspaceEmail, body.id) })
           : jsonError("badRequest");
       case "issueExtraordinary": {
         const extra: IssueExtraordinaryInput = {
@@ -83,7 +83,7 @@ export async function PATCH(request: Request) {
           dueDate: body.dueDate,
         };
         return extra.condominiumId && extra.description
-          ? jsonOk({ state: issueExtraordinaryQuota(email, extra) })
+          ? jsonOk({ state: issueExtraordinaryQuota(workspaceEmail, extra) })
           : jsonError("badRequest");
       }
       default:

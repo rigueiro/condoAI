@@ -175,10 +175,14 @@ export interface Claim {
 export interface LegalProcess {
     id: string;
     condominiumId: string;
+    ownerId: string;
+    certificateId?: string | null;
     number: string;
     description: string;
     status: 'ongoing' | 'resolved' | 'archived';
     documents: string[];
+    openedAt: string;
+    resolvedAt?: string | null;
 }
 
 export interface Certificate {

@@ -4,13 +4,13 @@ import {
   createQuota,
   getCollections,
 } from "@/lib/server/collections";
-import { requireSessionEmail } from "@/lib/server/session";
+import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
 
 export async function GET() {
   try {
-    const email = await requireSessionEmail();
-    const state = getCollections(email);
+    const { workspaceEmail } = await requireManagerAccess("readCollections");
+    const state = getCollections(workspaceEmail);
     return jsonOk({ quotas: state.quotas, details: state.details, state });
   } catch (err) {
     return handleRouteError(err);
@@ -19,14 +19,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("writeCollections");
     const body = (await request.json()) as {
       quota?: Omit<QuotaPayment, "id"> & { id?: string };
     };
     if (!body.quota?.ownerId || body.quota.amount == null) {
       return NextResponse.json({ error: "badRequest" }, { status: 400 });
     }
-    const state = createQuota(email, {
+    const state = createQuota(workspaceEmail, {
       monthYear: body.quota.monthYear,
       amount: body.quota.amount,
       status: body.quota.status ?? "pending",

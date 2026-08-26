@@ -17,6 +17,7 @@ import {
   type ComplianceTab,
 } from "@/lib/compliance";
 import AttentionPanel from "./components/attention-panel";
+import LegalProcessesPanel from "./components/legal-processes-panel";
 import ComplianceModal, {
   type ComplianceRecord,
 } from "./components/compliance-modal";
@@ -53,6 +54,8 @@ function CompliancePage() {
     removeCert,
     markCertificateRenewed,
     sendDeadlineDigest,
+    legalProcesses,
+    canManageLegal,
   } = useCompliance();
   const digestCopy = useDigestCopy();
 
@@ -104,6 +107,7 @@ function CompliancePage() {
     { key: "attention", count: attentionItems.length },
     { key: "insurance", count: filteredPolicies.length },
     { key: "certificate", count: filteredCertificates.length },
+    { key: "legal", count: legalProcesses.length },
   ];
 
   const openAdd = () => {
@@ -201,7 +205,7 @@ function CompliancePage() {
             </Button>
           </div>
 
-          <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 label: t("stats.attention"),
@@ -217,6 +221,11 @@ function CompliancePage() {
                 label: t("stats.certificates"),
                 value: filteredCertificates.length,
                 icon: "BadgeCheck",
+              },
+              {
+                label: t("stats.legal"),
+                value: legalProcesses.length,
+                icon: "Scale",
               },
             ].map((stat) => (
               <div
@@ -340,6 +349,13 @@ function CompliancePage() {
                 </tr>
               ))}
             </RecordsTable>
+          )}
+
+          {tab === "legal" && (
+            <LegalProcessesPanel
+              search={search}
+              canManage={canManageLegal}
+            />
           )}
       </div>
 

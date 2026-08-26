@@ -5,7 +5,7 @@ import {
   putOccurrence,
   resolveOccurrences,
 } from "@/lib/server/occurrences";
-import { requireSessionEmail } from "@/lib/server/session";
+import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
 
 function idList(ids: unknown): string[] {
@@ -16,8 +16,8 @@ function idList(ids: unknown): string[] {
 
 export async function GET() {
   try {
-    const email = await requireSessionEmail();
-    return jsonOk({ state: getOccurrences(email) });
+    const { workspaceEmail } = await requireManagerAccess("readOccurrences");
+    return jsonOk({ state: getOccurrences(workspaceEmail) });
   } catch (err) {
     return handleRouteError(err);
   }
@@ -25,7 +25,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("writeOccurrences");
     const body = (await request.json()) as {
       action?: string;
       occurrence?: Occurrence;
@@ -35,18 +35,18 @@ export async function PATCH(request: Request) {
     switch (body.action) {
       case "upsertOccurrence":
         return body.occurrence?.condominiumId
-          ? jsonOk({ state: putOccurrence(email, body.occurrence) })
+          ? jsonOk({ state: putOccurrence(workspaceEmail, body.occurrence) })
           : jsonError("badRequest");
       case "removeOccurrences": {
         const ids = idList(body.ids);
         return ids.length > 0
-          ? jsonOk({ state: deleteOccurrences(email, ids) })
+          ? jsonOk({ state: deleteOccurrences(workspaceEmail, ids) })
           : jsonError("badRequest");
       }
       case "markResolved": {
         const ids = idList(body.ids);
         return ids.length > 0
-          ? jsonOk({ state: resolveOccurrences(email, ids) })
+          ? jsonOk({ state: resolveOccurrences(workspaceEmail, ids) })
           : jsonError("badRequest");
       }
       default:

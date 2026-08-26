@@ -16,11 +16,14 @@ import {
 import { formatIsoDate, formatMonthYear, todayKey } from "@/lib/collections/dates";
 import type { QuotaPayment } from "@/types";
 import { usePrintDocument } from "./use-print-document";
+import { useCompliance } from "@/lib/compliance";
+import { Link } from "@/i18n/navigation";
 
 type Props = {
   isOpen: boolean;
   ownerId: string;
   ownerName: string;
+  condominiumId?: string;
   quotas: QuotaPayment[];
   charges: AccountCharge[];
   receipts: AccountReceipt[];
@@ -148,6 +151,7 @@ function DebtCertificateModal({
   isOpen,
   ownerId,
   ownerName,
+  condominiumId,
   quotas,
   charges,
   receipts,
@@ -157,9 +161,12 @@ function DebtCertificateModal({
   const t = useTranslations("currentAccount.certificate");
   const locale = useLocale();
   const { formatCurrency } = useFormatCurrency();
+  const { openLegalProcess, canManageLegal } = useCompliance();
   const [asOfDate, setAsOfDate] = useState(todayKey());
   const [view, setView] = useState<CertificateView | null>(null);
   const [saving, setSaving] = useState(false);
+  const [legalStarted, setLegalStarted] = useState(false);
+  const [startingLegal, setStartingLegal] = useState(false);
   const print = usePrintDocument(Boolean(view));
 
   useEffect(() => {
@@ -167,6 +174,8 @@ function DebtCertificateModal({
     setAsOfDate(todayKey());
     setView(null);
     setSaving(false);
+    setLegalStarted(false);
+    setStartingLegal(false);
   }, [isOpen]);
 
   const preview = useMemo(
@@ -182,6 +191,21 @@ function DebtCertificateModal({
     const issued = await onIssue(asOfDate);
     setSaving(false);
     if (issued) setView(issued);
+  };
+
+  const handleStartLegal = async () => {
+    if (!view) return;
+    setStartingLegal(true);
+    try {
+      await openLegalProcess({
+        ownerId,
+        condominiumId: view.certificate.condominiumId ?? condominiumId,
+        certificateId: view.certificate.id,
+      });
+      setLegalStarted(true);
+    } finally {
+      setStartingLegal(false);
+    }
   };
 
   return (
@@ -209,6 +233,26 @@ function DebtCertificateModal({
           <div className="p-8">
             <CertificateDocument view={view} locale={locale} />
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-8 print:hidden">
+              {canManageLegal && view && (
+                legalStarted ? (
+                  <Link
+                    href="/compliance"
+                    className="inline-flex items-center justify-center rounded-lg border border-primary px-4 py-2 text-sm font-medium text-primary hover:bg-primary-50"
+                  >
+                    {t("viewLegalProcess")}
+                  </Link>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    iconName="Scale"
+                    loading={startingLegal}
+                    onClick={handleStartLegal}
+                  >
+                    {t("startLegalProcess")}
+                  </Button>
+                )
+              )}
               <Button type="button" variant="outline" onClick={() => setView(null)}>
                 {t("back")}
               </Button>

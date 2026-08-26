@@ -86,6 +86,8 @@
     "signature": "The administration",
     "unknownTaxId": "not on file",
     "unknownAddress": "address not on file",
-    "noFractions": "no fractions linked"
+    "noFractions": "no fractions linked",
+    "startLegalProcess": "Start legal process",
+    "viewLegalProcess": "View in Compliance"
   }
 }

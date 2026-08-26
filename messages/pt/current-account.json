@@ -86,6 +86,8 @@
     "signature": "A administração",
     "unknownTaxId": "não indicado",
     "unknownAddress": "morada não indicada",
-    "noFractions": "sem frações associadas"
+    "noFractions": "sem frações associadas",
+    "startLegalProcess": "Abrir processo legal",
+    "viewLegalProcess": "Ver em Conformidade"
   }
 }

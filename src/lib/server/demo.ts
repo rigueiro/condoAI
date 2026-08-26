@@ -25,7 +25,10 @@ import type { AssembliesState } from "@/lib/assemblies/types";
 import type { OperationsState } from "@/lib/operations/types";
 import type { CondoMembership } from "@/lib/memberships/types";
 import { mockAssemblies } from "@/fixtures/assemblies";
+import type { OrgTeamMember } from "@/lib/team/types";
 import { DEMO_EMAIL, DEFAULT_PASSWORD } from "@/lib/auth/constants";
+import { seedDemoLegalProcesses } from "./legal-processes";
+import { listTeamMembers } from "./org-team";
 import { updateStore, type StoredAccount } from "./store";
 
 export const DEMO_ORGANIZATION: Organization = {
@@ -178,6 +181,63 @@ function portalDemoMemberships(now: string): CondoMembership[] {
   ];
 }
 
+function demoTeamMembers(now: string): OrgTeamMember[] {
+  return [
+    {
+      id: "team-admin",
+      memberEmail: "sofia.almeida@condoai.pt",
+      displayName: "Sofia Almeida",
+      role: "admin",
+      status: "active",
+      invitedAt: now,
+      activatedAt: now,
+      lastActiveAt: "2026-05-19T08:42:00Z",
+    },
+    {
+      id: "team-manager",
+      memberEmail: "tiago.carvalho@condoai.pt",
+      displayName: "Tiago Carvalho",
+      role: "manager",
+      status: "active",
+      invitedAt: now,
+      activatedAt: now,
+      lastActiveAt: "2026-05-15T14:10:00Z",
+    },
+    {
+      id: "team-staff",
+      memberEmail: "marta.lopes@condoai.pt",
+      displayName: "Marta Lopes",
+      role: "staff",
+      status: "invited",
+      invitedAt: now,
+    },
+    {
+      id: "team-viewer",
+      memberEmail: "andre.pinto@condoai.pt",
+      displayName: "André Pinto",
+      role: "viewer",
+      status: "inactive",
+      invitedAt: now,
+      activatedAt: now,
+      lastActiveAt: "2026-02-02T11:00:00Z",
+    },
+  ];
+}
+
+function ensureDemoTeam(hostEmail: string): void {
+  listTeamMembers(hostEmail);
+  updateStore((store) => {
+    const key = hostEmail.trim().toLowerCase();
+    const existing = store.orgTeamsByHost[key] ?? [];
+    if (existing.length > 1) return;
+    const now = new Date().toISOString();
+    store.orgTeamsByHost[key] = [
+      ...existing,
+      ...demoTeamMembers(now),
+    ];
+  });
+}
+
 /** Seeds board/owner demo logins + memberships (idempotent). */
 export function ensurePortalDemoAccounts(): void {
   updateStore((store) => {
@@ -218,6 +278,8 @@ export function restoreDemoWorkspace(): Portfolio {
         new Date().toISOString(),
       );
     }
+    ensureDemoTeam(key);
+    seedDemoLegalProcesses(key);
   });
   return portfolio;
 }

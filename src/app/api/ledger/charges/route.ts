@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { addCharge } from "@/lib/server/collections";
-import { requireSessionEmail } from "@/lib/server/session";
+import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
 
 export async function POST(request: Request) {
   try {
-    const email = await requireSessionEmail();
+    const { workspaceEmail } = await requireManagerAccess("writeCollections");
     const body = (await request.json()) as {
       ownerId?: string;
       condominiumId?: string;
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     if (!body.ownerId || body.amount == null) {
       return NextResponse.json({ error: "badRequest" }, { status: 400 });
     }
-    const state = addCharge(email, {
+    const state = addCharge(workspaceEmail, {
       ownerId: body.ownerId,
       condominiumId: body.condominiumId,
       date: body.date,
