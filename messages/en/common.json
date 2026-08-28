@@ -10,6 +10,8 @@
     "owners": "Owners",
     "payments": "Payments",
     "finance": "Finance",
+    "budgetsAndAccounts": "Budgets & accounts",
+    "vendorsAndEquipment": "Vendors & equipment",
     "occurrences": "Occurrences",
     "assemblies": "Assemblies",
     "compliance": "Compliance",
@@ -23,7 +25,17 @@
     "budget": "Budget",
     "toggleMobileMenu": "Toggle mobile menu",
     "closeMenu": "Close menu",
-    "version": "Version 1.0.0"
+    "version": "Version 1.0.0",
+    "groups": {
+      "portfolio": "Portfolio",
+      "finance": "Finance",
+      "operations": "Operations",
+      "governance": "Governance"
+    },
+    "search": "Search",
+    "searchPlaceholder": "Search pages…",
+    "searchHint": "Quick navigation",
+    "noResults": "No pages found"
   },
   "switcher": {
     "label": "Active condominium",

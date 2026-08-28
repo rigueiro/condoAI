@@ -30,7 +30,7 @@ import { getCollections } from "./collections";
 import { getCompliance } from "./compliance";
 import { getPortfolio } from "./portfolio";
 import { readStore, updateStore } from "./store";
-import { isOrgTeamMember } from "./org-team";
+import { isOrgTeamMember, resolveManagerContext } from "./org-team";
 import { readMembershipsForHost } from "./membership-store";
 
 function normalizeEmail(email: string): string {
@@ -239,7 +239,10 @@ function toMembershipView(
 
 export function buildPortalContext(email: string): PortalContext {
   const mode = resolveAccessMode(email);
-  if (mode === "manager") return { mode, memberships: [] };
+  if (mode === "manager") {
+    const ctx = resolveManagerContext(email);
+    return { mode, memberships: [], teamRole: ctx?.role ?? "owner" };
+  }
 
   const live = activateAndList(email);
   const portfolioByHost = new Map<string, Portfolio>();

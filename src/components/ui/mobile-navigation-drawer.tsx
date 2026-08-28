@@ -1,60 +1,36 @@
 "use client";
 
-import React, { useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import Icon from "../icon";
-
-type NavigationItem = {
-  label: string;
-  path: string;
-  icon: string;
-};
+import NavItemLink from "./nav-item-link";
+import { useOverlayLock } from "@/hooks/use-overlay-lock";
+import { isNavigationPathActive } from "@/lib/navigation/build-nav";
+import type { NavEntry } from "@/lib/navigation/config";
 
 interface MobileNavigationDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  navigationItems: NavigationItem[];
+  nav: NavEntry[];
   currentPath: string;
+  onOpenSearch?: () => void;
 }
 
 function MobileNavigationDrawer({
   isOpen,
   onClose,
-  navigationItems,
+  nav,
   currentPath,
+  onOpenSearch,
 }: MobileNavigationDrawerProps) {
   const t = useTranslations("common");
+  const tNav = useTranslations("common.nav");
 
-  useEffect(() => {
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscapeKey);
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleEscapeKey);
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen, onClose]);
-
-  const isActivePath = (path: string) =>
-    currentPath === path ||
-    (path !== "/dashboard" && currentPath.startsWith(`${path}/`));
-
-  const handleLinkClick = () => {
-    onClose();
-  };
+  useOverlayLock(isOpen, onClose);
 
   if (!isOpen) return null;
+
+  const isActivePath = (path: string) =>
+    isNavigationPathActive(currentPath, path);
 
   return (
     <>
@@ -65,10 +41,10 @@ function MobileNavigationDrawer({
       />
 
       <div className="fixed top-0 left-0 z-1020 h-full w-80 max-w-[85vw] animate-slide-in bg-surface shadow-modal lg:hidden">
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-6 border-b border-border-light">
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between border-b border-border-light p-6">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <Icon name="Building2" size={20} color="white" />
               </div>
               <span className="text-xl font-semibold text-text-primary">
@@ -77,36 +53,70 @@ function MobileNavigationDrawer({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-secondary-50 transition-smooth"
-              aria-label={t("nav.closeMenu")}
+              className="rounded-lg p-2 text-text-secondary transition-smooth hover:bg-secondary-50 hover:text-text-primary"
+              aria-label={tNav("closeMenu")}
             >
               <Icon name="X" size={20} />
             </button>
           </div>
 
-          <nav className="flex-1 py-6">
-            <div className="space-y-2 px-4">
-              {navigationItems.map((item) => (
-                <Link
-                  key={item.path}
-                  href={item.path}
-                  onClick={handleLinkClick}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium transition-smooth ${
-                    isActivePath(item.path)
-                      ? "bg-primary-50 text-primary border border-primary-100"
-                      : "text-text-secondary hover:text-text-primary hover:bg-secondary-50"
-                  }`}
-                >
-                  <Icon name={item.icon} size={20} />
-                  <span>{item.label}</span>
-                </Link>
-              ))}
+          {onOpenSearch && (
+            <div className="border-b border-border-light px-4 py-3">
+              <button
+                type="button"
+                onClick={onOpenSearch}
+                className="flex w-full items-center gap-3 rounded-lg border border-border-light px-4 py-3 text-left text-sm text-text-secondary transition-smooth hover:border-primary-200 hover:bg-secondary-50"
+              >
+                <Icon name="Search" size={18} />
+                <span className="flex-1">{tNav("searchPlaceholder")}</span>
+                <kbd className="rounded border border-border-light bg-secondary-50 px-1.5 py-0.5 text-xs">
+                  ⌘K
+                </kbd>
+              </button>
             </div>
+          )}
+
+          <nav className="flex-1 overflow-y-auto py-4">
+            {nav.map((entry) => {
+              if (entry.type === "link") {
+                return (
+                  <div key={entry.link.path} className="px-4 pb-2">
+                    <NavItemLink
+                      item={entry.link}
+                      active={isActivePath(entry.link.path)}
+                      onClick={onClose}
+                      iconSize={20}
+                      className="w-full px-4 py-3 text-base"
+                    />
+                  </div>
+                );
+              }
+
+              return (
+                <div key={entry.group.id} className="mb-4 px-4">
+                  <div className="mb-2 px-4 text-xs font-semibold tracking-wide text-text-secondary uppercase">
+                    {entry.group.label}
+                  </div>
+                  <div className="space-y-1">
+                    {entry.group.items.map((item) => (
+                      <NavItemLink
+                        key={item.path}
+                        item={item}
+                        active={isActivePath(item.path)}
+                        onClick={onClose}
+                        iconSize={20}
+                        className="w-full px-4 py-3 text-base"
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </nav>
 
-          <div className="p-6 border-t border-border-light">
-            <div className="text-xs text-text-secondary text-center">
-              {t("nav.version")}
+          <div className="border-t border-border-light p-6">
+            <div className="text-center text-xs text-text-secondary">
+              {tNav("version")}
             </div>
           </div>
         </div>

@@ -1,90 +1,36 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import Icon from "../icon";
 import UserProfileDropdown from "./user-profile-dropdown";
 import MobileNavigationDrawer from "./mobile-navigation-drawer";
 import CondominiumSwitcher from "./condominium-switcher";
+import DesktopNav from "./desktop-nav";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
 import { useMemberships } from "@/lib/memberships";
+import { useAppNavigation } from "@/hooks/use-app-navigation";
+import { useCommandPalette } from "@/hooks/use-command-palette";
 
-type NavItem = { label: string; path: string; icon: string };
+const CommandPalette = dynamic(() => import("./command-palette"), {
+  ssr: false,
+});
 
 function Header() {
   const t = useTranslations("common");
+  const tNav = useTranslations("common.nav");
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
-  const { mode, isReady } = useMemberships();
+  const { mode, isReady, teamRole } = useMemberships();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const commandPalette = useCommandPalette();
 
   const isPortal = isReady && mode === "portal";
-
-  const navigationItems = useMemo<NavItem[]>(() => {
-    if (isPortal) {
-      return [
-        { label: t("nav.portal"), path: "/portal", icon: "Home" },
-        { label: t("nav.extract"), path: "/portal/extract", icon: "Receipt" },
-        {
-          label: t("nav.documents"),
-          path: "/portal/documents",
-          icon: "FolderOpen",
-        },
-        {
-          label: t("nav.occurrences"),
-          path: "/portal/occurrences",
-          icon: "ClipboardList",
-        },
-        {
-          label: t("nav.announcements"),
-          path: "/portal/announcements",
-          icon: "Mail",
-        },
-        { label: t("nav.budget"), path: "/portal/budget", icon: "Wallet" },
-      ];
-    }
-    return [
-      { label: t("nav.dashboard"), path: "/dashboard", icon: "LayoutDashboard" },
-      {
-        label: t("nav.properties"),
-        path: "/properties-management",
-        icon: "Building2",
-      },
-      { label: t("nav.owners"), path: "/owners-management", icon: "Users" },
-      { label: t("nav.payments"), path: "/payment-tracking", icon: "CreditCard" },
-      { label: t("nav.finance"), path: "/finance", icon: "Wallet" },
-      { label: t("nav.assemblies"), path: "/assemblies", icon: "Gavel" },
-      {
-        label: t("nav.occurrences"),
-        path: "/occurrences",
-        icon: "ClipboardList",
-      },
-      { label: t("nav.compliance"), path: "/compliance", icon: "ScrollText" },
-      { label: t("nav.operations"), path: "/operations", icon: "Wrench" },
-      {
-        label: t("nav.documentsArchive"),
-        path: "/documents",
-        icon: "FolderOpen",
-      },
-      {
-        label: t("nav.announcements"),
-        path: "/announcements",
-        icon: "Mail",
-      },
-      { label: t("nav.reports"), path: "/reports-analytics", icon: "BarChart3" },
-    ];
-  }, [isPortal, t]);
-
-  const isActivePath = useCallback(
-    (path: string) => {
-      if (pathname === path) return true;
-      if (path === "/portal" || path === "/dashboard") return false;
-      return pathname.startsWith(`${path}/`);
-    },
-    [pathname],
-  );
+  const { nav, commandItems } = useAppNavigation(isPortal, teamRole);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -94,7 +40,10 @@ function Header() {
     }
   }, [logout, router]);
 
-  const brandHref = isPortal ? "/portal" : "/dashboard";
+  const openSearch = useCallback(() => {
+    setOpenDropdownId(null);
+    commandPalette.open();
+  }, [commandPalette]);
 
   return (
     <>
@@ -102,7 +51,7 @@ function Header() {
         <div className="px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex min-w-0 items-center justify-between gap-3">
             <Link
-              href={brandHref}
+              href={isPortal ? "/portal" : "/dashboard"}
               className="flex shrink-0 items-center gap-2 transition-smooth hover:opacity-80 sm:gap-3"
             >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
@@ -113,37 +62,33 @@ function Header() {
               </span>
             </Link>
 
-            <nav className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 lg:flex xl:gap-1">
-              {navigationItems.map((item) => {
-                const active = isActivePath(item.path);
-                return (
-                  <Link
-                    key={item.path}
-                    href={item.path}
-                    aria-label={item.label}
-                    aria-current={active ? "page" : undefined}
-                    className={`group relative flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium transition-smooth xl:px-2.5 ${
-                      active
-                        ? "border border-primary-100 bg-primary-50 text-primary"
-                        : "text-text-secondary hover:bg-secondary-50 hover:text-text-primary"
-                    }`}
-                  >
-                    <Icon name={item.icon} size={16} className="shrink-0" />
-                    <span className="hidden whitespace-nowrap xl:inline">
-                      {item.label}
-                    </span>
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute top-full left-1/2 z-10 mt-1.5 -translate-x-1/2 rounded-md bg-text-primary px-2 py-1 text-xs font-medium whitespace-nowrap text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 xl:hidden"
-                    >
-                      {item.label}
-                    </span>
-                  </Link>
-                );
-              })}
+            <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex">
+              <DesktopNav
+                nav={nav}
+                isPortal={isPortal}
+                pathname={pathname}
+                openDropdownId={openDropdownId}
+                onToggleDropdown={(id) =>
+                  setOpenDropdownId((current) => (current === id ? null : id))
+                }
+                onCloseDropdown={() => setOpenDropdownId(null)}
+              />
             </nav>
 
-            <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+              <button
+                type="button"
+                onClick={openSearch}
+                className="hidden items-center gap-2 rounded-lg border border-border-light bg-surface px-2.5 py-1.5 text-sm text-text-secondary transition-smooth hover:border-primary-200 hover:text-text-primary sm:flex lg:px-3"
+                aria-label={tNav("searchHint")}
+              >
+                <Icon name="Search" size={16} className="shrink-0" />
+                <span className="hidden xl:inline">{tNav("search")}</span>
+                <kbd className="hidden rounded border border-border-light bg-secondary-50 px-1.5 py-0.5 text-xs 2xl:inline">
+                  ⌘K
+                </kbd>
+              </button>
+
               <UserProfileDropdown
                 currentUser={user}
                 onLogout={handleLogout}
@@ -153,7 +98,7 @@ function Header() {
                 type="button"
                 onClick={() => setIsMobileMenuOpen((open) => !open)}
                 className="rounded-lg p-2 text-text-secondary transition-smooth hover:bg-secondary-50 hover:text-text-primary lg:hidden"
-                aria-label={t("nav.toggleMobileMenu")}
+                aria-label={tNav("toggleMobileMenu")}
                 aria-expanded={isMobileMenuOpen}
               >
                 <Icon name={isMobileMenuOpen ? "X" : "Menu"} size={20} />
@@ -167,9 +112,20 @@ function Header() {
       <MobileNavigationDrawer
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
-        navigationItems={navigationItems}
+        nav={nav}
         currentPath={pathname}
+        onOpenSearch={() => {
+          setIsMobileMenuOpen(false);
+          commandPalette.open();
+        }}
       />
+
+      {commandPalette.isOpen && (
+        <CommandPalette
+          onClose={commandPalette.close}
+          items={commandItems}
+        />
+      )}
     </>
   );
 }

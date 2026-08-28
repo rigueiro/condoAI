@@ -10,6 +10,8 @@
     "owners": "Proprietários",
     "payments": "Pagamentos",
     "finance": "Finanças",
+    "budgetsAndAccounts": "Orçamentos e contas",
+    "vendorsAndEquipment": "Fornecedores e equipamento",
     "occurrences": "Ocorrências",
     "assemblies": "Assembleias",
     "compliance": "Conformidade",
@@ -23,7 +25,17 @@
     "budget": "Orçamento",
     "toggleMobileMenu": "Abrir menu móvel",
     "closeMenu": "Fechar menu",
-    "version": "Versão 1.0.0"
+    "version": "Versão 1.0.0",
+    "groups": {
+      "portfolio": "Carteira",
+      "finance": "Finanças",
+      "operations": "Operações",
+      "governance": "Governança"
+    },
+    "search": "Pesquisar",
+    "searchPlaceholder": "Pesquisar páginas…",
+    "searchHint": "Navegação rápida",
+    "noResults": "Nenhuma página encontrada"
   },
   "switcher": {
     "label": "Condomínio activo",

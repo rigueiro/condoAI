@@ -9,11 +9,13 @@ import {
 } from "react";
 import { apiFetch } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
+import type { TeamRole } from "@/lib/team/types";
 import type { PortalContext, PortalMembershipView } from "./types";
 
 type MembershipsContextValue = {
   mode: "manager" | "portal";
   portalMemberships: PortalMembershipView[];
+  teamRole: TeamRole | null;
   isReady: boolean;
 };
 
@@ -22,6 +24,7 @@ const MembershipsContext = createContext<MembershipsContextValue | null>(null);
 const EMPTY: MembershipsContextValue = {
   mode: "manager",
   portalMemberships: [],
+  teamRole: null,
   isReady: true,
 };
 
@@ -30,6 +33,7 @@ export function MembershipsProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<MembershipsContextValue>({
     mode: "manager",
     portalMemberships: [],
+    teamRole: null,
     isReady: false,
   });
 
@@ -48,6 +52,7 @@ export function MembershipsProvider({ children }: { children: ReactNode }) {
           setState({
             mode: context.mode,
             portalMemberships: context.memberships,
+            teamRole: context.teamRole ?? null,
             isReady: true,
           });
         }

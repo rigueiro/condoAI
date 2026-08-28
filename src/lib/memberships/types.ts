@@ -65,9 +65,12 @@ export type PortalMembershipView = {
   status: MembershipStatus;
 };
 
+import type { TeamRole } from "@/lib/team/types";
+
 export type PortalContext = {
   mode: "manager" | "portal";
   memberships: PortalMembershipView[];
+  teamRole?: TeamRole;
 };
 
 export type PortalOccurrence = {
