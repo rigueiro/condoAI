@@ -15,6 +15,9 @@ import CurrentAccountExtract from "../components/current-account-extract";
 import ChargeModal from "../components/charge-modal";
 import ReceiptModal from "../components/receipt-modal";
 import DebtCertificateModal from "../components/debt-certificate-modal";
+import TransferModal from "../components/transfer-modal";
+import Toast, { type ToastTone } from "@/components/ui/toast";
+import type { TransferInput } from "@/lib/portfolio/transfer";
 import type { PaymentStatus } from "../components/types";
 import { ownerFromFormSave, usePortfolio } from "@/lib/portfolio";
 import {
@@ -29,6 +32,7 @@ const ACTION_CLASS =
 
 function OwnerDetailPage() {
   const t = useTranslations("ownersManagement.detail");
+  const tTransfer = useTranslations("ownersManagement.transfer");
   const tStatus = useTranslations("ownersManagement.status");
   const tRole = useTranslations("ownersManagement.roles");
   const { formatCurrency } = useFormatCurrency();
@@ -41,6 +45,7 @@ function OwnerDetailPage() {
     recordPayment,
     addCharge,
     issueCertificate,
+    transferOwnership,
     extractForOwner,
     receipts,
     quotas,
@@ -51,6 +56,10 @@ function OwnerDetailPage() {
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
   const [isChargeOpen, setIsChargeOpen] = useState(false);
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [flash, setFlash] = useState<{ message: string; tone: ToastTone } | null>(
+    null,
+  );
   const [viewingReceipt, setViewingReceipt] = useState<AccountReceipt | null>(
     null,
   );
@@ -106,6 +115,23 @@ function OwnerDetailPage() {
   };
 
   const handleAddCharge = (input: AddChargeInput) => addCharge(input);
+
+  const handleTransfer = async (input: TransferInput) => {
+    const result = await transferOwnership(input);
+    if (result.ok) {
+      setFlash({
+        message: result.result.certificateNumber
+          ? tTransfer("doneWithCertificate", {
+              certificate: result.result.certificateNumber,
+            })
+          : tTransfer("done"),
+        tone: "success",
+      });
+      return true;
+    }
+    setFlash({ message: tTransfer("failed"), tone: "warning" });
+    return false;
+  };
 
   if (!id || !row) {
     return (
@@ -344,6 +370,11 @@ function OwnerDetailPage() {
                         onClick: () => setIsCertificateOpen(true),
                       },
                       {
+                        icon: "ArrowRightLeft",
+                        label: t("transfer"),
+                        onClick: () => setIsTransferOpen(true),
+                      },
+                      {
                         icon: "Printer",
                         label: t("printExtract"),
                         onClick: () => window.print(),
@@ -446,6 +477,19 @@ function OwnerDetailPage() {
         }
       />
 
+      {isTransferOpen && (
+        <TransferModal
+          seller={row}
+          owners={portfolio.owners}
+          units={portfolio.units}
+          quotas={quotas}
+          charges={charges}
+          receipts={receipts}
+          onClose={() => setIsTransferOpen(false)}
+          onTransfer={handleTransfer}
+        />
+      )}
+
       <ReceiptModal
         receipt={viewingReceipt}
         ownerName={owner.fullName}
@@ -453,6 +497,14 @@ function OwnerDetailPage() {
         unit={row.unitLabel}
         onClose={() => setViewingReceipt(null)}
       />
+
+      {flash && (
+        <Toast
+          message={flash.message}
+          tone={flash.tone}
+          onDismiss={() => setFlash(null)}
+        />
+      )}
     </div>
   );
 }

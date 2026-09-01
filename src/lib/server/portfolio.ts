@@ -16,6 +16,7 @@ import {
   upsertOwnerInMemory,
   upsertUnitInMemory,
 } from "@/lib/portfolio/mutations";
+import { applySaleTransfer } from "@/lib/portfolio/transfer";
 import { readStore, writeStore } from "./store";
 import { restoreDemoWorkspace, ensurePortalDemoAccounts } from "./demo";
 
@@ -72,6 +73,18 @@ function mutatePortfolio(
   store.portfolios[key] = next;
   writeStore(store);
   return next;
+}
+
+export function commitSaleTransfer(
+  email: string,
+  sellerId: string,
+  buyer: Owner,
+  unitIds: string[],
+  saleDate: string,
+): Portfolio {
+  return mutatePortfolio(email, (current) =>
+    applySaleTransfer(current, sellerId, buyer, unitIds, saleDate),
+  );
 }
 
 export function saveOrganization(

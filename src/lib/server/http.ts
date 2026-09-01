@@ -42,6 +42,11 @@ const ERROR_STATUS: Record<string, number> = {
   teamMemberExists: 409,
   cannotInviteSelf: 400,
   noRecipients: 400,
+  unitsRequired: 400,
+  sameOwner: 400,
+  notOwnerOfUnit: 400,
+  buyerRequired: 400,
+  multipleCondominiums: 400,
 };
 
 export function handleRouteError(err: unknown): NextResponse {

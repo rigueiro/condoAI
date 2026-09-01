@@ -26,6 +26,7 @@ import {
   normalizeLedger,
   parseChargeKind,
   yearFromDate,
+  type CertificateView,
 } from "@/lib/collections/ledger";
 import { pickApprovedBudget } from "@/lib/reports/budget";
 import { normalizeAnnualBudget } from "@/lib/finance/budget";
@@ -57,6 +58,14 @@ function saveCollections(
   store.collections[key] = next;
   writeStore(store);
   return next;
+}
+
+/** Persist an already-mutated collections snapshot (transfer composes in memory). */
+export function persistCollections(
+  email: string,
+  state: CollectionsState,
+): CollectionsState {
+  return saveCollections(email, state);
 }
 
 /** Read budgets without importing getFinance (circular with this module). */
@@ -296,6 +305,49 @@ export function issueOrdinaryQuotas(
   };
 }
 
+/** Append a certidão to collections in memory (caller persists). */
+export function appendCertificate(
+  state: CollectionsState,
+  input: {
+    owner: Owner;
+    portfolio: ReturnType<typeof getPortfolio>;
+    condominiumId: string;
+    asOfDate: string;
+  },
+): { state: CollectionsState; view: CertificateView } {
+  const year = yearFromDate(input.asOfDate);
+  const sequenced = nextSequence(state.certificateSeqByYear, year);
+  const draft = {
+    id: crypto.randomUUID(),
+    ownerId: input.owner.id,
+    condominiumId: input.condominiumId,
+    issuedAt: new Date().toISOString(),
+    asOfDate: input.asOfDate,
+    year,
+    sequence: sequenced.sequence,
+    number: formatCertificateNumber(year, sequenced.sequence),
+    totalDue: 0,
+  };
+  const view = buildCertificateView(draft, {
+    owner: input.owner,
+    units: input.portfolio.units,
+    condominiums: input.portfolio.condominiums,
+    organization: input.portfolio.organization,
+    quotas: state.quotas,
+    charges: state.charges,
+    receipts: state.receipts,
+  });
+  const certificate = { ...draft, totalDue: view.totalDue };
+  return {
+    state: {
+      ...state,
+      certificates: [...state.certificates, certificate],
+      certificateSeqByYear: sequenced.seqByYear,
+    },
+    view: { ...view, certificate },
+  };
+}
+
 export function issueCertificate(
   email: string,
   input: IssueCertificateInput,
@@ -309,38 +361,14 @@ export function issueCertificate(
     throw new Error("notFound");
   }
 
-  const state = getCollections(email);
   const asOfDate = input.asOfDate?.slice(0, 10) || todayKey();
   const condominiumId =
     input.condominiumId || condominiumIdForOwner(email, owner.id);
-  const year = yearFromDate(asOfDate);
-  const sequenced = nextSequence(state.certificateSeqByYear, year);
-  const draft = {
-    id: crypto.randomUUID(),
-    ownerId: owner.id,
-    condominiumId,
-    issuedAt: new Date().toISOString(),
-    asOfDate,
-    year,
-    sequence: sequenced.sequence,
-    number: formatCertificateNumber(year, sequenced.sequence),
-    totalDue: 0,
-  };
-  const view = buildCertificateView(draft, {
+  const appended = appendCertificate(getCollections(email), {
     owner,
-    units: portfolio.units,
-    condominiums: portfolio.condominiums,
-    organization: portfolio.organization,
-    quotas: state.quotas,
-    charges: state.charges,
-    receipts: state.receipts,
+    portfolio,
+    condominiumId,
+    asOfDate,
   });
-  const certificate = { ...draft, totalDue: view.totalDue };
-  const next = saveCollections(email, {
-    ...state,
-    certificates: [...state.certificates, certificate],
-    certificateSeqByYear: sequenced.seqByYear,
-  });
-
-  return { state: next, view: { ...view, certificate } };
+  return { state: saveCollections(email, appended.state), view: appended.view };
 }

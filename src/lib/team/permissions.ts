@@ -24,7 +24,8 @@ export type ManagerAction =
   | "manageLegal"
   | "readTeam"
   | "manageTeam"
-  | "managePortalAccess";
+  | "managePortalAccess"
+  | "transferOwnership";
 
 const ALL_READ: ManagerAction[] = [
   "readPortfolio",
@@ -49,6 +50,7 @@ const MANAGER_WRITE: ManagerAction[] = [
   "writeOperations",
   "writeAnnouncements",
   "manageLegal",
+  "transferOwnership",
 ];
 
 const STAFF_WRITE: ManagerAction[] = [

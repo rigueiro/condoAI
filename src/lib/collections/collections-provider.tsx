@@ -43,6 +43,7 @@ import {
   type ReminderRecipient,
 } from "./types";
 import type { IssueOrdinaryInput, IssueOrdinaryResult } from "./quota-run";
+import type { TransferInput, TransferResult } from "@/lib/portfolio/transfer";
 import {
   applyOwnerBalances,
   quotasToOverdueItems,
@@ -85,6 +86,12 @@ interface CollectionsContextValue {
   issueCertificate: (
     input: IssueCertificateInput,
   ) => Promise<CertificateView | null>;
+  transferOwnership: (
+    input: TransferInput,
+  ) => Promise<
+    | { ok: true; result: TransferResult }
+    | { ok: false; code: string }
+  >;
   sendReminders: (ids: string[], copy: ReminderCopy) => SendResult;
   escalateOverdue: (ids: string[], copy: ReminderCopy) => SendResult;
   sendCollectionsDigest: (copy: ReminderCopy) => SendResult;
@@ -98,7 +105,8 @@ const CollectionsContext = createContext<CollectionsContextValue | undefined>(
 export function CollectionsProvider({ children }: { children: ReactNode }) {
   const user = useUser();
   const email = user?.email ?? null;
-  const { isDemo, portfolio, isReady: portfolioReady } = usePortfolio();
+  const { isDemo, portfolio, isReady: portfolioReady, refresh: refreshPortfolio } =
+    usePortfolio();
 
   const [state, setState] = useState<CollectionsState>(EMPTY_COLLECTIONS);
   const [contactAttempts, setContactAttempts] = useState<ContactAttempt[]>(
@@ -373,6 +381,27 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const transferOwnership = useCallback(
+    async (input: TransferInput) => {
+      try {
+        const data = await apiFetch<{
+          state: CollectionsState;
+          result: TransferResult;
+        }>("/api/owners/transfer", {
+          method: "POST",
+          body: JSON.stringify(input),
+        });
+        setState(data.state);
+        refreshPortfolio();
+        return { ok: true as const, result: data.result };
+      } catch (err) {
+        const code = err instanceof ApiError ? err.message : "requestFailed";
+        return { ok: false as const, code };
+      }
+    },
+    [refreshPortfolio],
+  );
+
   const sendReminders = useCallback(
     (ids: string[], copy: ReminderCopy): SendResult => {
       if (!email) {
@@ -467,6 +496,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       addCharge,
       issueOrdinaryMonth,
       issueCertificate,
+      transferOwnership,
       sendReminders,
       escalateOverdue,
       sendCollectionsDigest,
@@ -490,6 +520,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       addCharge,
       issueOrdinaryMonth,
       issueCertificate,
+      transferOwnership,
       sendReminders,
       escalateOverdue,
       sendCollectionsDigest,
