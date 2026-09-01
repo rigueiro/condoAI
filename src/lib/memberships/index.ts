@@ -14,6 +14,7 @@ export {
 } from "./types";
 export {
   canPortal,
+  canPortalComment,
   roleDisplayKey,
   type PortalAction,
 } from "./permissions";

@@ -5,6 +5,7 @@ export type PortalAction =
   | "readExtract"
   | "readDocuments"
   | "readOccurrences"
+  | "createOccurrence"
   | "readAnnouncements"
   | "readBudget"
   | "approveBudget";
@@ -14,6 +15,7 @@ const ROLE_ACTIONS: Record<CondoAssignableRole, ReadonlySet<PortalAction>> = {
     "readDocuments",
     "readExtract",
     "readOccurrences",
+    "createOccurrence",
     "readAnnouncements",
     "readBudget",
     "approveBudget",
@@ -22,12 +24,14 @@ const ROLE_ACTIONS: Record<CondoAssignableRole, ReadonlySet<PortalAction>> = {
     "readExtract",
     "readDocuments",
     "readOccurrences",
+    "createOccurrence",
     "readAnnouncements",
   ]),
   [UserRole.Tenant]: new Set([
     "readExtract",
     "readDocuments",
     "readOccurrences",
+    "createOccurrence",
     "readAnnouncements",
   ]),
   [UserRole.Staff]: new Set(["readDocuments", "readOccurrences", "readAnnouncements"]),
@@ -38,6 +42,16 @@ export function canPortal(
   action: PortalAction,
 ): boolean {
   return ROLE_ACTIONS[role].has(action);
+}
+
+export function canPortalComment(
+  role: CondoAssignableRole,
+  memberOwnerId: string | null,
+  occurrenceOwnerId: string | null,
+): boolean {
+  if (!canPortal(role, "createOccurrence")) return false;
+  if (role === UserRole.BoardMember) return true;
+  return Boolean(memberOwnerId) && occurrenceOwnerId === memberOwnerId;
 }
 
 const ROLE_DISPLAY: Record<

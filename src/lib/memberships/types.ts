@@ -1,6 +1,7 @@
 import { UserRole } from "@/app/types";
 import type {
   OccurrenceCategory,
+  OccurrenceComment,
   OccurrencePriority,
   OccurrenceStatus,
 } from "@/types";
@@ -76,12 +77,16 @@ export type PortalContext = {
 export type PortalOccurrence = {
   id: string;
   title: string;
+  description: string;
   category: OccurrenceCategory;
   unit: string | null;
+  ownerId: string | null;
   status: OccurrenceStatus;
   priority: OccurrencePriority;
   dateTime: string;
   lastUpdate: string | null;
+  photos: string[];
+  comments: OccurrenceComment[];
 };
 
 export type PortalBudgetLine = {

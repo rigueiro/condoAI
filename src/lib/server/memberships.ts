@@ -10,7 +10,7 @@ import {
   type PortalMembershipView,
   type PortalOccurrence,
 } from "@/lib/memberships/types";
-import { canPortal } from "@/lib/memberships/permissions";
+import { canPortal, canPortalComment } from "@/lib/memberships/permissions";
 import { buildExtract } from "@/lib/collections/ledger";
 import type { LedgerMovement } from "@/lib/collections/types";
 import { formatPortugueseAddress } from "@/lib/address";
@@ -24,7 +24,8 @@ import {
 } from "@/lib/server/announcements";
 import { summarizeBudget } from "@/lib/finance/budget";
 import { getFinance, markBudgetApproved } from "@/lib/server/finance";
-import { getOccurrences } from "@/lib/server/occurrences";
+import { sanitizeOccurrencePhotos } from "@/lib/occurrences/photos";
+import { getOccurrences, putOccurrence } from "@/lib/server/occurrences";
 import { getAssemblies } from "./assemblies";
 import { getCollections } from "./collections";
 import { getCompliance } from "./compliance";
@@ -394,19 +395,144 @@ function isoDateTime(value: string | Date | null | undefined): string | null {
   return String(value);
 }
 
+const OCCURRENCE_CATEGORIES = new Set([
+  "MAINTENANCE",
+  "NOISE",
+  "PARKING",
+  "PET",
+  "CLEANLINESS",
+  "SECURITY",
+  "LEAK_WATER_DAMAGE",
+  "ELEVATOR",
+  "COMMON_AREA",
+  "RULE_VIOLATION",
+  "OTHER",
+]);
+
 function toPortalOccurrence(occurrence: Occurrence): PortalOccurrence {
   const history = occurrence.history ?? [];
-  const last = history.length > 0 ? history[history.length - 1] : null;
+  const comments = occurrence.comments ?? [];
+  const lastHistory = history.at(-1);
+  const lastComment = comments.at(-1);
   return {
     id: occurrence.id,
     title: occurrence.title,
+    description: occurrence.description,
     category: occurrence.category,
     unit: occurrence.unit,
+    ownerId: occurrence.ownerId ?? null,
     status: occurrence.status,
     priority: occurrence.priority,
     dateTime: isoDateTime(occurrence.dateTime) ?? "",
-    lastUpdate: last ? isoDateTime(last.date) : null,
+    lastUpdate: isoDateTime(lastComment?.createdAt ?? lastHistory?.date),
+    photos: Array.isArray(occurrence.photos) ? occurrence.photos : [],
+    comments,
   };
+}
+
+function canSeeOccurrence(
+  membership: CondoMembership,
+  occurrence: Occurrence,
+): boolean {
+  if (occurrence.condominiumId !== membership.condominiumId) return false;
+  if (
+    membership.role === UserRole.BoardMember ||
+    membership.role === UserRole.Staff
+  ) {
+    return true;
+  }
+  if (!membership.ownerId) return false;
+  return occurrence.ownerId === membership.ownerId || occurrence.ownerId === null;
+}
+
+export function portalCreateOccurrence(
+  memberEmail: string,
+  input: {
+    condominiumId: string;
+    title: unknown;
+    description: unknown;
+    category: unknown;
+    unit?: unknown;
+    photos?: unknown;
+  },
+): { occurrence: PortalOccurrence } {
+  const membership = requireMembership(memberEmail, input.condominiumId);
+  if (!canPortal(membership.role, "createOccurrence")) {
+    throw new Error("forbidden");
+  }
+
+  const title = typeof input.title === "string" ? input.title.trim() : "";
+  const description =
+    typeof input.description === "string" ? input.description.trim() : "";
+  const category =
+    typeof input.category === "string" && OCCURRENCE_CATEGORIES.has(input.category)
+      ? input.category
+      : null;
+  if (!title || !description || !category) throw new Error("badRequest");
+
+  const reportedOn = todayIso().slice(0, 10);
+  const occurrence: Occurrence = {
+    id: crypto.randomUUID(),
+    condominiumId: membership.condominiumId,
+    ownerId: membership.ownerId,
+    title,
+    description,
+    category: category as Occurrence["category"],
+    unit: typeof input.unit === "string" ? input.unit.trim() || null : null,
+    dateTime: reportedOn,
+    status: "Open",
+    priority: "MEDIUM",
+    vendorId: null,
+    assignedTo: null,
+    photos: sanitizeOccurrencePhotos(input.photos),
+    comments: [],
+    history: [
+      {
+        action: "reported",
+        date: reportedOn,
+        author: membership.displayName,
+      },
+    ],
+  };
+
+  putOccurrence(membership.hostEmail, occurrence);
+  return { occurrence: toPortalOccurrence(occurrence) };
+}
+
+export function portalAddOccurrenceComment(
+  memberEmail: string,
+  condominiumId: string,
+  occurrenceId: string,
+  message: unknown,
+): { occurrence: PortalOccurrence } {
+  const membership = requireMembership(memberEmail, condominiumId);
+  const text = typeof message === "string" ? message.trim() : "";
+  if (!text) throw new Error("badRequest");
+
+  const existing = getOccurrences(membership.hostEmail).occurrences.find(
+    (occ) => occ.id === occurrenceId && occ.condominiumId === condominiumId,
+  );
+  if (!existing) throw new Error("notFound");
+  if (
+    !canPortalComment(membership.role, membership.ownerId, existing.ownerId)
+  ) {
+    throw new Error("forbidden");
+  }
+
+  const next: Occurrence = {
+    ...existing,
+    comments: [
+      ...(existing.comments ?? []),
+      {
+        id: crypto.randomUUID(),
+        author: membership.displayName,
+        message: text,
+        createdAt: todayIso().slice(0, 10),
+      },
+    ],
+  };
+  putOccurrence(membership.hostEmail, next);
+  return { occurrence: toPortalOccurrence(next) };
 }
 
 export function portalOccurrences(
@@ -419,16 +545,7 @@ export function portalOccurrences(
   }
 
   const { occurrences } = getOccurrences(membership.hostEmail);
-  const seesAll =
-    membership.role === UserRole.BoardMember ||
-    membership.role === UserRole.Staff;
-
-  const filtered = occurrences.filter((occ) => {
-    if (occ.condominiumId !== condominiumId) return false;
-    if (seesAll) return true;
-    if (!membership.ownerId) return false;
-    return occ.ownerId === membership.ownerId || occ.ownerId === null;
-  });
+  const filtered = occurrences.filter((occ) => canSeeOccurrence(membership, occ));
 
   return {
     occurrences: filtered
