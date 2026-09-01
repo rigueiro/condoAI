@@ -4,6 +4,28 @@
   "recordPayment": "Record Payment",
   "bulkImport": "Bulk Import",
   "exportReport": "Export Report",
+  "quotaRun": {
+    "issue": "Issue monthly quotas",
+    "modalTitle": "Issue monthly quotas",
+    "modalSubtitle": "Bill ordinary quotas for one month from the approved budget (mapa de rateio).",
+    "month": "Month",
+    "preview": "Rateio preview",
+    "budgetYear": "Approved budget {year}",
+    "monthlyTotal": "Building monthly total {amount}",
+    "alreadyIssued": "{count} already issued",
+    "alreadyIssuedAll": "This month is already issued for this condominium.",
+    "owner": "Owner",
+    "units": "Fractions",
+    "amount": "Amount",
+    "issuing": "Issuing…",
+    "issued": "Issued {count, plural, one {# quota} other {# quotas}} for {month}.",
+    "issueFailed": "Could not issue monthly quotas.",
+    "validation": {
+      "monthRequired": "Select a month.",
+      "noApprovedBudget": "Approve the annual budget for this year first.",
+      "noOwners": "This condominium has no billed owners."
+    }
+  },
   "collectionSummary": {
     "totalCollected": "Total Collected",
     "collectionRate": "Collection Rate",

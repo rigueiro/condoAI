@@ -27,8 +27,18 @@ import {
   parseChargeKind,
   yearFromDate,
 } from "@/lib/collections/ledger";
+import { pickApprovedBudget } from "@/lib/reports/budget";
+import { normalizeAnnualBudget } from "@/lib/finance/budget";
+import {
+  applyOrdinaryRun,
+  isMonthYear,
+  previewOrdinaryMonth,
+  yearFromMonthYear,
+  type IssueOrdinaryInput,
+  type IssueOrdinaryResult,
+} from "@/lib/collections/quota-run";
+import { buildDemoCollections, buildDemoFinance } from "./demo";
 import { getPortfolio } from "./portfolio";
-import { buildDemoCollections } from "./demo";
 import { readStore, writeStore } from "./store";
 
 export type { AddChargeInput, IssueCertificateInput, RecordPaymentInput };
@@ -47,6 +57,15 @@ function saveCollections(
   store.collections[key] = next;
   writeStore(store);
   return next;
+}
+
+/** Read budgets without importing getFinance (circular with this module). */
+function budgetsForWorkspace(email: string) {
+  const key = email.trim().toLowerCase();
+  const existing = readStore().finance[key];
+  const finance =
+    existing ?? (isDemoEmail(key) ? buildDemoFinance() : undefined);
+  return (finance?.budgets ?? []).map(normalizeAnnualBudget);
 }
 
 function condominiumIdForOwner(email: string, ownerId: string): string {
@@ -226,6 +245,55 @@ export function addCharge(
   };
 
   return saveCollections(email, addChargeToState(getCollections(email), charge));
+}
+
+export function issueOrdinaryQuotas(
+  email: string,
+  input: IssueOrdinaryInput,
+): { state: CollectionsState; result: IssueOrdinaryResult } {
+  const condominiumId = input.condominiumId?.trim() ?? "";
+  const monthYear = input.monthYear?.trim() ?? "";
+  if (!condominiumId || !isMonthYear(monthYear)) {
+    throw new Error("badRequest");
+  }
+
+  const portfolio = getPortfolio(email);
+  const condo = portfolio.condominiums.find((item) => item.id === condominiumId);
+  if (!condo) throw new Error("condominiumNotFound");
+
+  const budget = pickApprovedBudget(
+    budgetsForWorkspace(email),
+    condominiumId,
+    yearFromMonthYear(monthYear),
+  );
+  if (!budget) throw new Error("noApprovedBudget");
+
+  const { rows } = previewOrdinaryMonth({
+    units: portfolio.units,
+    condominiumId,
+    totalPermillage: condo.totalPermillage || 1000,
+    budget,
+  });
+  if (rows.length === 0) throw new Error("noBilledOwners");
+
+  const current = getCollections(email);
+  const applied = applyOrdinaryRun(
+    current.quotas,
+    rows,
+    condominiumId,
+    monthYear,
+  );
+  if (applied.issued === 0) throw new Error("alreadyIssued");
+
+  const state = saveCollections(email, { ...current, quotas: applied.quotas });
+  return {
+    state,
+    result: {
+      issued: applied.issued,
+      skipped: applied.skipped,
+      monthYear,
+    },
+  };
 }
 
 export function issueCertificate(

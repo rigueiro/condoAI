@@ -21,8 +21,12 @@ import {
 } from "@/lib/collections";
 import {
   buildCollectionFromPortfolio,
+  useActiveCondominium,
   usePortfolio,
 } from "@/lib/portfolio";
+import { useFinance } from "@/lib/finance";
+import type { IssueOrdinaryInput } from "@/lib/collections/quota-run";
+import MonthlyQuotaModal from "./components/monthly-quota-modal";
 import { buildMockCollectionSummary } from "@/fixtures/views";
 import ReceiptModal from "@/app/[locale]/owners-management/components/receipt-modal";
 
@@ -39,17 +43,21 @@ function PaymentTracking() {
   const tDash = useTranslations("dashboard.upcomingPayments");
   const tReceipt = useTranslations("currentAccount.receipt");
   const { portfolio, isDemo } = usePortfolio();
+  const { activeId } = useActiveCondominium();
+  const { budgets } = useFinance();
   const reminderCopy = useReminderCopy();
   const {
     payments: paymentHistory,
     quotas,
     recordPayment,
+    issueOrdinaryMonth,
     sendReminders,
     receiptForQuota,
   } = useCollections();
 
   const [isRecordPaymentModalOpen, setIsRecordPaymentModalOpen] =
     useState(false);
+  const [isQuotaRunOpen, setIsQuotaRunOpen] = useState(false);
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
   const [selectedPayments, setSelectedPayments] = useState<number[]>([]);
   const [viewingReceipt, setViewingReceipt] = useState<AccountReceipt | null>(
@@ -174,6 +182,32 @@ function PaymentTracking() {
     );
   });
 
+  const handleIssueOrdinary = async (input: IssueOrdinaryInput) => {
+    const result = await issueOrdinaryMonth(input);
+    if (result.ok) {
+      setFlash({
+        message: t("quotaRun.issued", {
+          count: result.result.issued,
+          month: result.result.monthYear,
+        }),
+        tone: "success",
+      });
+      return true;
+    }
+    setFlash({
+      message:
+        result.code === "noApprovedBudget"
+          ? t("quotaRun.validation.noApprovedBudget")
+          : result.code === "alreadyIssued"
+            ? t("quotaRun.alreadyIssuedAll")
+            : result.code === "noBilledOwners"
+              ? t("quotaRun.validation.noOwners")
+              : t("quotaRun.issueFailed"),
+      tone: "warning",
+    });
+    return false;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -190,6 +224,14 @@ function PaymentTracking() {
               <p className="text-text-secondary">{t("subtitle")}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 mt-4 lg:mt-0">
+              <Button
+                variant="outline"
+                iconName="CalendarPlus"
+                onClick={() => setIsQuotaRunOpen(true)}
+                className="w-full sm:w-auto"
+              >
+                {t("quotaRun.issue")}
+              </Button>
               <Button
                 variant="outline"
                 iconName="Upload"
@@ -256,6 +298,19 @@ function PaymentTracking() {
             </div>
           </div>
         </div>
+
+        {isQuotaRunOpen && (
+          <MonthlyQuotaModal
+            condominiums={portfolio.condominiums}
+            units={portfolio.units}
+            owners={portfolio.owners}
+            budgets={budgets}
+            quotas={quotas}
+            defaultCondominiumId={activeId ?? portfolio.condominiums[0]?.id}
+            onClose={() => setIsQuotaRunOpen(false)}
+            onIssue={handleIssueOrdinary}
+          />
+        )}
 
         <RecordPaymentModal
           isOpen={isRecordPaymentModalOpen}

@@ -12,7 +12,7 @@ import {
 } from "react";
 import { useUser } from "@/lib/auth";
 import { usePortfolio } from "@/lib/portfolio";
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, ApiError } from "@/lib/api/client";
 import type { OwnerRow } from "@/app/[locale]/owners-management/components/types";
 import type { QuotaPayment } from "@/types";
 import { OWNER_AVATARS } from "@/fixtures/views";
@@ -42,6 +42,7 @@ import {
   type ReminderCopy,
   type ReminderRecipient,
 } from "./types";
+import type { IssueOrdinaryInput, IssueOrdinaryResult } from "./quota-run";
 import {
   applyOwnerBalances,
   quotasToOverdueItems,
@@ -75,6 +76,12 @@ interface CollectionsContextValue {
     input: RecordPaymentInput,
   ) => Promise<{ quotaId: string; receipt?: AccountReceipt } | null>;
   addCharge: (input: AddChargeInput) => Promise<boolean>;
+  issueOrdinaryMonth: (
+    input: IssueOrdinaryInput,
+  ) => Promise<
+    | { ok: true; result: IssueOrdinaryResult }
+    | { ok: false; code: string }
+  >;
   issueCertificate: (
     input: IssueCertificateInput,
   ) => Promise<CertificateView | null>;
@@ -327,6 +334,26 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const issueOrdinaryMonth = useCallback(
+    async (input: IssueOrdinaryInput) => {
+      try {
+        const data = await apiFetch<{
+          state: CollectionsState;
+          result: IssueOrdinaryResult;
+        }>("/api/quotas", {
+          method: "PATCH",
+          body: JSON.stringify({ action: "issueOrdinary", ...input }),
+        });
+        setState(data.state);
+        return { ok: true as const, result: data.result };
+      } catch (err) {
+        const code = err instanceof ApiError ? err.message : "requestFailed";
+        return { ok: false as const, code };
+      }
+    },
+    [],
+  );
+
   const issueCertificate = useCallback(
     async (input: IssueCertificateInput): Promise<CertificateView | null> => {
       try {
@@ -438,6 +465,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       receiptForQuota,
       recordPayment,
       addCharge,
+      issueOrdinaryMonth,
       issueCertificate,
       sendReminders,
       escalateOverdue,
@@ -460,6 +488,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       receiptForQuota,
       recordPayment,
       addCharge,
+      issueOrdinaryMonth,
       issueCertificate,
       sendReminders,
       escalateOverdue,

@@ -3,7 +3,7 @@ import { roundCurrency } from "@/lib/quota";
 import type { ExtraordinaryAllocation } from "./types";
 
 /** Bill the occupancy with role `owner`; fall back to the first occupancy. */
-function billedOwnerId(unit: Unit): string | undefined {
+export function billedOwnerId(unit: Unit): string | undefined {
   const occupancies = unit.occupancies ?? [];
   return (
     occupancies.find((item) => item.role === "owner")?.ownerId ??

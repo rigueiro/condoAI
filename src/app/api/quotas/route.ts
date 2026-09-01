@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
 import type { QuotaPayment } from "@/types";
 import {
   createQuota,
   getCollections,
+  issueOrdinaryQuotas,
 } from "@/lib/server/collections";
 import { requireManagerAccess } from "@/lib/server/manager-access";
-import { handleRouteError, jsonOk } from "@/lib/server/http";
+import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
 
 export async function GET() {
   try {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       quota?: Omit<QuotaPayment, "id"> & { id?: string };
     };
     if (!body.quota?.ownerId || body.quota.amount == null) {
-      return NextResponse.json({ error: "badRequest" }, { status: 400 });
+      return jsonError("badRequest");
     }
     const state = createQuota(workspaceEmail, {
       monthYear: body.quota.monthYear,
@@ -35,6 +35,27 @@ export async function POST(request: Request) {
       id: body.quota.id,
     });
     return jsonOk({ state, quotas: state.quotas }, { status: 201 });
+  } catch (err) {
+    return handleRouteError(err);
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const { workspaceEmail } = await requireManagerAccess("writeCollections");
+    const body = (await request.json()) as {
+      action?: string;
+      condominiumId?: string;
+      monthYear?: string;
+    };
+    if (body.action !== "issueOrdinary" || !body.condominiumId || !body.monthYear) {
+      return jsonError("badRequest");
+    }
+    const { state, result } = issueOrdinaryQuotas(workspaceEmail, {
+      condominiumId: body.condominiumId,
+      monthYear: body.monthYear,
+    });
+    return jsonOk({ state, quotas: state.quotas, result });
   } catch (err) {
     return handleRouteError(err);
   }

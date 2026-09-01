@@ -15,6 +15,16 @@ export function pickBudget(
   return fallback;
 }
 
+/** Approved budget for condo+year, or undefined. */
+export function pickApprovedBudget(
+  budgets: AnnualBudget[],
+  condominiumId: string,
+  year: number,
+): AnnualBudget | undefined {
+  const budget = pickBudget(budgets, condominiumId, year);
+  return budget?.status === "approved" ? budget : undefined;
+}
+
 export function availableBudgetYears(
   budgets: AnnualBudget[],
   condominiumId: string,

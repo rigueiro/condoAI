@@ -25,6 +25,8 @@ const ERROR_STATUS: Record<string, number> = {
   condominiumNotFound: 404,
   unitNotFound: 404,
   invalidAmount: 400,
+  alreadyIssued: 409,
+  noApprovedBudget: 400,
   noBilledOwners: 400,
   extractUnavailable: 400,
   assemblyClosed: 409,

@@ -4,6 +4,28 @@
   "recordPayment": "Registar Pagamento",
   "bulkImport": "Importar por CSV",
   "exportReport": "Exportar relatório",
+  "quotaRun": {
+    "issue": "Emitir quotas do mês",
+    "modalTitle": "Emitir quotas mensais",
+    "modalSubtitle": "Lançar as quotas ordinárias de um mês a partir do orçamento aprovado (mapa de rateio).",
+    "month": "Mês",
+    "preview": "Pré-visualização do rateio",
+    "budgetYear": "Orçamento aprovado {year}",
+    "monthlyTotal": "Total mensal do edifício {amount}",
+    "alreadyIssued": "{count} já emitidas",
+    "alreadyIssuedAll": "Este mês já foi emitido para este condomínio.",
+    "owner": "Proprietário",
+    "units": "Frações",
+    "amount": "Valor",
+    "issuing": "A emitir…",
+    "issued": "Emitidas {count, plural, one {# quota} other {# quotas}} para {month}.",
+    "issueFailed": "Não foi possível emitir as quotas mensais.",
+    "validation": {
+      "monthRequired": "Selecione um mês.",
+      "noApprovedBudget": "Aprove primeiro o orçamento anual deste ano.",
+      "noOwners": "Este condomínio não tem proprietários faturáveis."
+    }
+  },
   "collectionSummary": {
     "totalCollected": "Total cobrado",
     "collectionRate": "Taxa de cobrança",
