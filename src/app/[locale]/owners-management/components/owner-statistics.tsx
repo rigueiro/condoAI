@@ -25,6 +25,9 @@ function OwnerStatistics({ owners }: { owners: OwnerRow[] }) {
   const pendingPayments = owners.filter(
     (row) => row.paymentStatus === "pending",
   ).length;
+  const agreementPayments = owners.filter(
+    (row) => row.paymentStatus === "agreement",
+  ).length;
 
   const complianceRate =
     totalOwners > 0 ? Math.round((currentPayments / totalOwners) * 100) : 0;
@@ -111,6 +114,12 @@ function OwnerStatistics({ owners }: { owners: OwnerRow[] }) {
       count: overduePayments,
       color: "text-error",
       bgColor: "bg-error-100",
+    },
+    {
+      label: tStatus("agreement"),
+      count: agreementPayments,
+      color: "text-primary",
+      bgColor: "bg-primary-100",
     },
   ];
 

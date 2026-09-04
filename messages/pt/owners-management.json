@@ -11,7 +11,8 @@
   "status": {
     "current": "Em dia",
     "pending": "Pendente",
-    "overdue": "Em atraso"
+    "overdue": "Em atraso",
+    "agreement": "Acordo"
   },
   "filters": {
     "title": "Filtrar proprietários",
@@ -133,6 +134,7 @@
     "monthlyFee": "Quota mensal",
     "quickActions": "Acções rápidas",
     "recordPayment": "Registar pagamento",
+    "paymentAgreement": "Acordo de pagamento",
     "addCharge": "Adicionar lançamento",
     "issueCertificate": "Emitir certidão de dívida",
     "transfer": "Transferir na venda",
@@ -175,6 +177,70 @@
       "buyerRequired": "Selecione um comprador.",
       "nameRequired": "Indique o nome do comprador.",
       "openingInvalid": "O saldo de abertura deve ser zero ou superior."
+    }
+  },
+  "agreement": {
+    "title": "Acordo de pagamento",
+    "subtitle": "Dividir o saldo em aberto em prestações, com juros de mora opcionais, antes da injunção.",
+    "panelTitle": "Acordo de pagamento",
+    "principal": "Capital em dívida",
+    "oldestDue": "Item mais antigo {date} · {days, plural, one {# dia} other {# dias}} até à primeira prestação",
+    "startDate": "Vencimento da primeira prestação",
+    "installments": "Número de prestações",
+    "installmentCount": "{count, plural, one {# prestação mensal} other {# prestações mensais}}",
+    "includeMora": "Incluir juros de mora",
+    "moraRate": "Taxa anual de mora",
+    "moraHint": "Juro simples sobre o capital, desde o vencimento mais antigo até à primeira prestação. Os 4% coincidem com a taxa de juro legal civil habitual; use a taxa do regulamento se for outra.",
+    "notes": "Notas",
+    "notesPlaceholder": "ex.: Assinado no escritório, primeira prestação no dia 8",
+    "preview": "Calendário",
+    "moraAmount": "Juros de mora",
+    "total": "Total do acordo",
+    "remaining": "Em falta",
+    "installmentRow": "Prestação {n}",
+    "confirm": "Criar acordo",
+    "saving": "A criar…",
+    "created": "Acordo de pagamento {number} criado.",
+    "failed": "Não foi possível criar o acordo de pagamento.",
+    "installmentPaid": "Prestação registada.",
+    "payFailed": "Não foi possível registar a prestação.",
+    "defaulted": "Acordo marcado como incumprido. Emita a certidão para iniciar a injunção.",
+    "cancelled": "Acordo anulado.",
+    "recordInstallment": "Registar",
+    "cancelPlan": "Anular acordo",
+    "markDefaulted": "Marcar incumprimento",
+    "defaultedHint": "O plano falhou. As quotas em aberto voltam a estar em atraso — emita a certidão e abra o processo legal.",
+    "issueCertificate": "Emitir certidão",
+    "paymentNotes": "{number} · prestação {n}/{total}",
+    "status": {
+      "active": "Activo",
+      "completed": "Cumprido",
+      "defaulted": "Incumprido",
+      "cancelled": "Anulado"
+    },
+    "installmentStatus": {
+      "pending": "Pendente",
+      "paid": "Paga",
+      "overdue": "Em atraso"
+    },
+    "columns": {
+      "n": "N.º",
+      "due": "Vencimento",
+      "amount": "Valor",
+      "status": "Estado"
+    },
+    "validation": {
+      "dateRequired": "Indique a data da primeira prestação.",
+      "noDebt": "Não há saldo em aberto para calendarizar.",
+      "moraRate": "Indique uma taxa de mora entre 0 e 50%."
+    },
+    "errors": {
+      "alreadyActive": "Este proprietário já tem um acordo de pagamento activo.",
+      "noDebt": "Não há saldo em aberto para calendarizar.",
+      "invalidInstallments": "Escolha entre 2 e 24 prestações.",
+      "notActive": "Este acordo já não está activo.",
+      "hasPayments": "Só se pode anular antes da primeira prestação. Marque incumprimento em vez disso.",
+      "requestFailed": "Não foi possível guardar o acordo."
     }
   },
   "bulk": {

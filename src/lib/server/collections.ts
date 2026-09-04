@@ -13,7 +13,9 @@ import {
   type AccountCharge,
   type AddChargeInput,
   type CollectionsState,
+  type CreateAgreementInput,
   type IssueCertificateInput,
+  type PayInstallmentInput,
   type PaymentDetails,
   type RecordPaymentInput,
 } from "@/lib/collections/types";
@@ -38,11 +40,17 @@ import {
   type IssueOrdinaryInput,
   type IssueOrdinaryResult,
 } from "@/lib/collections/quota-run";
+import {
+  cancelAgreementInState,
+  createAgreementInState,
+  defaultAgreementInState,
+  payInstallmentInState,
+} from "@/lib/collections/agreement";
 import { buildDemoCollections, buildDemoFinance } from "./demo";
 import { getPortfolio } from "./portfolio";
 import { readStore, writeStore } from "./store";
 
-export type { AddChargeInput, IssueCertificateInput, RecordPaymentInput };
+export type { AddChargeInput, IssueCertificateInput, RecordPaymentInput, CreateAgreementInput, PayInstallmentInput };
 
 function normalizeCollections(parsed: CollectionsState): CollectionsState {
   return normalizeLedger(parsed);
@@ -92,7 +100,8 @@ export function getCollections(email: string): CollectionsState {
     const next = normalizeCollections(existing);
     const needsWrite =
       next.receipts.length !== (existing.receipts?.length ?? 0) ||
-      !existing.receiptSeqByYear;
+      !existing.receiptSeqByYear ||
+      !Array.isArray(existing.agreements);
     return needsWrite ? saveCollections(key, next) : next;
   }
 
@@ -371,4 +380,71 @@ export function issueCertificate(
     asOfDate,
   });
   return { state: saveCollections(email, appended.state), view: appended.view };
+}
+
+function persistAgreementResult<T extends { state: CollectionsState }>(
+  email: string,
+  result: T,
+): T {
+  return { ...result, state: saveCollections(email, result.state) };
+}
+
+function ownerAndCondo(
+  email: string,
+  ownerId: string,
+  condominiumId?: string,
+) {
+  const portfolio = getPortfolio(email);
+  const owner = portfolio.owners.find((item) => item.id === ownerId);
+  if (!owner) throw new Error("notFound");
+  const resolved =
+    condominiumId?.trim() || condominiumIdForOwner(email, owner.id);
+  if (!resolved) throw new Error("condominiumNotFound");
+  return { owner, condominiumId: resolved };
+}
+
+export function createPaymentAgreement(
+  email: string,
+  input: CreateAgreementInput,
+) {
+  if (!input.ownerId) throw new Error("badRequest");
+  const { condominiumId } = ownerAndCondo(
+    email,
+    input.ownerId,
+    input.condominiumId,
+  );
+  return persistAgreementResult(
+    email,
+    createAgreementInState(getCollections(email), {
+      ...input,
+      condominiumId,
+    }),
+  );
+}
+
+export function payAgreementInstallment(
+  email: string,
+  input: PayInstallmentInput,
+) {
+  if (!input.agreementId || !input.installmentId) throw new Error("badRequest");
+  return persistAgreementResult(
+    email,
+    payInstallmentInState(getCollections(email), input),
+  );
+}
+
+export function defaultPaymentAgreement(email: string, agreementId: string) {
+  if (!agreementId) throw new Error("badRequest");
+  return persistAgreementResult(
+    email,
+    defaultAgreementInState(getCollections(email), agreementId),
+  );
+}
+
+export function cancelPaymentAgreement(email: string, agreementId: string) {
+  if (!agreementId) throw new Error("badRequest");
+  return persistAgreementResult(
+    email,
+    cancelAgreementInState(getCollections(email), agreementId),
+  );
 }

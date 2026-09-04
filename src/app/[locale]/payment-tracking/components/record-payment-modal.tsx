@@ -120,7 +120,7 @@ function RecordPaymentModal({
     setIsSubmitting(true);
 
     try {
-      onSubmit({
+      await onSubmit({
         ownerId: formData.ownerId,
         amount: formData.amount,
         paymentMethod: formData.paymentMethod,

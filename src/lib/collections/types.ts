@@ -8,7 +8,52 @@ export interface PaymentDetails {
   timestamp?: string;
 }
 
-export type ChargeKind = "opening" | "charge" | "credit" | "extraordinary";
+export type ChargeKind =
+  | "opening"
+  | "charge"
+  | "credit"
+  | "extraordinary"
+  | "mora";
+
+export type PaymentAgreementStatus =
+  | "active"
+  | "completed"
+  | "defaulted"
+  | "cancelled";
+
+export type InstallmentStatus = "pending" | "paid" | "overdue";
+
+export interface PaymentInstallment {
+  id: string;
+  sequence: number;
+  dueDate: string;
+  amount: number;
+  status: InstallmentStatus;
+  paidAt: string | null;
+  receiptId: string | null;
+}
+
+export interface PaymentAgreement {
+  id: string;
+  number: string;
+  ownerId: string;
+  condominiumId: string;
+  createdAt: string;
+  startDate: string;
+  status: PaymentAgreementStatus;
+  principal: number;
+  moraRateAnnual: number;
+  moraAmount: number;
+  total: number;
+  installmentCount: number;
+  notes: string | null;
+  quotaIds: string[];
+  moraChargeId: string | null;
+  installments: PaymentInstallment[];
+  defaultedAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+}
 
 export interface AccountCharge {
   id: string;
@@ -69,8 +114,10 @@ export interface CollectionsState {
   charges: AccountCharge[];
   receipts: AccountReceipt[];
   certificates: DebtCertificate[];
+  agreements: PaymentAgreement[];
   receiptSeqByYear: Record<string, number>;
   certificateSeqByYear: Record<string, number>;
+  agreementSeqByYear: Record<string, number>;
 }
 
 export const EMPTY_COLLECTIONS: CollectionsState = {
@@ -79,8 +126,10 @@ export const EMPTY_COLLECTIONS: CollectionsState = {
   charges: [],
   receipts: [],
   certificates: [],
+  agreements: [],
   receiptSeqByYear: {},
   certificateSeqByYear: {},
+  agreementSeqByYear: {},
 };
 
 export type RecordPaymentInput = {
@@ -106,6 +155,24 @@ export type IssueCertificateInput = {
   ownerId: string;
   condominiumId?: string;
   asOfDate?: string;
+};
+
+export type CreateAgreementInput = {
+  ownerId: string;
+  condominiumId?: string;
+  startDate?: string;
+  installmentCount: number | string;
+  includeMora?: boolean;
+  moraRateAnnual?: number | string;
+  notes?: string;
+};
+
+export type PayInstallmentInput = {
+  agreementId: string;
+  installmentId: string;
+  paymentDate?: string;
+  paymentMethod?: string;
+  notes?: string;
 };
 
 /** Overdue row shown on the manager dashboard daily job. */

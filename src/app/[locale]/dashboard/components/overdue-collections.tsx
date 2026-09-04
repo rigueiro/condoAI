@@ -285,7 +285,16 @@ function OverdueCollections({
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="min-w-0">
                       <h3 className="text-sm font-medium text-text-primary truncate">
-                        {item.ownerName}
+                        {item.ownerId ? (
+                          <Link
+                            href={`/owners-management/${item.ownerId}`}
+                            className="hover:text-primary hover:underline"
+                          >
+                            {item.ownerName}
+                          </Link>
+                        ) : (
+                          item.ownerName
+                        )}
                       </h3>
                       <p className="text-xs text-text-secondary mt-1">
                         {t("unitProperty", {

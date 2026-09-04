@@ -35,9 +35,12 @@ import {
   type AddChargeInput,
   type CollectionsState,
   type ContactAttempt,
+  type CreateAgreementInput,
   type DebtCertificate,
   type IssueCertificateInput,
   type OverdueItem,
+  type PayInstallmentInput,
+  type PaymentAgreement,
   type RecordPaymentInput,
   type ReminderCopy,
   type ReminderRecipient,
@@ -58,6 +61,10 @@ import {
 
 export type { SendResult };
 export type { AddChargeInput, IssueCertificateInput, RecordPaymentInput };
+
+type AgreementMutationResult =
+  | { ok: true; agreement: PaymentAgreement; receipt?: AccountReceipt }
+  | { ok: false; code: string };
 
 interface CollectionsContextValue {
   isReady: boolean;
@@ -92,6 +99,19 @@ interface CollectionsContextValue {
     | { ok: true; result: TransferResult }
     | { ok: false; code: string }
   >;
+  agreements: PaymentAgreement[];
+  createPaymentAgreement: (
+    input: CreateAgreementInput,
+  ) => Promise<AgreementMutationResult>;
+  payAgreementInstallment: (
+    input: PayInstallmentInput,
+  ) => Promise<AgreementMutationResult>;
+  defaultPaymentAgreement: (
+    agreementId: string,
+  ) => Promise<AgreementMutationResult>;
+  cancelPaymentAgreement: (
+    agreementId: string,
+  ) => Promise<AgreementMutationResult>;
   sendReminders: (ids: string[], copy: ReminderCopy) => SendResult;
   escalateOverdue: (ids: string[], copy: ReminderCopy) => SendResult;
   sendCollectionsDigest: (copy: ReminderCopy) => SendResult;
@@ -190,8 +210,9 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
         OWNER_AVATARS,
         state.charges,
         state.receipts,
+        state.agreements,
       ),
-    [portfolio, state.quotas, state.charges, state.receipts],
+    [portfolio, state.quotas, state.charges, state.receipts, state.agreements],
   );
 
   const payments = useMemo(
@@ -200,8 +221,8 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
   );
 
   const overdueItems = useMemo(
-    () => quotasToOverdueItems(state.quotas, portfolio),
-    [state.quotas, portfolio],
+    () => quotasToOverdueItems(state.quotas, portfolio, state.agreements),
+    [state.quotas, portfolio, state.agreements],
   );
 
   const remindedIds = useMemo(
@@ -402,6 +423,61 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
     [refreshPortfolio],
   );
 
+  const requestAgreement = useCallback(
+    async (init: RequestInit): Promise<AgreementMutationResult> => {
+      try {
+        const data = await apiFetch<{
+          state: CollectionsState;
+          agreement: PaymentAgreement;
+          receipt?: AccountReceipt;
+        }>("/api/ledger/agreements", init);
+        setState(data.state);
+        return {
+          ok: true as const,
+          agreement: data.agreement,
+          receipt: data.receipt,
+        };
+      } catch (err) {
+        const code = err instanceof ApiError ? err.message : "requestFailed";
+        return { ok: false as const, code };
+      }
+    },
+    [],
+  );
+
+  const createPaymentAgreement = useCallback(
+    (input: CreateAgreementInput) =>
+      requestAgreement({ method: "POST", body: JSON.stringify(input) }),
+    [requestAgreement],
+  );
+
+  const payAgreementInstallment = useCallback(
+    (input: PayInstallmentInput) =>
+      requestAgreement({
+        method: "PATCH",
+        body: JSON.stringify({ action: "payInstallment", ...input }),
+      }),
+    [requestAgreement],
+  );
+
+  const defaultPaymentAgreement = useCallback(
+    (agreementId: string) =>
+      requestAgreement({
+        method: "PATCH",
+        body: JSON.stringify({ action: "default", agreementId }),
+      }),
+    [requestAgreement],
+  );
+
+  const cancelPaymentAgreement = useCallback(
+    (agreementId: string) =>
+      requestAgreement({
+        method: "PATCH",
+        body: JSON.stringify({ action: "cancel", agreementId }),
+      }),
+    [requestAgreement],
+  );
+
   const sendReminders = useCallback(
     (ids: string[], copy: ReminderCopy): SendResult => {
       if (!email) {
@@ -484,6 +560,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       charges: state.charges,
       receipts: state.receipts,
       certificates: state.certificates,
+      agreements: state.agreements,
       payments,
       overdueItems,
       ownersWithBalances,
@@ -497,6 +574,10 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       issueOrdinaryMonth,
       issueCertificate,
       transferOwnership,
+      createPaymentAgreement,
+      payAgreementInstallment,
+      defaultPaymentAgreement,
+      cancelPaymentAgreement,
       sendReminders,
       escalateOverdue,
       sendCollectionsDigest,
@@ -508,6 +589,7 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       state.charges,
       state.receipts,
       state.certificates,
+      state.agreements,
       payments,
       overdueItems,
       ownersWithBalances,
@@ -521,6 +603,10 @@ export function CollectionsProvider({ children }: { children: ReactNode }) {
       issueOrdinaryMonth,
       issueCertificate,
       transferOwnership,
+      createPaymentAgreement,
+      payAgreementInstallment,
+      defaultPaymentAgreement,
+      cancelPaymentAgreement,
       sendReminders,
       escalateOverdue,
       sendCollectionsDigest,

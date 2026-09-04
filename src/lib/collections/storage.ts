@@ -78,6 +78,7 @@ export function readCollections(email: string): CollectionsState | null {
       certificates: Array.isArray(parsed.certificates)
         ? parsed.certificates
         : [],
+      agreements: Array.isArray(parsed.agreements) ? parsed.agreements : [],
       receiptSeqByYear:
         parsed.receiptSeqByYear && typeof parsed.receiptSeqByYear === "object"
           ? parsed.receiptSeqByYear
@@ -86,6 +87,10 @@ export function readCollections(email: string): CollectionsState | null {
         parsed.certificateSeqByYear &&
         typeof parsed.certificateSeqByYear === "object"
           ? parsed.certificateSeqByYear
+          : {},
+      agreementSeqByYear:
+        parsed.agreementSeqByYear && typeof parsed.agreementSeqByYear === "object"
+          ? parsed.agreementSeqByYear
           : {},
     };
   } catch {

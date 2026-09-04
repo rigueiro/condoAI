@@ -11,7 +11,8 @@
   "status": {
     "current": "Current",
     "pending": "Pending",
-    "overdue": "Overdue"
+    "overdue": "Overdue",
+    "agreement": "Payment plan"
   },
   "filters": {
     "title": "Filter Owners",
@@ -133,6 +134,7 @@
     "monthlyFee": "Monthly quota",
     "quickActions": "Quick actions",
     "recordPayment": "Record payment",
+    "paymentAgreement": "Payment agreement",
     "addCharge": "Add charge",
     "issueCertificate": "Issue debt certificate",
     "transfer": "Transfer on sale",
@@ -175,6 +177,70 @@
       "buyerRequired": "Select a buyer.",
       "nameRequired": "Enter the buyer’s name.",
       "openingInvalid": "Opening balance must be zero or more."
+    }
+  },
+  "agreement": {
+    "title": "Payment agreement",
+    "subtitle": "Split the outstanding balance into installments, optionally with juros de mora, before injunção.",
+    "panelTitle": "Payment agreement",
+    "principal": "Outstanding principal",
+    "oldestDue": "Oldest open item {date} · {days, plural, one {# day} other {# days}} to first due date",
+    "startDate": "First installment due",
+    "installments": "Number of installments",
+    "installmentCount": "{count, plural, one {# monthly installment} other {# monthly installments}}",
+    "includeMora": "Add juros de mora (late interest)",
+    "moraRate": "Annual mora rate",
+    "moraHint": "Simple interest on the principal from the oldest open due date to the first installment. Default 4% matches the usual civil legal rate; use the rate in the regulamento if different.",
+    "notes": "Notes",
+    "notesPlaceholder": "e.g. Signed at the office, first due on the 8th",
+    "preview": "Schedule",
+    "moraAmount": "Juros de mora",
+    "total": "Agreement total",
+    "remaining": "Remaining",
+    "installmentRow": "Installment {n}",
+    "confirm": "Create agreement",
+    "saving": "Creating…",
+    "created": "Payment agreement {number} created.",
+    "failed": "Could not create the payment agreement.",
+    "installmentPaid": "Installment recorded.",
+    "payFailed": "Could not record the installment.",
+    "defaulted": "Agreement marked as defaulted. Issue a certidão to start injunção.",
+    "cancelled": "Agreement cancelled.",
+    "recordInstallment": "Record",
+    "cancelPlan": "Cancel agreement",
+    "markDefaulted": "Mark as defaulted",
+    "defaultedHint": "The plan failed. Original unpaid quotas are overdue again — issue a certidão and start a legal process.",
+    "issueCertificate": "Issue certidão",
+    "paymentNotes": "{number} · installment {n}/{total}",
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "defaulted": "Defaulted",
+      "cancelled": "Cancelled"
+    },
+    "installmentStatus": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "overdue": "Overdue"
+    },
+    "columns": {
+      "n": "#",
+      "due": "Due",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "validation": {
+      "dateRequired": "Enter the first due date.",
+      "noDebt": "There is no outstanding balance to schedule.",
+      "moraRate": "Enter a mora rate between 0 and 50%."
+    },
+    "errors": {
+      "alreadyActive": "This owner already has an active payment agreement.",
+      "noDebt": "There is no outstanding balance to schedule.",
+      "invalidInstallments": "Choose between 2 and 24 installments.",
+      "notActive": "This agreement is no longer active.",
+      "hasPayments": "Cancel only works before the first installment is paid. Mark as defaulted instead.",
+      "requestFailed": "Could not save the agreement."
     }
   },
   "bulk": {

@@ -28,7 +28,8 @@
     "opening": "Opening balance",
     "charge": "Charge",
     "credit": "Credit note",
-    "extraordinary": "Extraordinary quota"
+    "extraordinary": "Extraordinary quota",
+    "mora": "Late interest (juros de mora)"
   },
   "chargeModal": {
     "title": "Add charge",

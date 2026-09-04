@@ -3,13 +3,16 @@ import type { Organization } from "@/app/[locale]/account/types";
 import { roundCurrency } from "@/lib/quota";
 import { occupanciesForOwner } from "@/lib/portfolio/occupancy";
 import type { OccupancyOnUnit } from "@/lib/portfolio/occupancy";
+import { todayKey } from "./dates";
 import type {
   AccountCharge,
   AccountReceipt,
   ChargeKind,
   CollectionsState,
   DebtCertificate,
+  InstallmentStatus,
   LedgerMovement,
+  PaymentAgreement,
 } from "./types";
 
 export const CHARGE_KINDS: ChargeKind[] = [
@@ -17,6 +20,7 @@ export const CHARGE_KINDS: ChargeKind[] = [
   "charge",
   "credit",
   "extraordinary",
+  "mora",
 ];
 
 const CHARGE_KIND_SET = new Set<string>(CHARGE_KINDS);
@@ -47,6 +51,10 @@ export function formatCertificateNumber(
   sequence: number,
 ): string {
   return formatYearSequence("CD", year, sequence);
+}
+
+export function formatAgreementNumber(year: number, sequence: number): string {
+  return formatYearSequence("AP", year, sequence);
 }
 
 export function groupByOwnerId<T extends { ownerId: string }>(
@@ -81,15 +89,19 @@ export function emptyLedgerFields(): Pick<
   | "charges"
   | "receipts"
   | "certificates"
+  | "agreements"
   | "receiptSeqByYear"
   | "certificateSeqByYear"
+  | "agreementSeqByYear"
 > {
   return {
     charges: [],
     receipts: [],
     certificates: [],
+    agreements: [],
     receiptSeqByYear: {},
     certificateSeqByYear: {},
+    agreementSeqByYear: {},
   };
 }
 
@@ -107,6 +119,10 @@ export function normalizeLedger(state: CollectionsState): CollectionsState {
   const certificateSeqByYear =
     state.certificateSeqByYear && typeof state.certificateSeqByYear === "object"
       ? { ...state.certificateSeqByYear }
+      : {};
+  const agreementSeqByYear =
+    state.agreementSeqByYear && typeof state.agreementSeqByYear === "object"
+      ? { ...state.agreementSeqByYear }
       : {};
   const details =
     state.details && typeof state.details === "object"
@@ -159,9 +175,33 @@ export function normalizeLedger(state: CollectionsState): CollectionsState {
     charges,
     receipts,
     certificates,
+    agreements: refreshAgreementInstallments(
+      Array.isArray(state.agreements) ? state.agreements : [],
+    ),
     receiptSeqByYear,
     certificateSeqByYear,
+    agreementSeqByYear,
   };
+}
+
+/** Pending installments past their due date become overdue. */
+export function refreshAgreementInstallments(
+  agreements: PaymentAgreement[],
+  today = todayKey(),
+): PaymentAgreement[] {
+  return agreements.map((agreement) => {
+    if (agreement.status !== "active") return agreement;
+    let changed = false;
+    const installments = agreement.installments.map((item) => {
+      if (item.status === "paid") return item;
+      const status: InstallmentStatus =
+        item.dueDate < today ? "overdue" : "pending";
+      if (status === item.status) return item;
+      changed = true;
+      return { ...item, status };
+    });
+    return changed ? { ...agreement, installments } : agreement;
+  });
 }
 
 export function issueReceipt(

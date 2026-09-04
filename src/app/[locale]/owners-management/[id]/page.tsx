@@ -16,15 +16,24 @@ import ChargeModal from "../components/charge-modal";
 import ReceiptModal from "../components/receipt-modal";
 import DebtCertificateModal from "../components/debt-certificate-modal";
 import TransferModal from "../components/transfer-modal";
+import AgreementModal from "../components/agreement-modal";
+import AgreementPanel from "../components/agreement-panel";
 import Toast, { type ToastTone } from "@/components/ui/toast";
 import type { TransferInput } from "@/lib/portfolio/transfer";
-import type { PaymentStatus } from "../components/types";
+import {
+  paymentStatusLabel,
+  paymentStatusStyle,
+  type PaymentStatus,
+} from "../components/types";
 import { ownerFromFormSave, usePortfolio } from "@/lib/portfolio";
 import {
+  AGREEMENT_ERROR_CODES,
   useCollections,
   type AccountReceipt,
   type AddChargeInput,
+  type CreateAgreementInput,
   type RecordPaymentInput,
+  visibleAgreementForOwner,
 } from "@/lib/collections";
 
 const ACTION_CLASS =
@@ -33,6 +42,7 @@ const ACTION_CLASS =
 function OwnerDetailPage() {
   const t = useTranslations("ownersManagement.detail");
   const tTransfer = useTranslations("ownersManagement.transfer");
+  const tAgreement = useTranslations("ownersManagement.agreement");
   const tStatus = useTranslations("ownersManagement.status");
   const tRole = useTranslations("ownersManagement.roles");
   const { formatCurrency } = useFormatCurrency();
@@ -46,6 +56,11 @@ function OwnerDetailPage() {
     addCharge,
     issueCertificate,
     transferOwnership,
+    agreements,
+    createPaymentAgreement,
+    payAgreementInstallment,
+    defaultPaymentAgreement,
+    cancelPaymentAgreement,
     extractForOwner,
     receipts,
     quotas,
@@ -57,6 +72,7 @@ function OwnerDetailPage() {
   const [isChargeOpen, setIsChargeOpen] = useState(false);
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [isAgreementOpen, setIsAgreementOpen] = useState(false);
   const [flash, setFlash] = useState<{ message: string; tone: ToastTone } | null>(
     null,
   );
@@ -81,22 +97,12 @@ function OwnerDetailPage() {
   }));
 
   const getPaymentStatusBadge = (status: PaymentStatus) => {
-    const statusConfig = {
-      current: { color: "text-success", bg: "bg-success-100" },
-      pending: { color: "text-warning", bg: "bg-warning-100" },
-      overdue: { color: "text-error", bg: "bg-error-100" },
-    } as Record<PaymentStatus, { color: string; bg: string }>;
-
-    const config = statusConfig[status] || statusConfig.current;
-    const label = status
-      ? tStatus(status as "current" | "pending" | "overdue")
-      : tStatus("current");
-
+    const config = paymentStatusStyle(status);
     return (
       <span
         className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${config.bg} ${config.color}`}
       >
-        {label}
+        {tStatus(paymentStatusLabel(status))}
       </span>
     );
   };
@@ -130,6 +136,24 @@ function OwnerDetailPage() {
       return true;
     }
     setFlash({ message: tTransfer("failed"), tone: "warning" });
+    return false;
+  };
+
+  const handleCreateAgreement = async (input: CreateAgreementInput) => {
+    const result = await createPaymentAgreement(input);
+    if (result.ok) {
+      setFlash({
+        message: tAgreement("created", { number: result.agreement.number }),
+        tone: "success",
+      });
+      return true;
+    }
+    setFlash({
+      message: AGREEMENT_ERROR_CODES.has(result.code)
+        ? tAgreement(`errors.${result.code}`)
+        : tAgreement("failed"),
+      tone: "warning",
+    });
     return false;
   };
 
@@ -167,6 +191,53 @@ function OwnerDetailPage() {
   const { owner } = row;
   const balanceIsClear = row.currentBalance === 0;
   const joinDate = String(owner.entryDate).slice(0, 10);
+  const shownAgreement = visibleAgreementForOwner(agreements, owner.id);
+  const canCreateAgreement =
+    shownAgreement?.status !== "active" && row.currentBalance > 0;
+
+  const handlePayInstallment = async (
+    input: RecordPaymentInput & { installmentId: string },
+  ) => {
+    if (!shownAgreement) return false;
+    const result = await payAgreementInstallment({
+      agreementId: shownAgreement.id,
+      installmentId: input.installmentId,
+      paymentDate: input.paymentDate,
+      paymentMethod: input.paymentMethod,
+      notes: input.notes,
+    });
+    if (result.ok) {
+      if (result.receipt) setViewingReceipt(result.receipt);
+      setFlash({ message: tAgreement("installmentPaid"), tone: "success" });
+      return true;
+    }
+    setFlash({ message: tAgreement("payFailed"), tone: "warning" });
+    return false;
+  };
+
+  const handleDefaultAgreement = async () => {
+    if (!shownAgreement) return false;
+    const result = await defaultPaymentAgreement(shownAgreement.id);
+    setFlash({
+      message: result.ok ? tAgreement("defaulted") : tAgreement("failed"),
+      tone: result.ok ? "success" : "warning",
+    });
+    return result.ok;
+  };
+
+  const handleCancelAgreement = async () => {
+    if (!shownAgreement) return false;
+    const result = await cancelPaymentAgreement(shownAgreement.id);
+    setFlash({
+      message: result.ok
+        ? tAgreement("cancelled")
+        : result.code === "hasPayments"
+          ? tAgreement("errors.hasPayments")
+          : tAgreement("failed"),
+      tone: result.ok ? "success" : "warning",
+    });
+    return result.ok;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -248,6 +319,17 @@ function OwnerDetailPage() {
                   </div>
                 </div>
               </section>
+
+              {shownAgreement && (
+                <AgreementPanel
+                  agreement={shownAgreement}
+                  ownerId={owner.id}
+                  onPay={handlePayInstallment}
+                  onDefault={handleDefaultAgreement}
+                  onCancel={handleCancelAgreement}
+                  onIssueCertificate={() => setIsCertificateOpen(true)}
+                />
+              )}
 
               <CurrentAccountExtract
                 movements={extract}
@@ -359,6 +441,15 @@ function OwnerDetailPage() {
                         label: t("recordPayment"),
                         onClick: () => setIsRecordPaymentOpen(true),
                       },
+                      ...(canCreateAgreement
+                        ? [
+                            {
+                              icon: "Handshake",
+                              label: t("paymentAgreement"),
+                              onClick: () => setIsAgreementOpen(true),
+                            },
+                          ]
+                        : []),
                       {
                         icon: "PlusCircle",
                         label: t("addCharge"),
@@ -487,6 +578,18 @@ function OwnerDetailPage() {
           receipts={receipts}
           onClose={() => setIsTransferOpen(false)}
           onTransfer={handleTransfer}
+        />
+      )}
+
+      {isAgreementOpen && (
+        <AgreementModal
+          ownerId={owner.id}
+          condominiumId={row.condominiumId}
+          quotas={quotas}
+          charges={charges}
+          receipts={receipts}
+          onClose={() => setIsAgreementOpen(false)}
+          onCreate={handleCreateAgreement}
         />
       )}
 

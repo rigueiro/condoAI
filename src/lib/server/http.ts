@@ -47,6 +47,17 @@ const ERROR_STATUS: Record<string, number> = {
   notOwnerOfUnit: 400,
   buyerRequired: 400,
   multipleCondominiums: 400,
+  alreadyActive: 409,
+  noDebt: 400,
+  invalidInstallments: 400,
+  invalidMoraRate: 400,
+  invalidDate: 400,
+  agreementNotFound: 404,
+  installmentNotFound: 404,
+  installmentPaid: 409,
+  installmentOutOfOrder: 409,
+  hasPayments: 409,
+  notActive: 409,
 };
 
 export function handleRouteError(err: unknown): NextResponse {

@@ -10,9 +10,11 @@ import type {
   AccountCharge,
   AccountReceipt,
   OverdueItem,
+  PaymentAgreement,
   PaymentDetails,
 } from "./types";
 import { buildExtract, closingBalance, groupByOwnerId, quotaDueDate } from "./ledger";
+import { activeCoveredQuotaIds, ownersOnActivePlan } from "./agreement";
 
 const QUOTA_TO_PAYMENT_STATUS: Record<
   QuotaPayment["status"],
@@ -101,11 +103,13 @@ export function quotasToPaymentRows(
 export function quotasToOverdueItems(
   quotas: QuotaPayment[],
   portfolio: Portfolio,
+  agreements: PaymentAgreement[] = [],
 ): OverdueItem[] {
   const { ownerById, condoById } = portfolioLookup(portfolio);
+  const covered = activeCoveredQuotaIds(agreements);
 
   return quotas
-    .filter((q) => q.status === "overdue")
+    .filter((q) => q.status === "overdue" && !covered.has(q.id))
     .map((q) => {
       const owner = ownerById.get(q.ownerId);
       const display = owner
@@ -134,10 +138,12 @@ export function applyOwnerBalances(
   avatars: Record<string, string> = {},
   charges: AccountCharge[] = [],
   receipts: AccountReceipt[] = [],
+  agreements: PaymentAgreement[] = [],
 ): OwnerRow[] {
   const quotasByOwner = groupByOwnerId(quotas);
   const chargesByOwner = groupByOwnerId(charges);
   const receiptsByOwner = groupByOwnerId(receipts);
+  const onPlan = ownersOnActivePlan(agreements);
   return portfolioToOwnerRows(portfolio, avatars).map((row) => {
     const ownerQuotas = quotasByOwner.get(row.owner.id) ?? [];
     const ownerCharges = chargesByOwner.get(row.owner.id) ?? [];
@@ -154,8 +160,10 @@ export function applyOwnerBalances(
     for (const receipt of ownerReceipts) {
       if (!lastPayment || receipt.date > lastPayment) lastPayment = receipt.date;
     }
-    const paymentStatus =
-      derived.paymentStatus === "overdue"
+    const onPlanStatus = onPlan.has(row.owner.id);
+    const paymentStatus: PaymentStatus = onPlanStatus
+      ? "agreement"
+      : derived.paymentStatus === "overdue"
         ? "overdue"
         : balance > 0
           ? "pending"

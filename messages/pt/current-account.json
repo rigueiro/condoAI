@@ -28,7 +28,8 @@
     "opening": "Saldo de abertura",
     "charge": "Lançamento",
     "credit": "Nota de crédito",
-    "extraordinary": "Quota extraordinária"
+    "extraordinary": "Quota extraordinária",
+    "mora": "Juros de mora"
   },
   "chargeModal": {
     "title": "Adicionar lançamento",

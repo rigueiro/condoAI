@@ -96,6 +96,7 @@ function OwnerFilters({
           <option value="current">{tStatus("current")}</option>
           <option value="pending">{tStatus("pending")}</option>
           <option value="overdue">{tStatus("overdue")}</option>
+          <option value="agreement">{tStatus("agreement")}</option>
         </Select>
 
         <Select
@@ -129,7 +130,7 @@ function OwnerFilters({
             <span className="inline-flex items-center space-x-1 bg-warning-50 text-warning px-3 py-1 rounded-full text-sm">
               <span>
                 {t("chipStatus")}{" "}
-                {tStatus(filters.paymentStatus as "current" | "pending" | "overdue")}
+                {tStatus(filters.paymentStatus as Exclude<PaymentStatus, "">)}
               </span>
               <button
                 onClick={() => handleFilterChange("paymentStatus", "")}

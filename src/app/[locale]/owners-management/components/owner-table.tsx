@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { useFormatCurrency } from "@/hooks/use-format-currency";
 import Icon from "@/components/icon";
 import Image from "@/components/image";
-import { type OwnerRow, type PaymentStatus, type SortConfig } from "./types";
+import { type OwnerRow, type PaymentStatus, type SortConfig, paymentStatusLabel, paymentStatusStyle } from "./types";
 
 type SortKey = SortConfig["key"];
 type SortDirection = SortConfig["direction"];
@@ -126,22 +126,12 @@ function OwnerTable({
   }, [owners, sortConfig]);
 
   const getPaymentStatusBadge = (status: PaymentStatus) => {
-    const statusConfig = {
-      current: { color: "text-success", bg: "bg-success-100" },
-      pending: { color: "text-warning", bg: "bg-warning-100" },
-      overdue: { color: "text-error", bg: "bg-error-100" },
-    } as Record<PaymentStatus, { color: string; bg: string }>;
-
-    const config = statusConfig[status] || statusConfig.current;
-    const label = status
-      ? tStatus(status as "current" | "pending" | "overdue")
-      : tStatus("current");
-
+    const config = paymentStatusStyle(status);
     return (
       <span
         className={`inline-flex text-overflow-wrap-nowrap truncate text-ellipsis items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.color}`}
       >
-        {label}
+        {tStatus(paymentStatusLabel(status))}
       </span>
     );
   };
