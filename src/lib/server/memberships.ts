@@ -9,6 +9,7 @@ import {
   type PortalDocument,
   type PortalMembershipView,
   type PortalOccurrence,
+  type PortalBoardMandate,
 } from "@/lib/memberships/types";
 import { canPortal, canPortalComment } from "@/lib/memberships/permissions";
 import { buildExtract } from "@/lib/collections/ledger";
@@ -27,6 +28,9 @@ import { getFinance, markBudgetApproved } from "@/lib/server/finance";
 import { sanitizeOccurrencePhotos } from "@/lib/occurrences/photos";
 import { getOccurrences, putOccurrence } from "@/lib/server/occurrences";
 import { getAssemblies } from "./assemblies";
+import { getBoard } from "./board";
+import { currentMandate } from "@/lib/board/views";
+import { mandateStatus, sortedSeats } from "@/lib/board/rules";
 import { getCollections } from "./collections";
 import { getCompliance } from "./compliance";
 import { getPortfolio } from "./portfolio";
@@ -208,6 +212,27 @@ function unitLabelsForOwner(
     .map((row) => row.unit.label);
 }
 
+function toPortalMandate(
+  hostEmail: string,
+  condominiumId: string,
+  owners: Portfolio["owners"],
+): PortalBoardMandate | null {
+  const names = new Map(owners.map((owner) => [owner.id, owner.fullName]));
+  const mandate = currentMandate(getBoard(hostEmail).mandates, condominiumId);
+  if (!mandate) return null;
+  return {
+    number: mandate.number,
+    startsOn: mandate.startsOn,
+    endsOn: mandate.endsOn,
+    status: mandateStatus(mandate),
+    seats: sortedSeats(mandate.seats).map((seat) => ({
+      office: seat.office,
+      name: names.get(seat.ownerId) ?? seat.ownerId,
+      canSignSummons: seat.canSignSummons,
+    })),
+  };
+}
+
 function toMembershipView(
   membership: CondoMembership,
   portfolio: Portfolio,
@@ -235,6 +260,11 @@ function toMembershipView(
         )
       : [],
     status: membership.status,
+    board: toPortalMandate(
+      membership.hostEmail,
+      membership.condominiumId,
+      portfolio.owners,
+    ),
   };
 }
 

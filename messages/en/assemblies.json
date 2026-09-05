@@ -96,7 +96,10 @@
     "closedHint": "This assembly is closed. Resolutions are locked.",
     "draftHint": "Finish the agenda, then send the summons with at least {days} days’ notice.",
     "summonedHint": "Owners have been summoned. Open the session on the meeting day to take attendance and vote.",
-    "sessionHint": "Record who is present, vote each agenda item by permillage, then write the minutes."
+    "sessionHint": "Record who is present, vote each agenda item by permillage, then write the minutes.",
+    "electionTitle": "Board election passed",
+    "electionBody": "Record the presidente, vogais, and term dates so the next convocatória has a signer.",
+    "electionRecord": "Record mandato"
   },
   "summons": {
     "title": "Summons & legal notice",
@@ -118,7 +121,10 @@
     "deliveryNone": "No emails sent — add owner emails or use registered mail with proof.",
     "deliveryMail": "Postal summons recorded with delivery proof.",
     "resent": "Summons resent to owners.",
-    "outboxHint": "Email delivery is simulated in the local outbox until a provider is connected."
+    "outboxHint": "Email delivery is simulated in the local outbox until a provider is connected.",
+    "signer": "Signed by",
+    "signerHint": "The presidente (or another designated seat) signs the convocatória. The firm signs if there is no active mandato.",
+    "signerFirm": "Administrator (firm)"
   },
   "agenda": {
     "title": "Agenda",

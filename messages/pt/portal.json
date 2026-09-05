@@ -35,7 +35,11 @@
     "budgetUnavailable": "A aprovação de orçamento está disponível apenas para a administração.",
     "role": "A sua função",
     "units": "Frações",
-    "linkedOwner": "Proprietário ligado"
+    "linkedOwner": "Proprietário ligado",
+    "boardTitle": "Mandato da administração",
+    "boardEmpty": "Ainda não há administração eleita no ficheiro.",
+    "boardTerm": "{start} – {end}",
+    "boardSigner": "Assina convocatórias"
   },
   "extract": {
     "title": "Extrato de conta corrente",

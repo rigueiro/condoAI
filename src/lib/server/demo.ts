@@ -25,6 +25,8 @@ import type { AssembliesState } from "@/lib/assemblies/types";
 import type { OperationsState } from "@/lib/operations/types";
 import type { WorksState } from "@/lib/works/types";
 import { mockWorksState } from "@/fixtures/works";
+import { mockBoardState } from "@/fixtures/board";
+import type { BoardState } from "@/lib/board/types";
 import type { CondoMembership } from "@/lib/memberships/types";
 import { mockAssemblies } from "@/fixtures/assemblies";
 import type { OrgTeamMember } from "@/lib/team/types";
@@ -103,6 +105,10 @@ export function buildDemoOperations(): OperationsState {
 
 export function buildDemoWorks(): WorksState {
   return structuredClone(mockWorksState());
+}
+
+export function buildDemoBoard(): BoardState {
+  return structuredClone(mockBoardState());
 }
 
 export function buildDemoOccurrences(): OccurrencesState {
@@ -275,6 +281,7 @@ export function restoreDemoWorkspace(): Portfolio {
     store.assemblies[key] = buildDemoAssemblies();
     store.operations[key] = buildDemoOperations();
     store.works[key] = buildDemoWorks();
+    store.board[key] = buildDemoBoard();
 
     const password = store.demoPassword || DEFAULT_PASSWORD;
     for (const account of portalDemoAccounts(password)) {

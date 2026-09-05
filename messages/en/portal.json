@@ -35,7 +35,11 @@
     "budgetUnavailable": "Budget approval is available to board members only.",
     "role": "Your role",
     "units": "Fractions",
-    "linkedOwner": "Linked owner"
+    "linkedOwner": "Linked owner",
+    "boardTitle": "Board mandato",
+    "boardEmpty": "No elected board is on file yet.",
+    "boardTerm": "{start} – {end}",
+    "boardSigner": "Signs convocatórias"
   },
   "extract": {
     "title": "Current account extract",

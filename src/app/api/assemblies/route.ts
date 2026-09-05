@@ -12,6 +12,7 @@ import {
   sendAssemblySummons,
 } from "@/lib/server/assemblies";
 import { syncWorksFromAssembly } from "@/lib/server/works";
+import { resolveSummonsSigner } from "@/lib/server/board";
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
 
@@ -51,6 +52,7 @@ export async function PATCH(request: Request) {
       emailed?: number;
       skipped?: number;
       lastAt?: string | null;
+      signedByOwnerId?: string | null;
     };
 
     switch (body.action) {
@@ -77,18 +79,32 @@ export async function PATCH(request: Request) {
             })
           : jsonError("badRequest");
       case "sendSummons":
-        return hasId(body)
-          ? jsonOk({
-              state: sendAssemblySummons(workspaceEmail, {
-                id: body.id,
-                method: body.method === "mail" ? "mail" : "email",
-                title: body.title ?? "",
-                content: body.content ?? "",
-                sentDate: body.sentDate,
-                proof: body.proof,
-              }),
-            })
-          : jsonError("badRequest");
+        if (!hasId(body)) return jsonError("badRequest");
+        {
+          const current = getAssemblies(workspaceEmail).assemblies.find(
+            (row) => row.id === body.id,
+          );
+          const signer = current
+            ? resolveSummonsSigner(
+                workspaceEmail,
+                current.condominiumId,
+                typeof body.signedByOwnerId === "string"
+                  ? body.signedByOwnerId
+                  : null,
+              )
+            : null;
+          return jsonOk({
+            state: sendAssemblySummons(workspaceEmail, {
+              id: body.id,
+              method: body.method === "mail" ? "mail" : "email",
+              title: body.title ?? "",
+              content: body.content ?? "",
+              sentDate: body.sentDate,
+              proof: body.proof,
+              signer,
+            }),
+          });
+        }
       case "resendSummons":
         return hasId(body)
           ? jsonOk({

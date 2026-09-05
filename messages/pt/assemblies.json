@@ -96,7 +96,10 @@
     "closedHint": "Esta assembleia está encerrada. As deliberações estão bloqueadas.",
     "draftHint": "Feche a ordem de trabalhos e envie a convocatória com pelo menos {days} dias de antecedência.",
     "summonedHint": "Os condóminos já foram convocados. No dia da reunião, abra a sessão para passar lista e votar.",
-    "sessionHint": "Registe presenças, vote cada ponto por permilagem e redija a acta."
+    "sessionHint": "Registe presenças, vote cada ponto por permilagem e redija a acta.",
+    "electionTitle": "Eleição da administração aprovada",
+    "electionBody": "Registe o presidente, os vogais e as datas do mandato para a próxima convocatória ter quem assina.",
+    "electionRecord": "Registar mandato"
   },
   "summons": {
     "title": "Convocatória e prazo legal",
@@ -118,7 +121,10 @@
     "deliveryNone": "Nenhum email enviado — adicione emails ou use correio com comprovativo.",
     "deliveryMail": "Convocatória postal registada com comprovativo.",
     "resent": "Convocatória reenviada aos condóminos.",
-    "outboxHint": "O envio por email é simulado na caixa de saída local até haver um fornecedor."
+    "outboxHint": "O envio por email é simulado na caixa de saída local até haver um fornecedor.",
+    "signer": "Assinado por",
+    "signerHint": "O presidente (ou outro lugar designado) assina a convocatória. A firma assina se não houver mandato em vigor.",
+    "signerFirm": "Administrador (firma)"
   },
   "agenda": {
     "title": "Ordem de trabalhos",

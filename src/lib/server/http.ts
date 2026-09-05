@@ -72,6 +72,16 @@ const ERROR_STATUS: Record<string, number> = {
   hasWorkLog: 409,
   workLogRequired: 400,
   vendorRequiredForLog: 400,
+  mandateNotFound: 404,
+  ownerRequired: 400,
+  ownerNotEligible: 400,
+  duplicateOwner: 400,
+  presidenteRequired: 400,
+  singlePresidente: 400,
+  signerRequired: 400,
+  termTooLong: 400,
+  termInverted: 400,
+  mandateLocked: 409,
 };
 
 export function handleRouteError(err: unknown): NextResponse {

@@ -370,5 +370,7 @@ export function buildSummons(
     content: input.content.trim(),
     proof: input.proof ?? null,
     delivery: input.delivery ?? null,
+    signedByOwnerId: input.signedByOwnerId ?? null,
+    signedByOffice: input.signedByOffice ?? null,
   };
 }

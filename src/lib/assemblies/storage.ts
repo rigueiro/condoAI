@@ -26,6 +26,8 @@ function normalizeSummons(
           lastAt: summons.delivery.lastAt ?? null,
         }
       : null,
+    signedByOwnerId: summons.signedByOwnerId ?? null,
+    signedByOffice: summons.signedByOffice ?? null,
   };
 }
 

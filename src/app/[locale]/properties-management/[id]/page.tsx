@@ -18,6 +18,7 @@ import PropertyOwnersList from "../components/property-owners-list";
 import UnitRegistry from "../components/unit-registry";
 import WorkspaceTabs from "../components/workspace-tabs";
 import AccessSection from "../components/access-section";
+import BoardSection from "../components/board-section";
 import {
   formatOccurrenceDate,
   toOccurrenceRows,
@@ -506,6 +507,21 @@ function PropertyDetailContent() {
                 )}
               </div>
             </section>
+          )}
+
+          {tab === "board" && id && (
+            <BoardSection
+              condominiumId={id}
+              prefill={
+                searchParams.get("fromAssembly")
+                  ? {
+                      assemblyId: searchParams.get("fromAssembly"),
+                      agendaItemId: searchParams.get("agendaItem"),
+                      resolutionId: searchParams.get("resolution"),
+                    }
+                  : null
+              }
+            />
           )}
 
           {tab === "occurrences" && (

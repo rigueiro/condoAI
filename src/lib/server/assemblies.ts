@@ -29,6 +29,7 @@ import {
   upsertAssembly,
 } from "@/lib/assemblies/storage";
 import { buildDemoAssemblies } from "./demo";
+import { formatSummonsSignature } from "@/lib/board/rules";
 import { getPortfolio } from "./portfolio";
 import { readStore, writeStore } from "./store";
 
@@ -215,13 +216,21 @@ export function sendAssemblySummons(
     const proof = input.proof ?? null;
     if (method === "mail" && !proof) throw new Error("proofRequired");
 
+    const signer = input.signer ?? null;
+    let content = input.content.trim() || defaultSummonsContent(assembly);
+    if (signer && !content.includes("\n—\n")) {
+      content = `${content}${formatSummonsSignature(signer.name, signer.office)}`;
+    }
+
     const summons = buildSummons({
       method,
       title: input.title || assembly.title,
-      content: input.content.trim() || defaultSummonsContent(assembly),
+      content,
       sentDate: input.sentDate,
       proof,
       delivery: null,
+      signedByOwnerId: signer?.ownerId ?? null,
+      signedByOffice: signer?.office ?? null,
     });
     if (!noticeMeetsLegalMinimum(assembly.scheduledDate, summons.sentDate)) {
       throw new Error("noticeTooShort");

@@ -40,9 +40,11 @@ export const mockAssemblies: Assembly[] = [
       method: "email",
       title: "Convocatória — assembleia ordinária 12 de setembro de 2026",
       content:
-        "Convoca-se a assembleia de condóminos para o dia 12 de setembro de 2026, às 18:30, no salão do rés-do-chão.\n\nOrdem de trabalhos:\n1. Prestação de contas de 2025\n2. Orçamento ordinário de 2026\n3. Eleição do administrador\n\nNa falta de quórum, a assembleia reunirá em segunda convocatória 30 minutos depois, com os condóminos presentes.",
+        "Convoca-se a assembleia de condóminos para o dia 12 de setembro de 2026, às 18:30, no salão do rés-do-chão.\n\nOrdem de trabalhos:\n1. Prestação de contas de 2025\n2. Orçamento ordinário de 2026\n3. Eleição do administrador\n\nNa falta de quórum, a assembleia reunirá em segunda convocatória 30 minutos depois, com os condóminos presentes.\n\n—\nMaria Clara Rodrigues\nPresidente da administração",
       proof: null,
       delivery: null,
+      signedByOwnerId: "3",
+      signedByOffice: "presidente",
     },
     attendance: [],
     votes: [],
@@ -83,6 +85,8 @@ export const mockAssemblies: Assembly[] = [
         "Assembleia ordinária em 25 de agosto de 2026, às 19:00.\n\n1. Seguro do edifício\n2. Limpeza das partes comuns",
       proof: null,
       delivery: null,
+      signedByOwnerId: null,
+      signedByOffice: "administrador",
     },
     attendance: [
       {
@@ -133,6 +137,8 @@ export const mockAssemblies: Assembly[] = [
         "Assembleia extraordinária em 8 de novembro de 2025 para deliberar sobre as obras de fachada.",
       proof: null,
       delivery: null,
+      signedByOwnerId: null,
+      signedByOffice: "administrador",
     },
     attendance: [
       {
@@ -218,6 +224,8 @@ export const mockAssemblies: Assembly[] = [
         "Assembleia extraordinária em 2 de junho de 2026 para deliberar sobre a impermeabilização da cobertura e a quota extraordinária.",
       proof: null,
       delivery: null,
+      signedByOwnerId: "3",
+      signedByOffice: "presidente",
     },
     attendance: [
       {
@@ -244,6 +252,86 @@ export const mockAssemblies: Assembly[] = [
         title: "Obras de impermeabilização da cobertura",
         text: "Aprovar a cotação da Obras Amoreira Lda. e o lançamento da quota extraordinária.",
         forPermillage: 42.5,
+        againstPermillage: 0,
+        abstainPermillage: 0,
+        passed: true,
+      },
+    ],
+  },
+  {
+    id: "asm-board-2025",
+    condominiumId: "1",
+    type: "ordinary",
+    status: "closed",
+    title: "Assembleia ordinária 2025 — eleição da administração",
+    scheduledDate: "2025-09-15",
+    scheduledTime: "18:30",
+    location: "Salão do rés-do-chão, Rua da Amoreira 45",
+    call: 1,
+    agenda: [
+      {
+        id: "asm-board-2025-i1",
+        order: 1,
+        title: "Prestação de contas de 2024",
+        description: "Apreciar e votar o relatório e contas do exercício.",
+        majority: "absolute-present",
+      },
+      {
+        id: "asm-board-2025-i2",
+        order: 2,
+        title: "Orçamento ordinário de 2025",
+        description: "Aprovar o orçamento e o fundo de reserva.",
+        majority: "absolute-present",
+      },
+      {
+        id: "asm-board-2025-i3",
+        order: 3,
+        title: "Eleição da administração",
+        description: "Eleger o presidente e os vogais para o mandato 2025/2026.",
+        majority: "simple",
+      },
+    ],
+    summons: {
+      sentDate: "2025-08-28",
+      method: "email",
+      title: "Convocatória — assembleia ordinária 15 de setembro de 2025",
+      content:
+        "Convoca-se a assembleia de condóminos para o dia 15 de setembro de 2025, às 18:30.\n\nOrdem de trabalhos:\n1. Prestação de contas de 2024\n2. Orçamento ordinário de 2025\n3. Eleição da administração\n\n—\nO Administrador",
+      proof: null,
+      delivery: null,
+      signedByOwnerId: null,
+      signedByOffice: "administrador",
+    },
+    attendance: [
+      {
+        ownerId: "1",
+        status: "present",
+        representedByOwnerId: null,
+      },
+      {
+        ownerId: "3",
+        status: "present",
+        representedByOwnerId: null,
+      },
+    ],
+    votes: [
+      {
+        itemId: "asm-board-2025-i3",
+        ballots: { "1": "for", "3": "for" },
+      },
+    ],
+    minutes: {
+      text: "A assembleia elegeu Maria Clara Rodrigues (presidente), Ricardo Jorge Almeida (secretário) e Ana Sofia Martins (vogal) para o mandato de 15 de setembro de 2025 a 14 de setembro de 2026.",
+      file: DEMO_PDF,
+      recordedAt: "2025-09-15",
+    },
+    resolutions: [
+      {
+        id: "res-asm-board-2025-i3",
+        itemId: "asm-board-2025-i3",
+        title: "Eleição da administração",
+        text: "Eleger o presidente e os vogais para o mandato 2025/2026.",
+        forPermillage: 50.5,
         againstPermillage: 0,
         abstainPermillage: 0,
         passed: true,

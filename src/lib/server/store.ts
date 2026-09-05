@@ -9,6 +9,7 @@ import type { OccurrencesState } from "@/lib/occurrences/types";
 import type { AssembliesState } from "@/lib/assemblies/types";
 import type { OperationsState } from "@/lib/operations/types";
 import type { WorksState } from "@/lib/works/types";
+import type { BoardState } from "@/lib/board/types";
 import type { AnnouncementsState } from "@/lib/announcements/types";
 import type { CondoMembership } from "@/lib/memberships/types";
 import type { OrgTeamMember } from "@/lib/team/types";
@@ -50,6 +51,7 @@ export interface StoreDocument {
   assemblies: Record<string, AssembliesState>;
   operations: Record<string, OperationsState>;
   works: Record<string, WorksState>;
+  board: Record<string, BoardState>;
   announcements: Record<string, AnnouncementsState>;
   /** Per-host invite list: manager email → condo memberships. */
   membershipsByHost: Record<string, CondoMembership[]>;
@@ -72,6 +74,7 @@ const EMPTY_STORE: StoreDocument = {
   assemblies: {},
   operations: {},
   works: {},
+  board: {},
   announcements: {},
   membershipsByHost: {},
   orgTeamsByHost: {},
@@ -113,6 +116,7 @@ function cloneEmpty(): StoreDocument {
     assemblies: {},
     operations: {},
     works: {},
+    board: {},
     announcements: {},
     membershipsByHost: {},
     orgTeamsByHost: {},
@@ -139,6 +143,7 @@ export function readStore(): StoreDocument {
       assemblies: parsed.assemblies ?? {},
       operations: parsed.operations ?? {},
       works: parsed.works ?? {},
+      board: parsed.board ?? {},
       announcements: parsed.announcements ?? {},
       membershipsByHost: parsed.membershipsByHost ?? {},
       orgTeamsByHost: parsed.orgTeamsByHost ?? {},

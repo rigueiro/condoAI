@@ -42,6 +42,16 @@ import {
   type VoteChoice,
 } from "@/lib/assemblies";
 import { useWorks } from "@/lib/works";
+import {
+  boardEligibleOwners,
+  currentMandate,
+  defaultSigner,
+  needsMandateRecording,
+  passedElectionResolution,
+  summonsSigners,
+  useBoard,
+} from "@/lib/board";
+import MandateModal from "@/app/[locale]/properties-management/components/mandate-modal";
 
 const fieldClass =
   "w-full rounded-lg border border-border-light bg-surface px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
@@ -69,6 +79,7 @@ function deliveryFlash(
 
 function AssemblyDetailPage() {
   const t = useTranslations("assemblies");
+  const tBoard = useTranslations("board");
   const user = useUser();
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : params.id?.[0];
@@ -85,12 +96,18 @@ function AssemblyDetailPage() {
     isReady,
   } = useAssemblies();
   const { refresh: refreshWorks } = useWorks();
+  const {
+    mandates,
+    recordMandate,
+  } = useBoard();
   const [flash, setFlash] = useState<string | null>(null);
   const [summonsTitle, setSummonsTitle] = useState<string | null>(null);
   const [summonsContent, setSummonsContent] = useState<string | null>(null);
   const [summonsMethod, setSummonsMethod] = useState<"email" | "mail">("email");
   const [proofDraft, setProofDraft] = useState<string | null>(null);
   const [packageOpen, setPackageOpen] = useState(false);
+  const [mandateOpen, setMandateOpen] = useState(false);
+  const [signerOwnerId, setSignerOwnerId] = useState<string>("");
 
   const assembly = assemblies.find((row) => row.id === id);
   const condo = portfolio.condominiums.find(
@@ -118,6 +135,22 @@ function AssemblyDetailPage() {
         : [],
     [assembly, portfolio.owners, portfolio.units],
   );
+
+  const mandate = assembly
+    ? currentMandate(mandates, assembly.condominiumId)
+    : null;
+  const signers = mandate ? summonsSigners(mandate) : [];
+  const electionPending = assembly
+    ? needsMandateRecording(assembly, mandates)
+    : false;
+  const electionResolution = assembly
+    ? passedElectionResolution(assembly)
+    : null;
+  const effectiveSignerId =
+    signerOwnerId ||
+    assembly?.summons?.signedByOwnerId ||
+    (mandate ? defaultSigner(mandate)?.ownerId : "") ||
+    "";
 
   if (!isReady) {
     return (
@@ -204,6 +237,7 @@ function AssemblyDetailPage() {
       title: draftTitle,
       content: draftContent,
       proof: method === "mail" ? proofDraft : null,
+      signedByOwnerId: effectiveSignerId || null,
     });
     if (!result.ok) {
       showFlash(result.code);
@@ -393,6 +427,22 @@ function AssemblyDetailPage() {
           </p>
         )}
 
+        {electionPending && (
+          <div className="mb-4 flex flex-col gap-3 rounded-lg border border-primary-100 bg-primary-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-text-primary">
+                {t("detail.electionTitle")}
+              </p>
+              <p className="mt-1 text-sm text-text-secondary">
+                {t("detail.electionBody")}
+              </p>
+            </div>
+            <Button onClick={() => setMandateOpen(true)}>
+              {t("detail.electionRecord")}
+            </Button>
+          </div>
+        )}
+
         <div className="space-y-6">
           <section className="rounded-xl border border-border-light bg-surface p-5">
             <h2 className="mb-3 text-lg font-semibold text-text-primary">
@@ -518,6 +568,39 @@ function AssemblyDetailPage() {
                 {t("summons.outboxHint")}
               </p>
             )}
+
+            <div className="mb-4">
+              <p className="mb-1 text-sm font-medium text-text-primary">
+                {t("summons.signer")}
+              </p>
+              <p className="mb-2 text-xs text-text-secondary">
+                {t("summons.signerHint")}
+              </p>
+              {assembly.summons?.signedByOffice ? (
+                <p className="text-sm text-text-primary">
+                  {assembly.summons.signedByOwnerId
+                    ? `${ownerById.get(assembly.summons.signedByOwnerId)?.fullName ?? assembly.summons.signedByOwnerId} · ${
+                        assembly.summons.signedByOffice === "administrador"
+                          ? t("summons.signerFirm")
+                          : tBoard(`offices.${assembly.summons.signedByOffice}`)
+                      }`
+                    : t("summons.signerFirm")}
+                </p>
+              ) : (
+                <Select
+                  value={effectiveSignerId}
+                  disabled={!summonsEditable}
+                  onChange={(event) => setSignerOwnerId(event.target.value)}
+                >
+                  <option value="">{t("summons.signerFirm")}</option>
+                  {signers.map((seat) => (
+                    <option key={seat.id} value={seat.ownerId}>
+                      {ownerById.get(seat.ownerId)?.fullName ?? seat.ownerId}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </div>
 
             <div className="mb-4">
               <p className="mb-1 text-sm font-medium text-text-primary">
@@ -1012,6 +1095,25 @@ function AssemblyDetailPage() {
         <MinutesPackageModal
           pack={buildMinutesPackage(minutesContext())}
           onClose={() => setPackageOpen(false)}
+        />
+      )}
+      {mandateOpen && (
+        <MandateModal
+          condominiumId={assembly.condominiumId}
+          owners={boardEligibleOwners(
+            portfolio.units,
+            portfolio.owners,
+            assembly.condominiumId,
+          )}
+          mandate={null}
+          prefill={{
+            assemblyId: assembly.id,
+            agendaItemId: electionResolution?.itemId ?? null,
+            resolutionId: electionResolution?.id ?? null,
+            startsOn: assembly.scheduledDate,
+          }}
+          onClose={() => setMandateOpen(false)}
+          onSave={(input) => recordMandate(input)}
         />
       )}
     </div>

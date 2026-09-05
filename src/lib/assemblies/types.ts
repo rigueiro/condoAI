@@ -9,6 +9,17 @@ export type AttendanceStatus = "present" | "represented" | "absent";
 export type VoteChoice = "for" | "against" | "abstain";
 export type MajorityRule = "simple" | "absolute-present" | "qualified-total";
 export type SummonsMethod = "email" | "mail";
+export type SummonsSignerOffice =
+  | "presidente"
+  | "secretario"
+  | "vogal"
+  | "administrador";
+
+export type SummonsSigner = {
+  ownerId: string | null;
+  office: SummonsSignerOffice;
+  name: string | null;
+};
 
 export const VOTE_CHOICES: VoteChoice[] = ["for", "against", "abstain"];
 export const MAJORITY_RULES: MajorityRule[] = [
@@ -50,6 +61,9 @@ export interface AssemblySummons {
   proof: string | null;
   /** Client outbox fan-out summary after email delivery. */
   delivery: SummonsDelivery | null;
+  /** Who signed the convocatória (board seat or the professional administrador). */
+  signedByOwnerId: string | null;
+  signedByOffice: SummonsSignerOffice | null;
 }
 
 export interface AssemblyMinutesRecord {
@@ -112,6 +126,8 @@ export type SendSummonsInput = {
   content: string;
   sentDate?: string;
   proof?: string | null;
+  signer?: SummonsSigner | null;
+  signedByOwnerId?: string | null;
 };
 
 export type ResendSummonsInput = {

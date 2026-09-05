@@ -11,6 +11,9 @@ export {
   type PortalOccurrence,
   type PortalBudget,
   type PortalBudgetLine,
+  type PortalBoardView,
+  type PortalBoardSeat,
+  type PortalBoardMandate,
 } from "./types";
 export {
   canPortal,

@@ -54,6 +54,24 @@ export type PortalDocument = {
   file: string | null;
 };
 
+export type PortalBoardSeat = {
+  office: "presidente" | "secretario" | "vogal";
+  name: string;
+  canSignSummons: boolean;
+};
+
+export type PortalBoardMandate = {
+  number: string;
+  startsOn: string;
+  endsOn: string;
+  status: "upcoming" | "active" | "expired" | "superseded";
+  seats: PortalBoardSeat[];
+};
+
+export type PortalBoardView = {
+  mandate: PortalBoardMandate | null;
+};
+
 export type PortalMembershipView = {
   id: string;
   condominiumId: string;
@@ -64,6 +82,8 @@ export type PortalMembershipView = {
   ownerName: string | null;
   unitLabels: string[];
   status: MembershipStatus;
+  /** Current board mandato for this building, when recorded. */
+  board: PortalBoardMandate | null;
 };
 
 import type { TeamRole } from "@/lib/team/types";

@@ -26,6 +26,7 @@ import {
 import RecentActivity from "./components/recent-activity";
 import QuickActions from "./components/quick-actions";
 import OverdueCollections from "./components/overdue-collections";
+import MandateAttention from "./components/mandate-attention";
 import { useCollections } from "@/lib/collections";
 
 function Dashboard() {
@@ -532,6 +533,7 @@ function Dashboard() {
             </div>
 
             <div className="lg:col-span-4 space-y-8">
+              <MandateAttention />
               <OverdueCollections formatCurrency={formatCurrency} />
               <QuickActions />
             </div>

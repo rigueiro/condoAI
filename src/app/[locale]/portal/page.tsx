@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { formatIsoDate } from "@/lib/collections/dates";
 import {
   canPortal,
   roleDisplayKey,
@@ -17,8 +18,18 @@ const CARD_LINK_CLASS =
 type HomeCard = {
   action: PortalAction;
   path: string;
-  titleKey: "extractCard" | "documentsCard" | "occurrencesCard" | "announcementsCard" | "budgetCard";
-  hintKey: "extractHint" | "documentsHint" | "occurrencesHint" | "announcementsHint" | "budgetHint";
+  titleKey:
+    | "extractCard"
+    | "documentsCard"
+    | "occurrencesCard"
+    | "announcementsCard"
+    | "budgetCard";
+  hintKey:
+    | "extractHint"
+    | "documentsHint"
+    | "occurrencesHint"
+    | "announcementsHint"
+    | "budgetHint";
 };
 
 const HOME_CARDS: HomeCard[] = [
@@ -57,8 +68,11 @@ const HOME_CARDS: HomeCard[] = [
 export default function PortalHomePage() {
   const t = useTranslations("portal");
   const tRoles = useTranslations("portal.roles");
+  const tBoard = useTranslations("board");
+  const locale = useLocale();
   const { selected } = usePortalCondo();
   const condoQs = selected ? `?condo=${selected.condominiumId}` : "";
+  const board = selected?.board ?? null;
 
   const cards = useMemo(() => {
     if (!selected) return [];
@@ -116,6 +130,47 @@ export default function PortalHomePage() {
                 </div>
               )}
             </dl>
+          </div>
+          <div className="rounded-lg border border-border-light bg-surface p-6 sm:col-span-2">
+            <h2 className="text-base font-semibold text-text-primary">
+              {t("home.boardTitle")}
+            </h2>
+            {!board ? (
+              <p className="mt-2 text-sm text-text-secondary">
+                {t("home.boardEmpty")}
+              </p>
+            ) : (
+              <>
+                <p className="mt-1 text-sm text-text-secondary">
+                  {t("home.boardTerm", {
+                    start: formatIsoDate(board.startsOn, locale),
+                    end: formatIsoDate(board.endsOn, locale),
+                  })}
+                  {" · "}
+                  {tBoard(`statuses.${board.status}`)}
+                </p>
+                <ul className="mt-3 divide-y divide-border-light rounded-lg border border-border-light">
+                  {board.seats.map((seat) => (
+                    <li
+                      key={`${seat.office}-${seat.name}`}
+                      className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm"
+                    >
+                      <span className="text-text-primary">
+                        {seat.name}
+                        <span className="ml-2 text-text-secondary">
+                          {tBoard(`offices.${seat.office}`)}
+                        </span>
+                      </span>
+                      {seat.canSignSummons && (
+                        <span className="text-xs font-medium text-primary">
+                          {t("home.boardSigner")}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         </div>
       )}

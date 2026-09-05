@@ -10,6 +10,7 @@ export const BUILDING_WORKSPACE_TABS = [
   "owners",
   "finance",
   "assemblies",
+  "board",
   "occurrences",
   "works",
   "access",
