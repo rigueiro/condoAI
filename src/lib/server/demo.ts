@@ -23,6 +23,8 @@ import type { ComplianceState } from "@/lib/compliance/types";
 import type { OccurrencesState } from "@/lib/occurrences/types";
 import type { AssembliesState } from "@/lib/assemblies/types";
 import type { OperationsState } from "@/lib/operations/types";
+import type { WorksState } from "@/lib/works/types";
+import { mockWorksState } from "@/fixtures/works";
 import type { CondoMembership } from "@/lib/memberships/types";
 import { mockAssemblies } from "@/fixtures/assemblies";
 import type { OrgTeamMember } from "@/lib/team/types";
@@ -97,6 +99,10 @@ export function buildDemoOperations(): OperationsState {
     contracts: mockMaintenanceContracts.map((c) => ({ ...c })),
     equipment: mockEquipment.map((e) => ({ ...e })),
   };
+}
+
+export function buildDemoWorks(): WorksState {
+  return structuredClone(mockWorksState());
 }
 
 export function buildDemoOccurrences(): OccurrencesState {
@@ -268,6 +274,7 @@ export function restoreDemoWorkspace(): Portfolio {
     store.occurrences[key] = buildDemoOccurrences();
     store.assemblies[key] = buildDemoAssemblies();
     store.operations[key] = buildDemoOperations();
+    store.works[key] = buildDemoWorks();
 
     const password = store.demoPassword || DEFAULT_PASSWORD;
     for (const account of portalDemoAccounts(password)) {

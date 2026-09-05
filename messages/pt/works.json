@@ -1,0 +1,213 @@
+{
+  "title": "Obras",
+  "subtitle": "Cotações, deliberação da assembleia, quota extraordinária, fornecedor e diário de intervenção — um projecto por trabalho.",
+  "add": "Novo projecto",
+  "filters": {
+    "search": "Pesquisar projectos…",
+    "allStatuses": "Todos os estados"
+  },
+  "stats": {
+    "quoting": "Em cotação",
+    "pendingVote": "À espera de voto",
+    "inProgress": "Em curso",
+    "completed": "Concluídas"
+  },
+  "table": {
+    "number": "Número",
+    "condominium": "Condomínio",
+    "title": "Projecto",
+    "category": "Categoria",
+    "status": "Estado",
+    "awarded": "Cotação adjudicada",
+    "vendor": "Fornecedor",
+    "empty": "Ainda não há projectos de obras.",
+    "actions": "Acções",
+    "open": "Abrir",
+    "delete": "Eliminar"
+  },
+  "categories": {
+    "facade": "Fachada",
+    "elevator": "Elevador",
+    "roof": "Cobertura",
+    "common-area": "Partes comuns",
+    "other": "Outro"
+  },
+  "statuses": {
+    "draft": "Rascunho",
+    "quoting": "Em cotação",
+    "pending_vote": "À espera de voto",
+    "approved": "Aprovado",
+    "rejected": "Rejeitado",
+    "funded": "Quota extraordinária lançada",
+    "in_progress": "Em curso",
+    "completed": "Concluído",
+    "cancelled": "Cancelado"
+  },
+  "pipeline": {
+    "title": "Pipeline",
+    "quotes": "Cotações",
+    "assembly": "Assembleia",
+    "quota": "Quota extra",
+    "vendor": "Fornecedor",
+    "worklog": "Diário de obra"
+  },
+  "modal": {
+    "addTitle": "Novo projecto de obras",
+    "editTitle": "Editar projecto",
+    "condominium": "Condomínio",
+    "title": "Título",
+    "titlePlaceholder": "ex.: Conservação da fachada, substituição do elevador",
+    "category": "Categoria",
+    "location": "Local",
+    "locationPlaceholder": "ex.: Fachada principal, cobertura, caixa do elevador",
+    "description": "Descrição",
+    "notes": "Notas internas",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "validation": {
+      "condominiumRequired": "Seleccione um condomínio",
+      "titleRequired": "Indique um título"
+    }
+  },
+  "quote": {
+    "add": "Adicionar cotação",
+    "title": "Cotação do fornecedor",
+    "vendor": "Fornecedor",
+    "amount": "Valor",
+    "description": "Âmbito",
+    "receivedAt": "Recebida",
+    "validUntil": "Válida até",
+    "document": "Documento da cotação",
+    "award": "Adjudicar",
+    "awarded": "Adjudicada",
+    "remove": "Remover cotação",
+    "empty": "Ainda sem cotações. Recolha pelo menos duas antes da assembleia.",
+    "noVendors": "Não há fornecedores neste condomínio — adicione um em Operações.",
+    "emptyVendor": "Seleccione um fornecedor",
+    "save": "Guardar cotação",
+    "cancel": "Cancelar",
+    "validation": {
+      "vendorRequired": "Seleccione um fornecedor",
+      "amountRequired": "Indique o valor da cotação"
+    }
+  },
+  "assembly": {
+    "link": "Ligar ponto da assembleia",
+    "unlink": "Desligar",
+    "open": "Abrir assembleia",
+    "create": "Nova assembleia extraordinária",
+    "empty": "Ligue um ponto da ordem de trabalhos para o voto aprovar as obras e a quota extraordinária.",
+    "assembly": "Assembleia",
+    "agendaItem": "Ponto da ordem de trabalhos",
+    "resolution": "Deliberação",
+    "passed": "Aprovada",
+    "rejected": "Rejeitada",
+    "pending": "À espera do fecho da votação",
+    "save": "Ligar",
+    "cancel": "Cancelar",
+    "noAssemblies": "Ainda não há assembleias neste condomínio.",
+    "emptyAssembly": "Seleccione uma assembleia",
+    "emptyItem": "Seleccione um ponto",
+    "validation": {
+      "assemblyRequired": "Seleccione uma assembleia",
+      "agendaRequired": "Seleccione um ponto da ordem de trabalhos"
+    }
+  },
+  "quota": {
+    "issue": "Lançar quota extra",
+    "issued": "Lançada",
+    "openFinance": "Ver em finanças",
+    "empty": "Depois de uma deliberação aprovada, rateie a cotação adjudicada por permilagem nas contas correntes.",
+    "blocked": "É necessária uma deliberação aprovada antes de lançar a cobrança.",
+    "description": "Descrição do débito",
+    "total": "Valor total",
+    "date": "Data do lançamento",
+    "dueDate": "Data de vencimento",
+    "preview": "Pré-visualização do rateio",
+    "previewEmpty": "Indique um total para ver o rateio.",
+    "billedOwners": "{count, plural, one {# condómino} other {# condóminos}}",
+    "unit": "Fração",
+    "owner": "Proprietário",
+    "amount": "Valor",
+    "issuing": "A lançar…",
+    "save": "Lançar quota",
+    "cancel": "Cancelar",
+    "validation": {
+      "amountRequired": "Indique o valor total",
+      "noOwners": "Este condomínio não tem condóminos a cobrar."
+    }
+  },
+  "vendor": {
+    "empty": "Adjudique uma cotação para definir o empreiteiro.",
+    "awarded": "Fornecedor adjudicado"
+  },
+  "worklog": {
+    "add": "Registar intervenção",
+    "empty": "Adjudique um fornecedor e depois registe visitas, custos e fotos.",
+    "blocked": "Adjudique uma cotação antes de registar o trabalho.",
+    "date": "Data",
+    "description": "O que foi feito",
+    "cost": "Custo",
+    "photos": "Fotos",
+    "remove": "Remover registo",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "loggedCost": "Custo registado",
+    "photoHint": "PNG ou JPEG, máximo 1 MB, até 4 fotos.",
+    "tooMany": "Pode anexar até 4 fotos.",
+    "invalidType": "Use um ficheiro PNG ou JPEG.",
+    "tooLarge": "A foto é demasiado grande (máx. 1 MB).",
+    "validation": {
+      "descriptionRequired": "Descreva o trabalho"
+    }
+  },
+  "detail": {
+    "notFound": "Projecto não encontrado",
+    "notFoundDesc": "Este projecto de obras não existe ou foi removido.",
+    "back": "Voltar às obras",
+    "complete": "Marcar como concluído",
+    "cancel": "Cancelar projecto",
+    "confirmCancel": "Cancelar este projecto de obras?",
+    "confirmDelete": "Eliminar este projecto? As cotações serão removidas.",
+    "confirmRemoveQuote": "Remover esta cotação?",
+    "confirmRemoveLog": "Remover este registo de intervenção?",
+    "edit": "Editar"
+  },
+  "flash": {
+    "saved": "Projecto guardado",
+    "deleted": "Projecto eliminado",
+    "quoteSaved": "Cotação adicionada",
+    "quoteRemoved": "Cotação removida",
+    "awarded": "Cotação adjudicada",
+    "assemblyLinked": "Ponto da assembleia ligado",
+    "assemblyUnlinked": "Assembleia desligada",
+    "quotaIssued": "Quota extraordinária lançada nas contas correntes",
+    "logSaved": "Diário de obra actualizado",
+    "completed": "Projecto marcado como concluído",
+    "cancelled": "Projecto cancelado"
+  },
+  "errors": {
+    "projectNotFound": "Projecto não encontrado.",
+    "quoteNotFound": "Cotação não encontrada.",
+    "interventionNotFound": "Registo de intervenção não encontrado.",
+    "condominiumNotFound": "Condomínio não encontrado.",
+    "assemblyNotFound": "Assembleia não encontrada.",
+    "agendaRequired": "Seleccione um ponto da ordem de trabalhos.",
+    "vendorRequired": "Seleccione um fornecedor.",
+    "invalidAmount": "Indique um valor válido.",
+    "noQuotes": "Adicione uma cotação antes de adjudicar.",
+    "resolutionRequired": "É necessária uma deliberação aprovada.",
+    "resolutionRejected": "A assembleia rejeitou este ponto.",
+    "alreadyIssued": "Já existe uma quota extraordinária ligada.",
+    "alreadyAwarded": "Já existe uma cotação adjudicada.",
+    "alreadyComplete": "Este projecto já está concluído.",
+    "alreadyCancelled": "Este projecto já está cancelado.",
+    "hasQuota": "Há uma quota extraordinária ligada — o projecto não pode ser eliminado.",
+    "hasWorkLog": "Há registos de intervenção — o projecto não pode ser eliminado.",
+    "workLogRequired": "Registe pelo menos uma intervenção antes de concluir.",
+    "vendorRequiredForLog": "Adjudique um fornecedor antes de registar o trabalho.",
+    "noBilledOwners": "Não há condóminos a cobrar neste condomínio.",
+    "notFound": "Não encontrado.",
+    "requestFailed": "Não foi possível guardar. Tente de novo."
+  }
+}

@@ -6,6 +6,7 @@ export const MANAGER_DOCUMENT_KINDS = [
   "certificate",
   "invoice",
   "maintenance-contract",
+  "works-quote",
 ] as const;
 
 export type ManagerDocumentKind = (typeof MANAGER_DOCUMENT_KINDS)[number];
@@ -22,7 +23,8 @@ export type DocumentSource =
   | "compliance"
   | "assemblies"
   | "finance"
-  | "operations";
+  | "operations"
+  | "works";
 
 export type ManagerDocument = {
   id: string;

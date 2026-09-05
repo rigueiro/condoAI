@@ -144,6 +144,10 @@ export interface MaintenanceContract {
 export interface Intervention {
     id: string;
     condominiumId: string;
+    /** Obras project this work log belongs to. */
+    projectId: string | null;
+    /** Linked vendor from Operations when the crew is a registered contractor. */
+    vendorId: string | null;
     date: Date | string;
     description: string;
     cost: number;

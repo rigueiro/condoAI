@@ -1,6 +1,6 @@
 {
   "title": "Document archive",
-  "subtitle": "One library per building — title deed, regulations, minutes, insurance, certificates, invoices, and contracts.",
+  "subtitle": "One library per building — title deed, regulations, minutes, insurance, certificates, invoices, contracts, and works quotes.",
   "tabs": {
     "all": "All",
     "constitutive-title": "Title deed",
@@ -9,7 +9,8 @@
     "insurance": "Insurance",
     "certificate": "Certificates",
     "invoice": "Invoices",
-    "maintenance-contract": "Contracts"
+    "maintenance-contract": "Contracts",
+    "works-quote": "Works quotes"
   },
   "stats": {
     "total": "Listed documents",
@@ -27,7 +28,8 @@
     "insurance": "Insurance policy",
     "certificate": "Certificate",
     "invoice": "Supplier invoice",
-    "maintenance-contract": "Maintenance contract"
+    "maintenance-contract": "Maintenance contract",
+    "works-quote": "Works quote"
   },
   "table": {
     "condominium": "Condominium",

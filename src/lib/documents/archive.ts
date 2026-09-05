@@ -1,4 +1,5 @@
 import type { Assembly } from "@/lib/assemblies/types";
+import type { WorksProject } from "@/lib/works/types";
 import type {
   Certificate,
   Condominium,
@@ -26,6 +27,7 @@ export type DocumentArchiveInput = {
   assemblies: Assembly[];
   expenses: Expense[];
   contracts: MaintenanceContract[];
+  worksProjects?: WorksProject[];
   /** When set, only documents for this condominium are returned. */
   condominiumId?: string | null;
 };
@@ -38,6 +40,7 @@ export function buildDocumentArchive(input: DocumentArchiveInput): ManagerDocume
     assemblies,
     expenses,
     contracts,
+    worksProjects = [],
     condominiumId,
   } = input;
 
@@ -163,6 +166,26 @@ export function buildDocumentArchive(input: DocumentArchiveInput): ManagerDocume
     );
   }
 
+  for (const project of worksProjects) {
+    if (!matchesCondo(project.condominiumId)) continue;
+    for (const quote of project.quotes) {
+      if (!quote.document) continue;
+      documents.push(
+        doc({
+          id: `works-quote-${quote.id}`,
+          kind: "works-quote",
+          condominiumId: project.condominiumId,
+          title: project.title,
+          subtitle: project.number,
+          date: isoDate(quote.receivedAt),
+          file: quote.document,
+          source: "works",
+          sourceId: project.id,
+        }),
+      );
+    }
+  }
+
   documents.sort((a, b) => {
     const dateA = a.date ?? "";
     const dateB = b.date ?? "";
@@ -187,6 +210,8 @@ export function documentSourceHref(document: ManagerDocument): string {
       return "/finance";
     case "operations":
       return "/operations";
+    case "works":
+      return document.sourceId ? `/works/${document.sourceId}` : "/works";
     default:
       return "/documents";
   }

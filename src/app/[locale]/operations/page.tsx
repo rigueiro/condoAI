@@ -19,6 +19,7 @@ import {
 } from "@/lib/operations";
 import { useFinance } from "@/lib/finance";
 import { useOccurrences } from "@/lib/occurrences";
+import { useWorks, worksVendorIds } from "@/lib/works";
 import type { Equipment } from "@/types";
 import DocumentCell from "./components/document-cell";
 import OperationsModal, {
@@ -79,6 +80,7 @@ function OperationsPage() {
   } = useOperations();
   const { expenses } = useFinance();
   const { occurrences } = useOccurrences();
+  const { projects, interventions } = useWorks();
 
   const [tab, setTab] = useState<OperationsTab>("vendor");
   const [search, setSearch] = useState("");
@@ -107,8 +109,14 @@ function OperationsPage() {
   const searchLower = search.trim().toLowerCase();
 
   const vendorReferenceCounts = useMemo(
-    () => buildVendorReferenceCounts(contracts, expenses, occurrences),
-    [contracts, expenses, occurrences],
+    () =>
+      buildVendorReferenceCounts(
+        contracts,
+        expenses,
+        occurrences,
+        worksVendorIds(projects, interventions),
+      ),
+    [contracts, expenses, interventions, occurrences, projects],
   );
 
   const filteredVendors = useMemo(

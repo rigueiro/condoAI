@@ -90,6 +90,7 @@ export const MANAGER_NAV: NavEntryDef[] = [
   ]),
   group("operations", "groups.operations", "Wrench", [
     item("occurrences", "/occurrences", "ClipboardList", "readOccurrences"),
+    item("works", "/works", "HardHat", "readOperations"),
     item(
       "vendorsAndEquipment",
       "/operations",

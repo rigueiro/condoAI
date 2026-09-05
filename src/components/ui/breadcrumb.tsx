@@ -24,6 +24,7 @@ function Breadcrumb() {
     "/occurrences": { labelKey: "occurrences" as const, parent: "/dashboard" },
     "/compliance": { labelKey: "compliance" as const, parent: "/dashboard" },
     "/operations": { labelKey: "operations" as const, parent: "/dashboard" },
+    "/works": { labelKey: "works" as const, parent: "/dashboard" },
     "/documents": {
       labelKey: "documentsArchive" as const,
       parent: "/dashboard",
@@ -91,6 +92,17 @@ function Breadcrumb() {
           isActive: false,
         },
         { label: t("occurrenceDetail"), path, isActive: true },
+      ];
+    }
+
+    if (path.startsWith("/works/") && path !== "/works") {
+      return [
+        {
+          label: t("works"),
+          path: "/works",
+          isActive: false,
+        },
+        { label: t("workDetail"), path, isActive: true },
       ];
     }
 

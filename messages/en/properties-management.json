@@ -169,6 +169,7 @@
     "occurrences": "Occurrences",
     "noOccurrences": "No occurrences for this property.",
     "noAssemblies": "No assemblies for this property.",
+    "noWorks": "No obras projects for this property.",
     "summary": "Summary",
     "propertyInfo": "Property information",
     "address": "Address",
@@ -212,6 +213,7 @@
       "finance": "Finance",
       "assemblies": "Assemblies",
       "occurrences": "Occurrences",
+      "works": "Works",
       "access": "Access"
     }
   },

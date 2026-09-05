@@ -41,6 +41,7 @@ import {
   type MajorityRule,
   type VoteChoice,
 } from "@/lib/assemblies";
+import { useWorks } from "@/lib/works";
 
 const fieldClass =
   "w-full rounded-lg border border-border-light bg-surface px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
@@ -83,6 +84,7 @@ function AssemblyDetailPage() {
     closeSession,
     isReady,
   } = useAssemblies();
+  const { refresh: refreshWorks } = useWorks();
   const [flash, setFlash] = useState<string | null>(null);
   const [summonsTitle, setSummonsTitle] = useState<string | null>(null);
   const [summonsContent, setSummonsContent] = useState<string | null>(null);
@@ -374,7 +376,9 @@ function AssemblyDetailPage() {
                 disabled={!hasQuorum}
                 title={hasQuorum ? undefined : t("detail.closeBlockedQuorum")}
                 onClick={async () => {
-                  await run(await closeSession(assembly.id));
+                  const result = await closeSession(assembly.id);
+                  await run(result);
+                  if (result.ok) refreshWorks();
                 }}
               >
                 {t("detail.close")}

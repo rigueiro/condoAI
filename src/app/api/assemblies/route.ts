@@ -11,6 +11,7 @@ import {
   resendAssemblySummons,
   sendAssemblySummons,
 } from "@/lib/server/assemblies";
+import { syncWorksFromAssembly } from "@/lib/server/works";
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
 
@@ -126,10 +127,13 @@ export async function PATCH(request: Request) {
               state: openAssemblySession(workspaceEmail, body.id, body.call),
             })
           : jsonError("badRequest");
-      case "close":
-        return body.id
-          ? jsonOk({ state: closeAssembly(workspaceEmail, body.id) })
-          : jsonError("badRequest");
+      case "close": {
+        if (!body.id) return jsonError("badRequest");
+        const state = closeAssembly(workspaceEmail, body.id);
+        const closed = state.assemblies.find((row) => row.id === body.id);
+        if (closed) syncWorksFromAssembly(workspaceEmail, closed);
+        return jsonOk({ state });
+      }
       default:
         return jsonError("badRequest");
     }

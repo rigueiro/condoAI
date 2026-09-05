@@ -1,0 +1,213 @@
+{
+  "title": "Works",
+  "subtitle": "Quotes, assembly resolution, extra quota, vendor, and the intervention work log — one project per job.",
+  "add": "New project",
+  "filters": {
+    "search": "Search projects…",
+    "allStatuses": "All statuses"
+  },
+  "stats": {
+    "quoting": "Quoting",
+    "pendingVote": "Awaiting vote",
+    "inProgress": "In progress",
+    "completed": "Completed"
+  },
+  "table": {
+    "number": "Number",
+    "condominium": "Condominium",
+    "title": "Project",
+    "category": "Category",
+    "status": "Status",
+    "awarded": "Awarded quote",
+    "vendor": "Vendor",
+    "empty": "No obras projects yet.",
+    "actions": "Actions",
+    "open": "Open",
+    "delete": "Delete"
+  },
+  "categories": {
+    "facade": "Facade",
+    "elevator": "Elevator",
+    "roof": "Roof",
+    "common-area": "Common areas",
+    "other": "Other"
+  },
+  "statuses": {
+    "draft": "Draft",
+    "quoting": "Quoting",
+    "pending_vote": "Awaiting vote",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "funded": "Extra quota issued",
+    "in_progress": "In progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "pipeline": {
+    "title": "Pipeline",
+    "quotes": "Quotes",
+    "assembly": "Assembly",
+    "quota": "Extra quota",
+    "vendor": "Vendor",
+    "worklog": "Work log"
+  },
+  "modal": {
+    "addTitle": "New obras project",
+    "editTitle": "Edit project",
+    "condominium": "Condominium",
+    "title": "Title",
+    "titlePlaceholder": "e.g. Facade conservation, elevator replacement",
+    "category": "Category",
+    "location": "Location",
+    "locationPlaceholder": "e.g. Main facade, roof, elevator shaft",
+    "description": "Description",
+    "notes": "Internal notes",
+    "save": "Save",
+    "cancel": "Cancel",
+    "validation": {
+      "condominiumRequired": "Select a condominium",
+      "titleRequired": "Enter a title"
+    }
+  },
+  "quote": {
+    "add": "Add quote",
+    "title": "Vendor quote",
+    "vendor": "Vendor",
+    "amount": "Amount",
+    "description": "Scope",
+    "receivedAt": "Received",
+    "validUntil": "Valid until",
+    "document": "Quote document",
+    "award": "Award",
+    "awarded": "Awarded",
+    "remove": "Remove quote",
+    "empty": "No quotes yet. Collect at least two before the assembly.",
+    "noVendors": "No vendors for this condominium — add one under Operations.",
+    "emptyVendor": "Select a vendor",
+    "save": "Save quote",
+    "cancel": "Cancel",
+    "validation": {
+      "vendorRequired": "Select a vendor",
+      "amountRequired": "Enter a quote amount"
+    }
+  },
+  "assembly": {
+    "link": "Link assembly item",
+    "unlink": "Unlink",
+    "open": "Open assembly",
+    "create": "New extraordinary assembly",
+    "empty": "Link an agenda item so the vote can approve the works and the extra quota.",
+    "assembly": "Assembly",
+    "agendaItem": "Agenda item",
+    "resolution": "Resolution",
+    "passed": "Passed",
+    "rejected": "Rejected",
+    "pending": "Waiting for the vote to close",
+    "save": "Link",
+    "cancel": "Cancel",
+    "noAssemblies": "No assemblies for this condominium yet.",
+    "emptyAssembly": "Select an assembly",
+    "emptyItem": "Select an agenda item",
+    "validation": {
+      "assemblyRequired": "Select an assembly",
+      "agendaRequired": "Select an agenda item"
+    }
+  },
+  "quota": {
+    "issue": "Issue extra quota",
+    "issued": "Issued",
+    "openFinance": "View in finance",
+    "empty": "After a passed resolution, split the awarded quote by permillage onto owner accounts.",
+    "blocked": "A passed assembly resolution is required before billing.",
+    "description": "Charge description",
+    "total": "Total amount",
+    "date": "Charge date",
+    "dueDate": "Due date",
+    "preview": "Allocation preview",
+    "previewEmpty": "Enter a total to preview the split.",
+    "billedOwners": "{count, plural, one {# owner} other {# owners}}",
+    "unit": "Fraction",
+    "owner": "Owner",
+    "amount": "Amount",
+    "issuing": "Issuing…",
+    "save": "Issue quota",
+    "cancel": "Cancel",
+    "validation": {
+      "amountRequired": "Enter a total amount",
+      "noOwners": "This condominium has no billed owners."
+    }
+  },
+  "vendor": {
+    "empty": "Award a quote to set the contractor.",
+    "awarded": "Awarded vendor"
+  },
+  "worklog": {
+    "add": "Log intervention",
+    "empty": "Award a vendor, then record visits, costs, and photos.",
+    "blocked": "Award a quote before logging work.",
+    "date": "Date",
+    "description": "What was done",
+    "cost": "Cost",
+    "photos": "Photos",
+    "remove": "Remove entry",
+    "save": "Save log",
+    "cancel": "Cancel",
+    "loggedCost": "Logged cost",
+    "photoHint": "PNG or JPEG, max 1 MB, up to 4 photos.",
+    "tooMany": "You can attach up to 4 photos.",
+    "invalidType": "Use a PNG or JPEG file.",
+    "tooLarge": "Photo is too large (max 1 MB).",
+    "validation": {
+      "descriptionRequired": "Describe the work"
+    }
+  },
+  "detail": {
+    "notFound": "Project not found",
+    "notFoundDesc": "This obras project does not exist or was removed.",
+    "back": "Back to works",
+    "complete": "Mark completed",
+    "cancel": "Cancel project",
+    "confirmCancel": "Cancel this obras project?",
+    "confirmDelete": "Delete this project? Quotes will be removed.",
+    "confirmRemoveQuote": "Remove this quote?",
+    "confirmRemoveLog": "Remove this work-log entry?",
+    "edit": "Edit"
+  },
+  "flash": {
+    "saved": "Project saved",
+    "deleted": "Project deleted",
+    "quoteSaved": "Quote added",
+    "quoteRemoved": "Quote removed",
+    "awarded": "Quote awarded",
+    "assemblyLinked": "Assembly item linked",
+    "assemblyUnlinked": "Assembly unlinked",
+    "quotaIssued": "Extraordinary quota posted to owner accounts",
+    "logSaved": "Work log updated",
+    "completed": "Project marked completed",
+    "cancelled": "Project cancelled"
+  },
+  "errors": {
+    "projectNotFound": "Project not found.",
+    "quoteNotFound": "Quote not found.",
+    "interventionNotFound": "Work-log entry not found.",
+    "condominiumNotFound": "Condominium not found.",
+    "assemblyNotFound": "Assembly not found.",
+    "agendaRequired": "Select an agenda item.",
+    "vendorRequired": "Select a vendor.",
+    "invalidAmount": "Enter a valid amount.",
+    "noQuotes": "Add a quote before awarding.",
+    "resolutionRequired": "A passed assembly resolution is required.",
+    "resolutionRejected": "The assembly rejected this item.",
+    "alreadyIssued": "An extraordinary quota is already linked.",
+    "alreadyAwarded": "A quote is already awarded.",
+    "alreadyComplete": "This project is already completed.",
+    "alreadyCancelled": "This project is already cancelled.",
+    "hasQuota": "An extraordinary quota is linked — the project cannot be deleted.",
+    "hasWorkLog": "Work-log entries exist — the project cannot be deleted.",
+    "workLogRequired": "Log at least one intervention before completing.",
+    "vendorRequiredForLog": "Award a vendor before logging work.",
+    "noBilledOwners": "No billed owners found for this condominium.",
+    "notFound": "Not found.",
+    "requestFailed": "Could not save. Try again."
+  }
+}

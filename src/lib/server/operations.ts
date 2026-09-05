@@ -67,7 +67,19 @@ export function putVendor(email: string, vendor: Vendor): OperationsState {
   return mutateOperations(email, (current) => upsertVendor(current, vendor));
 }
 
-/** Throws `vendorInUse` when linked contracts, expenses, or occurrences exist. */
+function worksUsesVendor(email: string, vendorId: string): boolean {
+  const works = readStore().works?.[email.trim().toLowerCase()];
+  if (!works) return false;
+  for (const project of works.projects ?? []) {
+    if (project.vendorId === vendorId) return true;
+    if (project.quotes?.some((quote) => quote.vendorId === vendorId)) {
+      return true;
+    }
+  }
+  return (works.interventions ?? []).some((row) => row.vendorId === vendorId);
+}
+
+/** Throws `vendorInUse` when linked contracts, expenses, occurrences, or obras exist. */
 export function deleteVendor(email: string, id: string): OperationsState {
   const key = email.trim().toLowerCase();
   const store = readStore();
@@ -75,7 +87,8 @@ export function deleteVendor(email: string, id: string): OperationsState {
   const inUse =
     state.contracts.some((c) => c.vendorId === id) ||
     store.finance[key]?.expenses.some((e) => e.vendorId === id) ||
-    store.occurrences[key]?.occurrences.some((o) => o.vendorId === id);
+    store.occurrences[key]?.occurrences.some((o) => o.vendorId === id) ||
+    worksUsesVendor(email, id);
 
   if (inUse) throw new Error("vendorInUse");
 

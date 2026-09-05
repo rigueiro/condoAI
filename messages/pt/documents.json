@@ -1,6 +1,6 @@
 {
   "title": "Arquivo documental",
-  "subtitle": "Uma biblioteca por edifício — título, regulamento, atas, seguros, certificados, faturas e contratos.",
+  "subtitle": "Uma biblioteca por edifício — título, regulamento, atas, seguros, certificados, faturas, contratos e cotações de obras.",
   "tabs": {
     "all": "Todos",
     "constitutive-title": "Título",
@@ -9,7 +9,8 @@
     "insurance": "Seguros",
     "certificate": "Certificados",
     "invoice": "Faturas",
-    "maintenance-contract": "Contratos"
+    "maintenance-contract": "Contratos",
+    "works-quote": "Cotações de obras"
   },
   "stats": {
     "total": "Documentos listados",
@@ -27,7 +28,8 @@
     "insurance": "Apólice de seguro",
     "certificate": "Certificado",
     "invoice": "Fatura de fornecedor",
-    "maintenance-contract": "Contrato de manutenção"
+    "maintenance-contract": "Contrato de manutenção",
+    "works-quote": "Cotação de obras"
   },
   "table": {
     "condominium": "Condomínio",

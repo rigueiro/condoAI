@@ -13,6 +13,7 @@ import { FinanceProvider } from "@/lib/finance";
 import { OccurrencesProvider } from "@/lib/occurrences";
 import { AssembliesProvider } from "@/lib/assemblies";
 import { OperationsProvider } from "@/lib/operations";
+import { WorksProvider } from "@/lib/works";
 import { MembershipsProvider } from "@/lib/memberships";
 import { ThemeProvider, ThemeScript } from "@/lib/theme";
 import { routing } from "@/i18n/routing";
@@ -77,7 +78,9 @@ export default async function LocaleLayout({
                       <FinanceProvider>
                         <OccurrencesProvider>
                           <AssembliesProvider>
-                            <OperationsProvider>{children}</OperationsProvider>
+                            <OperationsProvider>
+                              <WorksProvider>{children}</WorksProvider>
+                            </OperationsProvider>
                           </AssembliesProvider>
                         </OccurrencesProvider>
                       </FinanceProvider>

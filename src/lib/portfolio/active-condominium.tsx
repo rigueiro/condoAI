@@ -11,6 +11,7 @@ export const BUILDING_WORKSPACE_TABS = [
   "finance",
   "assemblies",
   "occurrences",
+  "works",
   "access",
 ] as const;
 

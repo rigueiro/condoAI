@@ -58,6 +58,20 @@ const ERROR_STATUS: Record<string, number> = {
   installmentOutOfOrder: 409,
   hasPayments: 409,
   notActive: 409,
+  projectNotFound: 404,
+  quoteNotFound: 404,
+  interventionNotFound: 404,
+  assemblyNotFound: 404,
+  noQuotes: 400,
+  resolutionRequired: 400,
+  resolutionRejected: 409,
+  alreadyAwarded: 409,
+  alreadyComplete: 409,
+  alreadyCancelled: 409,
+  hasQuota: 409,
+  hasWorkLog: 409,
+  workLogRequired: 400,
+  vendorRequiredForLog: 400,
 };
 
 export function handleRouteError(err: unknown): NextResponse {

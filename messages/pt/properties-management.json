@@ -169,6 +169,7 @@
     "occurrences": "Ocorrências",
     "noOccurrences": "Sem ocorrências para este condomínio.",
     "noAssemblies": "Sem assembleias para este condomínio.",
+    "noWorks": "Sem projectos de obras para este condomínio.",
     "summary": "Resumo",
     "propertyInfo": "Informação do condomínio",
     "address": "Morada",
@@ -212,6 +213,7 @@
       "finance": "Finanças",
       "assemblies": "Assembleias",
       "occurrences": "Ocorrências",
+      "works": "Obras",
       "access": "Acessos"
     }
   },

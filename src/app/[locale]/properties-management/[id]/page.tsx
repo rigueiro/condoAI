@@ -26,6 +26,7 @@ import type { Condominium } from "@/types";
 import { useCollections, type AccountReceipt } from "@/lib/collections";
 import { useOccurrences } from "@/lib/occurrences";
 import { useAssemblies } from "@/lib/assemblies";
+import { statusTone, useWorks, worksForCondominium } from "@/lib/works";
 import {
   buildingTypeI18nKey,
   buildingWorkspaceHref,
@@ -67,6 +68,7 @@ function PropertyDetailContent() {
   const tOccState = useTranslations("occurrences.states");
   const tOccPriority = useTranslations("occurrences.priorities");
   const tAsm = useTranslations("assemblies");
+  const tWorks = useTranslations("works");
   const { formatPriceString } = useFormatCurrency();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -79,6 +81,7 @@ function PropertyDetailContent() {
     useCollections();
   const { occurrences } = useOccurrences();
   const { assemblies } = useAssemblies();
+  const { projects } = useWorks();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = useState(false);
@@ -148,6 +151,11 @@ function PropertyDetailContent() {
     () =>
       id ? assemblies.filter((row) => row.condominiumId === id) : [],
     [assemblies, id],
+  );
+
+  const propertyWorks = useMemo(
+    () => (id ? worksForCondominium(projects, id) : []),
+    [id, projects],
   );
 
   const propertyUnits = useMemo(() => {
@@ -548,6 +556,59 @@ function PropertyDetailContent() {
                         </li>
                       ),
                     )}
+                  </ul>
+                )}
+              </div>
+            </section>
+          )}
+
+          {tab === "works" && (
+            <section>
+              <div className="mb-4 flex justify-end">
+                <Link
+                  href={id ? `/works?new=1&condo=${id}` : "/works"}
+                  className="text-sm font-medium text-primary hover:underline"
+                >
+                  {tWorks("add")}
+                </Link>
+              </div>
+              <div className="overflow-hidden rounded-lg border border-border-light bg-surface">
+                {propertyWorks.length === 0 ? (
+                  <div className="p-8 text-center text-text-secondary">
+                    <Icon
+                      name="HardHat"
+                      size={40}
+                      className="mx-auto mb-2 text-secondary-300"
+                    />
+                    <p>{t("noWorks")}</p>
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-border-light">
+                    {propertyWorks.map((project) => (
+                      <li key={project.id}>
+                        <Link
+                          href={`/works/${project.id}`}
+                          className="block px-6 py-4 transition-smooth hover:bg-secondary-50"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                              <p className="font-medium text-text-primary">
+                                {project.number} · {project.title}
+                              </p>
+                              <p className="text-sm text-text-secondary">
+                                {tWorks(`categories.${project.category}`)}
+                                {project.location ? ` · ${project.location}` : ""}
+                              </p>
+                            </div>
+                            <span
+                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusTone(project.status)}`}
+                            >
+                              {tWorks(`statuses.${project.status}`)}
+                            </span>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
                   </ul>
                 )}
               </div>

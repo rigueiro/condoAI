@@ -12,6 +12,7 @@ import { useCompliance } from "@/lib/compliance";
 import { useAssemblies } from "@/lib/assemblies";
 import { useFinance } from "@/lib/finance";
 import { useOperations } from "@/lib/operations";
+import { useWorks } from "@/lib/works";
 import {
   buildDocumentArchive,
   DOCUMENT_TAB_KEYS,
@@ -44,6 +45,7 @@ function DocumentsPage() {
   const { assemblies } = useAssemblies();
   const { expenses } = useFinance();
   const { contracts } = useOperations();
+  const { projects } = useWorks();
 
   const condominiums = portfolio.condominiums;
   const [condoFilter, setCondoFilter] = useState<string>("");
@@ -80,6 +82,7 @@ function DocumentsPage() {
         assemblies,
         expenses,
         contracts,
+        worksProjects: projects,
         condominiumId: condoFilter || null,
       }),
     [
@@ -90,6 +93,7 @@ function DocumentsPage() {
       contracts,
       expenses,
       policies,
+      projects,
     ],
   );
 

@@ -154,10 +154,10 @@ function chargesFromGroupedOwners(
   }));
 }
 
-export function issueExtraordinaryQuota(
+export function issueExtraordinaryQuotaRecord(
   email: string,
   input: IssueExtraordinaryInput,
-): FinanceState {
+): { finance: FinanceState; extra: ExtraordinaryQuota } {
   const description = input.description?.trim() ?? "";
   const condominiumId = input.condominiumId?.trim() ?? "";
   const totalAmount =
@@ -221,5 +221,12 @@ export function issueExtraordinaryQuota(
     store.collections[key] = nextCollections;
     store.finance[key] = nextFinance;
   });
-  return nextFinance;
+  return { finance: nextFinance, extra };
+}
+
+export function issueExtraordinaryQuota(
+  email: string,
+  input: IssueExtraordinaryInput,
+): FinanceState {
+  return issueExtraordinaryQuotaRecord(email, input).finance;
 }

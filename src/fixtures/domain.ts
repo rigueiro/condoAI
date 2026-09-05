@@ -961,6 +961,16 @@ export const mockVendors: Vendor[] = [
     notes: "Common areas weekdays.",
   },
   {
+    id: "vendor-4",
+    condominiumId: "1",
+    name: "Obras Amoreira Lda.",
+    nif: "510667788",
+    email: "orcamentos@obrasamoreira.pt",
+    phone: "+351 21 394 4400",
+    services: "facade, roof, general works",
+    notes: "Competes on capital works quotes.",
+  },
+  {
     id: "vendor-3",
     condominiumId: "2",
     name: "CleanPro Belém",

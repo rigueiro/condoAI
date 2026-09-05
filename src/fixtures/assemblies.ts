@@ -190,4 +190,64 @@ export const mockAssemblies: Assembly[] = [
     minutes: { text: "", file: null, recordedAt: null },
     resolutions: [],
   },
+  {
+    id: "asm5",
+    condominiumId: "1",
+    type: "extraordinary",
+    status: "closed",
+    title: "Assembleia extraordinária — impermeabilização da cobertura",
+    scheduledDate: "2026-06-02",
+    scheduledTime: "18:30",
+    location: "Salão do rés-do-chão, Rua da Amoreira 45",
+    call: 1,
+    agenda: [
+      {
+        id: "asm5-i1",
+        order: 1,
+        title: "Obras de impermeabilização da cobertura",
+        description:
+          "Aprovar a cotação da Obras Amoreira Lda. e o lançamento da quota extraordinária.",
+        majority: "qualified-total",
+      },
+    ],
+    summons: {
+      sentDate: "2026-05-18",
+      method: "email",
+      title: "Convocatória — obras da cobertura",
+      content:
+        "Assembleia extraordinária em 2 de junho de 2026 para deliberar sobre a impermeabilização da cobertura e a quota extraordinária.",
+      proof: null,
+      delivery: null,
+    },
+    attendance: [
+      {
+        ownerId: "1",
+        status: "present",
+        representedByOwnerId: null,
+      },
+    ],
+    votes: [
+      {
+        itemId: "asm5-i1",
+        ballots: { "1": "for" },
+      },
+    ],
+    minutes: {
+      text: "A assembleia aprovou a cotação da Obras Amoreira Lda. e o lançamento da quota extraordinária por permilagem.",
+      file: DEMO_PDF,
+      recordedAt: "2026-06-02",
+    },
+    resolutions: [
+      {
+        id: "res-asm5-i1",
+        itemId: "asm5-i1",
+        title: "Obras de impermeabilização da cobertura",
+        text: "Aprovar a cotação da Obras Amoreira Lda. e o lançamento da quota extraordinária.",
+        forPermillage: 42.5,
+        againstPermillage: 0,
+        abstainPermillage: 0,
+        passed: true,
+      },
+    ],
+  },
 ];

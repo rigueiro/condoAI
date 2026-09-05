@@ -37,11 +37,12 @@ export function resolveVendorLabel(
   return fallback?.trim() ?? "";
 }
 
-/** Count references per vendor across contracts, expenses, and occurrences. */
+/** Count references per vendor across contracts, expenses, occurrences, and obras. */
 export function buildVendorReferenceCounts(
   contracts: { vendorId: string }[],
   expenses: { vendorId: string | null }[],
   occurrences: { vendorId: string | null }[],
+  extraVendorIds: Iterable<string | null | undefined> = [],
 ): Map<string, number> {
   const counts = new Map<string, number>();
   const bump = (vendorId: string | null | undefined) => {
@@ -51,6 +52,7 @@ export function buildVendorReferenceCounts(
   for (const c of contracts) bump(c.vendorId);
   for (const e of expenses) bump(e.vendorId);
   for (const o of occurrences) bump(o.vendorId);
+  for (const id of extraVendorIds) bump(id);
   return counts;
 }
 
