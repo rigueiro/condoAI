@@ -92,6 +92,15 @@ export function handleRouteError(err: unknown): NextResponse {
     return jsonError("unauthorized", 401);
   }
   if (err instanceof Error) {
+    if (err.message === "playgroundUnavailable") {
+      const redisStatus = (err as { redisStatus?: number }).redisStatus;
+      return NextResponse.json(
+        redisStatus
+          ? { error: "playgroundUnavailable", redisStatus }
+          : { error: "playgroundUnavailable" },
+        { status: 503 },
+      );
+    }
     return jsonError(err.message, ERROR_STATUS[err.message] ?? 400);
   }
   return jsonError("serverError", 500);

@@ -1,3 +1,5 @@
+import { request as httpsRequest } from "node:https";
+import { URL } from "node:url";
 import { SESSION_COOKIE } from "@/lib/auth/constants";
 import {
   isPlaygroundMode,
@@ -23,40 +25,89 @@ function redisKey(sessionId: string): string {
 function readEnv(name: string): string | undefined {
   const raw = process.env[name];
   if (!raw) return undefined;
-  const value = raw.trim().replace(/^['"]|['"]$/g, "").trim();
+  const value = raw
+    .trim()
+    .replace(/^[\s\u201c\u201d\u2018\u2019"']+|[\s\u201c\u201d\u2018\u2019"']+$/g, "")
+    .trim();
   return value || undefined;
 }
 
 function redisEnv(): { url: string; token: string } | null {
   const url = readEnv("UPSTASH_REDIS_REST_URL");
-  const token = readEnv("UPSTASH_REDIS_REST_TOKEN");
+  const token = readEnv("UPSTASH_REDIS_REST_TOKEN")?.replace(/^Bearer\s+/i, "");
   if (!url || !token) return null;
   return { url, token };
+}
+
+function playgroundUnavailable(redisStatus?: number): Error {
+  const err = new Error("playgroundUnavailable") as Error & {
+    redisStatus?: number;
+  };
+  if (redisStatus) err.redisStatus = redisStatus;
+  return err;
+}
+
+function redisPost(
+  url: string,
+  token: string,
+  command: unknown[],
+): Promise<{ status: number; body: string }> {
+  return new Promise((resolve, reject) => {
+    const endpoint = new URL(url);
+    const payload = Buffer.from(JSON.stringify(command));
+    const req = httpsRequest(
+      {
+        protocol: endpoint.protocol,
+        hostname: endpoint.hostname,
+        port: endpoint.port || 443,
+        path: endpoint.pathname && endpoint.pathname !== "" ? endpoint.pathname : "/",
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Content-Length": payload.length,
+        },
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk) => chunks.push(chunk));
+        res.on("end", () =>
+          resolve({
+            status: res.statusCode ?? 0,
+            body: Buffer.concat(chunks).toString("utf8"),
+          }),
+        );
+      },
+    );
+    req.on("error", reject);
+    req.write(payload);
+    req.end();
+  });
 }
 
 async function redisCommand(command: unknown[]): Promise<unknown> {
   const env = redisEnv();
   if (!env) return null;
-  let response: Response;
+  let response: { status: number; body: string };
   try {
-    response = await fetch(env.url, {
-      method: "POST",
-      cache: "no-store",
-      headers: {
-        Authorization: `Bearer ${env.token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(command),
-    });
+    response = await redisPost(env.url, env.token, command);
   } catch {
-    throw new Error("playgroundUnavailable");
+    throw playgroundUnavailable();
   }
-  if (!response.ok) {
-    throw new Error("playgroundUnavailable");
+  if (response.status < 200 || response.status >= 300) {
+    throw playgroundUnavailable(response.status);
   }
-  const payload = (await response.json()) as { result?: unknown; error?: string };
+  let payload: { result?: unknown; error?: string };
+  try {
+    payload = JSON.parse(response.body) as {
+      result?: unknown;
+      error?: string;
+    };
+  } catch {
+    throw playgroundUnavailable(response.status);
+  }
   if (payload.error) {
-    throw new Error("playgroundUnavailable");
+    throw playgroundUnavailable(response.status);
   }
   return payload.result ?? null;
 }
