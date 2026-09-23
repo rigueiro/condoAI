@@ -23,6 +23,7 @@ import {
 import { apiFetch } from "@/lib/api/client";
 import { needsOnboarding, type Portfolio } from "@/lib/portfolio";
 import type { PortalContext } from "@/lib/memberships";
+import { usePlayground } from "@/lib/playground";
 
 type Errors = {
   email?: string;
@@ -42,6 +43,7 @@ function Login() {
   const router = useRouter();
   const { login } = useAuth();
   const hrefs = useAuthHrefs();
+  const playground = usePlayground();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -175,7 +177,7 @@ function Login() {
           disabled={isSubmitting}
         />
 
-        <div className="flex items-center justify-between">
+        <div className={`flex items-center ${playground ? "" : "justify-between"}`}>
           <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
@@ -190,9 +192,11 @@ function Login() {
             </span>
           </label>
 
-          <AuthTextLink href={hrefs.forgotPassword}>
-            {t("forgotPassword")}
-          </AuthTextLink>
+          {playground ? null : (
+            <AuthTextLink href={hrefs.forgotPassword}>
+              {t("forgotPassword")}
+            </AuthTextLink>
+          )}
         </div>
 
         <AuthSubmitButton
@@ -203,10 +207,16 @@ function Login() {
         />
       </form>
 
-      <p className="text-center text-sm text-text-secondary mt-6">
-        {t("noAccount")}{" "}
-        <AuthTextLink href={hrefs.signup}>{t("signUpLink")}</AuthTextLink>
-      </p>
+      {playground ? (
+        <p className="text-center text-sm text-text-secondary mt-6">
+          {t("playgroundHint")}
+        </p>
+      ) : (
+        <p className="text-center text-sm text-text-secondary mt-6">
+          {t("noAccount")}{" "}
+          <AuthTextLink href={hrefs.signup}>{t("signUpLink")}</AuthTextLink>
+        </p>
+      )}
     </AuthShell>
   );
 }

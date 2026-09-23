@@ -5,12 +5,13 @@ import {
   portalCreateOccurrence,
   portalOccurrences,
 } from "@/lib/server/memberships";
+import { apiRoute } from "@/lib/server/api-route";
 
 function condoIdFromRequest(request: Request): string | null {
   return new URL(request.url).searchParams.get("condominiumId");
 }
 
-export async function GET(request: Request) {
+export const GET = apiRoute(async function GET(request: Request) {
   try {
     const email = await requireSessionEmail();
     const condominiumId = condoIdFromRequest(request);
@@ -19,9 +20,9 @@ export async function GET(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function POST(request: Request) {
+export const POST = apiRoute(async function POST(request: Request) {
   try {
     const email = await requireSessionEmail();
     const body = (await request.json()) as {
@@ -46,9 +47,9 @@ export async function POST(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = apiRoute(async function PATCH(request: Request) {
   try {
     const email = await requireSessionEmail();
     const body = (await request.json()) as {
@@ -75,4 +76,4 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

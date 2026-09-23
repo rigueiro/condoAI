@@ -38,6 +38,11 @@
     "searchHint": "Navegação rápida",
     "noResults": "Nenhuma página encontrada"
   },
+  "playground": {
+    "banner": "Demonstração — as alterações são temporárias e só visíveis para si.",
+    "reset": "Recomeçar",
+    "resetting": "A recomeçar…"
+  },
   "switcher": {
     "label": "Condomínio activo",
     "all": "Todos os condomínios"

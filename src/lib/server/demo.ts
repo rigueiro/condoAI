@@ -33,7 +33,7 @@ import type { OrgTeamMember } from "@/lib/team/types";
 import { DEMO_EMAIL, DEFAULT_PASSWORD } from "@/lib/auth/constants";
 import { seedDemoLegalProcesses } from "./legal-processes";
 import { listTeamMembers } from "./org-team";
-import { updateStore, type StoredAccount } from "./store";
+import { readStore, updateStore, type StoredAccount } from "./store";
 
 export const DEMO_ORGANIZATION: Organization = {
   name: "CondoAI Lda.",
@@ -263,6 +263,18 @@ export function ensurePortalDemoAccounts(): void {
       );
     }
   });
+}
+
+/**
+ * Seed fixtures when this playground session has no manager workspace yet.
+ */
+export function ensurePlaygroundWorkspace(): void {
+  const existing = readStore().portfolios[DEMO_EMAIL];
+  if (existing?.condominiums?.length) {
+    ensurePortalDemoAccounts();
+    return;
+  }
+  restoreDemoWorkspace();
 }
 
 /**

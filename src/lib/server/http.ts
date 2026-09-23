@@ -82,6 +82,9 @@ const ERROR_STATUS: Record<string, number> = {
   termTooLong: 400,
   termInverted: 400,
   mandateLocked: 409,
+  playgroundDisabled: 403,
+  playgroundUnavailable: 503,
+  playgroundStoreUnbound: 500,
 };
 
 export function handleRouteError(err: unknown): NextResponse {

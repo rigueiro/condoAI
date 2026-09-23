@@ -5,8 +5,9 @@ import {
   portalApproveBudget,
   portalBudget,
 } from "@/lib/server/memberships";
+import { apiRoute } from "@/lib/server/api-route";
 
-export async function GET(request: Request) {
+export const GET = apiRoute(async function GET(request: Request) {
   try {
     const email = await requireSessionEmail();
     const condominiumId = new URL(request.url).searchParams.get(
@@ -19,9 +20,9 @@ export async function GET(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = apiRoute(async function PATCH(request: Request) {
   try {
     const email = await requireSessionEmail();
     const body = (await request.json()) as {
@@ -38,4 +39,4 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

@@ -4,8 +4,9 @@ import {
   readSessionId,
 } from "@/lib/server/session";
 import { jsonError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
-export async function GET() {
+export const GET = apiRoute(async function GET() {
   const sessionId = await readSessionId();
   const session = getSessionFromStore(sessionId);
   if (!session) {
@@ -17,4 +18,4 @@ export async function GET() {
   } catch {
     return jsonError("unauthorized", 401);
   }
-}
+})

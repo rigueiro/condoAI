@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "async_hooks";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "fs";
 import path from "path";
 import type { User, UserRole } from "@/app/types";
@@ -15,6 +16,7 @@ import type { CondoMembership } from "@/lib/memberships/types";
 import type { OrgTeamMember } from "@/lib/team/types";
 import type { LegalProcess } from "@/types";
 import { DEFAULT_PASSWORD } from "@/lib/auth/constants";
+import { isPlaygroundMode } from "./playground-mode";
 
 export interface StoredAccount {
   id: string;
@@ -81,6 +83,15 @@ const EMPTY_STORE: StoreDocument = {
   legalProcessesByHost: {},
 };
 
+export interface PlaygroundStoreContext {
+  doc: StoreDocument;
+  dirty: boolean;
+  sessionId: string | null;
+  drop: boolean;
+}
+
+export const playgroundAls = new AsyncLocalStorage<PlaygroundStoreContext>();
+
 /** Process-local cache — avoids re-reading .data/store.json on every API call. */
 let cache: StoreDocument | null = null;
 
@@ -102,7 +113,7 @@ function ensureStoreFile(): void {
   }
 }
 
-function cloneEmpty(): StoreDocument {
+export function cloneEmptyStore(): StoreDocument {
   return {
     demoPassword: DEFAULT_PASSWORD,
     accounts: {},
@@ -124,40 +135,60 @@ function cloneEmpty(): StoreDocument {
   };
 }
 
+export function hydrateStoreDocument(
+  parsed: Partial<StoreDocument> | null | undefined,
+): StoreDocument {
+  return {
+    demoPassword: parsed?.demoPassword ?? DEFAULT_PASSWORD,
+    accounts: parsed?.accounts ?? {},
+    sessions: parsed?.sessions ?? {},
+    resetTokens: parsed?.resetTokens ?? {},
+    portfolios: parsed?.portfolios ?? {},
+    collections: parsed?.collections ?? {},
+    finance: parsed?.finance ?? {},
+    compliance: parsed?.compliance ?? {},
+    occurrences: parsed?.occurrences ?? {},
+    assemblies: parsed?.assemblies ?? {},
+    operations: parsed?.operations ?? {},
+    works: parsed?.works ?? {},
+    board: parsed?.board ?? {},
+    announcements: parsed?.announcements ?? {},
+    membershipsByHost: parsed?.membershipsByHost ?? {},
+    orgTeamsByHost: parsed?.orgTeamsByHost ?? {},
+    legalProcessesByHost: parsed?.legalProcessesByHost ?? {},
+  };
+}
+
 export function readStore(): StoreDocument {
+  const playground = playgroundAls.getStore();
+  if (playground) return playground.doc;
+  if (isPlaygroundMode()) {
+    throw new Error("playgroundStoreUnbound");
+  }
   if (cache) return cache;
   ensureStoreFile();
   try {
     const raw = readFileSync(storePath(), "utf8");
     const parsed = JSON.parse(raw) as Partial<StoreDocument>;
-    cache = {
-      demoPassword: parsed.demoPassword ?? DEFAULT_PASSWORD,
-      accounts: parsed.accounts ?? {},
-      sessions: parsed.sessions ?? {},
-      resetTokens: parsed.resetTokens ?? {},
-      portfolios: parsed.portfolios ?? {},
-      collections: parsed.collections ?? {},
-      finance: parsed.finance ?? {},
-      compliance: parsed.compliance ?? {},
-      occurrences: parsed.occurrences ?? {},
-      assemblies: parsed.assemblies ?? {},
-      operations: parsed.operations ?? {},
-      works: parsed.works ?? {},
-      board: parsed.board ?? {},
-      announcements: parsed.announcements ?? {},
-      membershipsByHost: parsed.membershipsByHost ?? {},
-      orgTeamsByHost: parsed.orgTeamsByHost ?? {},
-      legalProcessesByHost: parsed.legalProcessesByHost ?? {},
-    };
+    cache = hydrateStoreDocument(parsed);
     return cache;
   } catch {
-    cache = cloneEmpty();
+    cache = cloneEmptyStore();
     writeFileSync(storePath(), JSON.stringify(cache), "utf8");
     return cache;
   }
 }
 
 export function writeStore(store: StoreDocument): void {
+  const playground = playgroundAls.getStore();
+  if (playground) {
+    playground.doc = store;
+    playground.dirty = true;
+    return;
+  }
+  if (isPlaygroundMode()) {
+    throw new Error("playgroundStoreUnbound");
+  }
   ensureStoreFile();
   cache = store;
   // Compact JSON — demo store is rewritten often.

@@ -5,14 +5,17 @@
     "howItWorks": "Como funciona",
     "login": "Entrar",
     "signup": "Começar",
-    "goToDashboard": "Ir para o painel"
+    "goToDashboard": "Ir para o painel",
+    "enterPlayground": "Experimentar a aplicação",
+    "enteringPlayground": "A abrir a demonstração…"
   },
   "hero": {
     "headline": "Gestão de condomínios, organizada com clareza",
     "subtitle": "Não é um CRM imobiliário genérico—um espaço moldado à finança de condomínio, assembleias, convocatórias, seguros e certificados.",
     "ctaPrimary": "Começar grátis",
     "ctaSecondary": "Entrar",
-    "ctaDashboard": "Abrir painel"
+    "ctaDashboard": "Abrir painel",
+    "ctaPlayground": "Experimentar a aplicação"
   },
   "preview": {
     "navDashboard": "Painel",
@@ -98,6 +101,7 @@
     "title": "Reúna os seus condomínios num só lugar",
     "subtitle": "Comece com edifícios, proprietários e a finança completa do condomínio—mais assembleias, seguros e certificados que a administração realmente precisa.",
     "button": "Criar conta",
+    "playground": "Experimentar a aplicação",
     "login": "Entrar",
     "dashboard": "Continuar para o painel"
   },

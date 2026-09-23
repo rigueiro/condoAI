@@ -12,6 +12,7 @@ import type {
   SeatInput,
   UpdateMandateInput,
 } from "@/lib/board/types";
+import { apiRoute } from "@/lib/server/api-route";
 
 type BoardPatchBody = {
   action?: string;
@@ -57,16 +58,16 @@ const ACTIONS: Record<
     body.id ? deleteBoardMandate(email, body.id) : null,
 };
 
-export async function GET() {
+export const GET = apiRoute(async function GET() {
   try {
     const { workspaceEmail } = await requireManagerAccess("readAssemblies");
     return jsonOk({ state: getBoard(workspaceEmail) });
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = apiRoute(async function PATCH(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writeAssemblies");
     const body = (await request.json()) as BoardPatchBody;
@@ -77,4 +78,4 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

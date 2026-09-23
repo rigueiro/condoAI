@@ -5,8 +5,9 @@ import {
   readSessionId,
 } from "@/lib/server/session";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
-export async function POST(request: Request) {
+export const POST = apiRoute(async function POST(request: Request) {
   try {
     const sessionId = await readSessionId();
     const session = getSessionFromStore(sessionId);
@@ -26,4 +27,4 @@ export async function POST(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

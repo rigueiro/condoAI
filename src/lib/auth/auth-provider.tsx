@@ -183,6 +183,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [],
   );
 
+  const enterPlayground = useCallback(async (): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await apiFetch<{ user: User }>("/api/playground/enter", {
+        method: "POST",
+      });
+      setUser(data.user);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "loginFailed";
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const resetPlayground = useCallback(async (): Promise<void> => {
+    setError(null);
+    await apiFetch("/api/playground/reset", { method: "POST" });
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -197,6 +219,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       validateResetToken,
       resetPassword,
       changePassword,
+      enterPlayground,
+      resetPlayground,
     }),
     [
       user,
@@ -210,6 +234,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       validateResetToken,
       resetPassword,
       changePassword,
+      enterPlayground,
+      resetPlayground,
     ],
   );
 

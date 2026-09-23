@@ -13,6 +13,7 @@ import {
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
 import type { IssueExtraordinaryInput } from "@/lib/finance/types";
+import { apiRoute } from "@/lib/server/api-route";
 
 function hasCondoEntity<T extends { id?: string; condominiumId?: string }>(
   entity: T | undefined,
@@ -20,16 +21,16 @@ function hasCondoEntity<T extends { id?: string; condominiumId?: string }>(
   return Boolean(entity?.id && entity.condominiumId);
 }
 
-export async function GET() {
+export const GET = apiRoute(async function GET() {
   try {
     const { workspaceEmail } = await requireManagerAccess("readFinance");
     return jsonOk({ state: getFinance(workspaceEmail) });
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = apiRoute(async function PATCH(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writeFinance");
     const body = (await request.json()) as {
@@ -92,4 +93,4 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

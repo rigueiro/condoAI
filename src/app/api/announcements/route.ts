@@ -8,10 +8,11 @@ import type {
   AnnouncementAudience,
   SendAnnouncementInput,
 } from "@/lib/announcements/types";
+import { apiRoute } from "@/lib/server/api-route";
 
 const AUDIENCES = new Set<AnnouncementAudience>(["all", "owners", "board"]);
 
-export async function GET(request: Request) {
+export const GET = apiRoute(async function GET(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("readAnnouncements");
     const condominiumId =
@@ -22,9 +23,9 @@ export async function GET(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function POST(request: Request) {
+export const POST = apiRoute(async function POST(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writeAnnouncements");
     const body = (await request.json()) as Partial<SendAnnouncementInput>;
@@ -42,4 +43,4 @@ export async function POST(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

@@ -25,6 +25,7 @@ import type {
   UpdateWorksProjectInput,
   WorksState,
 } from "@/lib/works/types";
+import { apiRoute } from "@/lib/server/api-route";
 
 type WorksPatchBody = {
   action?: string;
@@ -129,16 +130,16 @@ const ACTIONS: Record<
     body.id ? cancelWorksProject(email, body.id) : null,
 };
 
-export async function GET() {
+export const GET = apiRoute(async function GET() {
   try {
     const { workspaceEmail } = await requireManagerAccess("readOperations");
     return jsonOk({ state: getWorks(workspaceEmail) });
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = apiRoute(async function PATCH(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writeOperations");
     const body = (await request.json()) as WorksPatchBody;
@@ -147,4 +148,4 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

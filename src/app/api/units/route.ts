@@ -3,8 +3,9 @@ import { unitsForCondominium } from "@/lib/portfolio/units";
 import { getPortfolio, upsertUnit } from "@/lib/server/portfolio";
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
-export async function GET(request: Request) {
+export const GET = apiRoute(async function GET(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("readPortfolio");
     const condominiumId = new URL(request.url).searchParams.get(
@@ -18,9 +19,9 @@ export async function GET(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function POST(request: Request) {
+export const POST = apiRoute(async function POST(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writePortfolio");
     const body = (await request.json()) as { unit?: Unit };
@@ -32,4 +33,4 @@ export async function POST(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

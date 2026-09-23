@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import Icon from "@/components/icon";
+import { useAuth } from "@/lib/auth";
+import { usePlayground } from "@/lib/playground";
 
 type Variant = "nav" | "hero" | "cta" | "footer";
 
@@ -19,6 +22,44 @@ const ctaSecondaryBtn =
 const footerLink =
   "text-xs font-medium text-text-primary transition-smooth hover:text-primary";
 
+function EnterPlaygroundButton({
+  className,
+  label,
+  icon,
+}: {
+  className: string;
+  label: string;
+  icon?: boolean;
+}) {
+  const t = useTranslations("home");
+  const { enterPlayground } = useAuth();
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+
+  const onClick = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await enterPlayground();
+      router.push("/dashboard");
+    } catch {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={() => void onClick()}
+      disabled={busy}
+      className={`${className} disabled:opacity-60`}
+    >
+      {busy ? t("nav.enteringPlayground") : label}
+      {icon && !busy ? <Icon name="ArrowRight" size={18} /> : null}
+    </button>
+  );
+}
+
 /** Login / signup (or dashboard) entry points for the landing page. */
 export default function AuthActions({
   variant,
@@ -28,6 +69,7 @@ export default function AuthActions({
   showDashboard: boolean;
 }) {
   const t = useTranslations("home");
+  const playground = usePlayground();
 
   if (variant === "nav") {
     if (showDashboard) {
@@ -35,6 +77,19 @@ export default function AuthActions({
         <Link href="/dashboard" className={`${primaryBtn} px-3.5 py-2 text-sm`}>
           {t("nav.goToDashboard")}
         </Link>
+      );
+    }
+    if (playground) {
+      return (
+        <>
+          <Link href="/login" className={`${ghostBtn} px-3 py-2 text-sm`}>
+            {t("nav.login")}
+          </Link>
+          <EnterPlaygroundButton
+            className={`${primaryBtn} px-3.5 py-2 text-sm`}
+            label={t("nav.enterPlayground")}
+          />
+        </>
       );
     }
     return (
@@ -59,6 +114,23 @@ export default function AuthActions({
           <Icon name="LayoutDashboard" size={18} />
           {t("hero.ctaDashboard")}
         </Link>
+      );
+    }
+    if (playground) {
+      return (
+        <>
+          <EnterPlaygroundButton
+            className={`${primaryBtn} w-full px-6 py-3 text-base sm:w-auto`}
+            label={t("hero.ctaPlayground")}
+            icon
+          />
+          <Link
+            href="/login"
+            className={`${secondaryBtn} w-full px-6 py-3 text-base sm:w-auto`}
+          >
+            {t("hero.ctaSecondary")}
+          </Link>
+        </>
       );
     }
     return (
@@ -89,6 +161,20 @@ export default function AuthActions({
         </Link>
       );
     }
+    if (playground) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <EnterPlaygroundButton
+            className={`${ctaPrimaryBtn} px-6 py-3 text-base`}
+            label={t("cta.playground")}
+            icon
+          />
+          <Link href="/login" className={`${ctaSecondaryBtn} px-6 py-3 text-base`}>
+            {t("cta.login")}
+          </Link>
+        </div>
+      );
+    }
     return (
       <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
         <Link href="/signup" className={`${ctaPrimaryBtn} px-6 py-3 text-base`}>
@@ -107,6 +193,20 @@ export default function AuthActions({
       <Link href="/dashboard" className={footerLink}>
         {t("nav.goToDashboard")}
       </Link>
+    );
+  }
+
+  if (playground) {
+    return (
+      <div className="flex items-center gap-4">
+        <Link href="/login" className={footerLink}>
+          {t("nav.login")}
+        </Link>
+        <EnterPlaygroundButton
+          className={footerLink}
+          label={t("nav.enterPlayground")}
+        />
+      </div>
     );
   }
 

@@ -15,5 +15,6 @@
   "signingInButton": "Signing in...",
   "noAccount": "Don't have an account?",
   "signUpLink": "Sign up",
+  "playgroundHint": "This is a playground. Sign in as admin@condoai.pt (manager), board@condoai.pt (board), or owner@condoai.pt (resident). Password: admin123",
   "footer": "© {year} CondoAI. All rights reserved."
 }

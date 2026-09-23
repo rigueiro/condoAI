@@ -10,8 +10,9 @@ import type {
   CreateAgreementInput,
   PayInstallmentInput,
 } from "@/lib/collections/types";
+import { apiRoute } from "@/lib/server/api-route";
 
-export async function POST(request: Request) {
+export const POST = apiRoute(async function POST(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writeCollections");
     const body = (await request.json()) as CreateAgreementInput;
@@ -22,9 +23,9 @@ export async function POST(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = apiRoute(async function PATCH(request: Request) {
   try {
     const body = (await request.json()) as PayInstallmentInput & {
       action?: string;
@@ -51,4 +52,4 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

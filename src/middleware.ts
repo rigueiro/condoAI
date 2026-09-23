@@ -2,6 +2,7 @@ import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE } from "./lib/auth/constants";
 import { routing } from "./i18n/routing";
+import { isPlaygroundMode } from "./lib/server/playground-mode";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -15,6 +16,11 @@ const PUBLIC_PATHS = new Set([
 ]);
 
 const AUTH_ONLY_PATHS = new Set(["login", "signup"]);
+const PLAYGROUND_BLOCKED_PATHS = new Set([
+  "signup",
+  "forgot-password",
+  "reset-password",
+]);
 
 function stripLocale(pathname: string): {
   locale: string | null;
@@ -38,6 +44,13 @@ export default function middleware(request: NextRequest) {
   const hasSession = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
   const effectiveLocale = locale ?? routing.defaultLocale;
   const isPublic = PUBLIC_PATHS.has(segment) || rest === "";
+
+  if (isPlaygroundMode() && PLAYGROUND_BLOCKED_PATHS.has(segment)) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = `/${effectiveLocale}/login`;
+    loginUrl.search = "";
+    return NextResponse.redirect(loginUrl);
+  }
 
   if (!hasSession && !isPublic) {
     const loginUrl = request.nextUrl.clone();

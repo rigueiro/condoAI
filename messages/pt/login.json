@@ -15,5 +15,6 @@
   "signingInButton": "Entrando...",
   "noAccount": "Ainda não tem conta?",
   "signUpLink": "Criar conta",
+  "playgroundHint": "Ambiente de demonstração. Entre com admin@condoai.pt (gestor), board@condoai.pt (administração) ou owner@condoai.pt (condómino). Palavra-passe: admin123",
   "footer": "© {year} CondoAI. Todos os direitos reservados."
 }

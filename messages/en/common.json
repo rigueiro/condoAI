@@ -38,6 +38,11 @@
     "searchHint": "Quick navigation",
     "noResults": "No pages found"
   },
+  "playground": {
+    "banner": "Playground — changes are temporary and only you can see them.",
+    "reset": "Reset",
+    "resetting": "Resetting…"
+  },
   "switcher": {
     "label": "Active condominium",
     "all": "All condominiums"

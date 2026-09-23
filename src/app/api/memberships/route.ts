@@ -7,8 +7,9 @@ import {
   revokeMembership,
 } from "@/lib/server/memberships";
 import { isCondoAssignableRole } from "@/lib/memberships/types";
+import { apiRoute } from "@/lib/server/api-route";
 
-export async function GET(request: Request) {
+export const GET = apiRoute(async function GET(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("managePortalAccess");
     const condominiumId = new URL(request.url).searchParams.get(
@@ -24,9 +25,9 @@ export async function GET(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function POST(request: Request) {
+export const POST = apiRoute(async function POST(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("managePortalAccess");
     const body = (await request.json()) as {
@@ -56,9 +57,9 @@ export async function POST(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function DELETE(request: Request) {
+export const DELETE = apiRoute(async function DELETE(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("managePortalAccess");
     const id = new URL(request.url).searchParams.get("id");
@@ -70,4 +71,4 @@ export async function DELETE(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

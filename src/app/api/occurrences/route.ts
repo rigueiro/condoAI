@@ -7,6 +7,7 @@ import {
 } from "@/lib/server/occurrences";
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
 function idList(ids: unknown): string[] {
   return Array.isArray(ids)
@@ -14,16 +15,16 @@ function idList(ids: unknown): string[] {
     : [];
 }
 
-export async function GET() {
+export const GET = apiRoute(async function GET() {
   try {
     const { workspaceEmail } = await requireManagerAccess("readOccurrences");
     return jsonOk({ state: getOccurrences(workspaceEmail) });
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = apiRoute(async function PATCH(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writeOccurrences");
     const body = (await request.json()) as {
@@ -55,4 +56,4 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { requireSessionEmail } from "@/lib/server/session";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
 import { portalExtract } from "@/lib/server/memberships";
+import { apiRoute } from "@/lib/server/api-route";
 
-export async function GET(request: Request) {
+export const GET = apiRoute(async function GET(request: Request) {
   try {
     const email = await requireSessionEmail();
     const condominiumId = new URL(request.url).searchParams.get(
@@ -16,4 +17,4 @@ export async function GET(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

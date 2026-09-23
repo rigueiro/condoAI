@@ -17,6 +17,8 @@ import { WorksProvider } from "@/lib/works";
 import { BoardProvider } from "@/lib/board";
 import { MembershipsProvider } from "@/lib/memberships";
 import { ThemeProvider, ThemeScript } from "@/lib/theme";
+import { PlaygroundProvider } from "@/lib/playground";
+import { isPlaygroundMode } from "@/lib/server/playground-mode";
 import { routing } from "@/i18n/routing";
 
 const geistSans = Geist({
@@ -71,8 +73,9 @@ export default async function LocaleLayout({
         <ThemeScript />
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
-            <AuthProvider>
-              <MembershipsProvider>
+            <PlaygroundProvider enabled={isPlaygroundMode()}>
+              <AuthProvider>
+                <MembershipsProvider>
                 <PortfolioProvider>
                   <CollectionsProvider>
                     <ComplianceProvider>
@@ -90,8 +93,9 @@ export default async function LocaleLayout({
                     </ComplianceProvider>
                   </CollectionsProvider>
                 </PortfolioProvider>
-              </MembershipsProvider>
-            </AuthProvider>
+                </MembershipsProvider>
+              </AuthProvider>
+            </PlaygroundProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

@@ -33,6 +33,8 @@ export interface AuthContextValue {
     currentPassword: string,
     newPassword: string,
   ) => Promise<void>;
+  enterPlayground: () => Promise<void>;
+  resetPlayground: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(

@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE } from "@/lib/auth/constants";
 import {
+  isPlaygroundMode,
+  PLAYGROUND_TTL_SECONDS,
+} from "./playground-mode";
+import {
   readStore,
   updateStore,
   type StoredSession,
@@ -57,6 +61,7 @@ export function getSessionFromStore(
 }
 
 export function cookieMaxAge(rememberMe: boolean): number {
+  if (isPlaygroundMode()) return PLAYGROUND_TTL_SECONDS;
   return (rememberMe ? SESSION_DAYS_REMEMBER : SESSION_DAYS_DEFAULT) * 24 * 60 * 60;
 }
 

@@ -17,6 +17,7 @@ import {
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import type { ManagerAction } from "@/lib/team/permissions";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
 function hasCondoEntity<T extends { id?: string; condominiumId?: string }>(
   entity: T | undefined,
@@ -35,7 +36,7 @@ const PATCH_PERMISSION: Record<string, ManagerAction> = {
   updateLegalProcess: "manageLegal",
 };
 
-export async function GET() {
+export const GET = apiRoute(async function GET() {
   try {
     const ctx = await requireManagerAccess("readCompliance");
     seedDemoLegalProcesses(ctx.workspaceEmail);
@@ -47,9 +48,9 @@ export async function GET() {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = apiRoute(async function PATCH(request: Request) {
   try {
     const ctx = await requireManagerAccess();
     const body = (await request.json()) as {
@@ -125,4 +126,4 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

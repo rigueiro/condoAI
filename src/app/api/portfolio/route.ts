@@ -12,6 +12,7 @@ import {
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import type { ManagerAction } from "@/lib/team/permissions";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
 const PATCH_PERMISSION: Record<string, ManagerAction> = {
   saveOrganization: "writeOrganization",
@@ -21,16 +22,16 @@ const PATCH_PERMISSION: Record<string, ManagerAction> = {
   completeOnboarding: "writePortfolio",
 };
 
-export async function GET() {
+export const GET = apiRoute(async function GET() {
   try {
     const { workspaceEmail } = await requireManagerAccess("readPortfolio");
     return jsonOk({ portfolio: getPortfolio(workspaceEmail) });
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = apiRoute(async function PATCH(request: Request) {
   try {
     const ctx = await requireManagerAccess();
     const body = (await request.json()) as {
@@ -89,4 +90,4 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

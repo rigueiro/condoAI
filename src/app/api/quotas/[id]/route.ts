@@ -7,10 +7,11 @@ import {
 } from "@/lib/server/collections";
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-export async function PUT(request: Request, context: Ctx) {
+export const PUT = apiRoute(async function PUT(request: Request, context: Ctx) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writeCollections");
     const { id } = await context.params;
@@ -23,9 +24,9 @@ export async function PUT(request: Request, context: Ctx) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function DELETE(_request: Request, context: Ctx) {
+export const DELETE = apiRoute(async function DELETE(_request: Request, context: Ctx) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writeCollections");
     const { id } = await context.params;
@@ -38,4 +39,4 @@ export async function DELETE(_request: Request, context: Ctx) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

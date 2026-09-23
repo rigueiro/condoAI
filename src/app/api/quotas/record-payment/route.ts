@@ -5,8 +5,9 @@ import {
 } from "@/lib/server/collections";
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
-export async function POST(request: Request) {
+export const POST = apiRoute(async function POST(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("recordPayment");
     const body = (await request.json()) as RecordPaymentInput;
@@ -21,4 +22,4 @@ export async function POST(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

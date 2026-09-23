@@ -5,14 +5,17 @@
     "howItWorks": "How it works",
     "login": "Log in",
     "signup": "Get started",
-    "goToDashboard": "Go to dashboard"
+    "goToDashboard": "Go to dashboard",
+    "enterPlayground": "Enter playground",
+    "enteringPlayground": "Opening playground…"
   },
   "hero": {
     "headline": "Condominium management, clearly organized",
     "subtitle": "Not a generic property CRM—a workspace shaped around condo finance, assemblies, summons, insurance, and certificates.",
     "ctaPrimary": "Start free",
     "ctaSecondary": "Log in",
-    "ctaDashboard": "Open dashboard"
+    "ctaDashboard": "Open dashboard",
+    "ctaPlayground": "Enter playground"
   },
   "preview": {
     "navDashboard": "Dashboard",
@@ -98,6 +101,7 @@
     "title": "Bring your condominiums into one place",
     "subtitle": "Start with properties, owners, and full condo finance—plus assemblies, insurance, and certificates administrators actually need.",
     "button": "Create your account",
+    "playground": "Enter playground",
     "login": "Log in",
     "dashboard": "Continue to dashboard"
   },

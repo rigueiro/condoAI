@@ -7,10 +7,11 @@ import {
 } from "@/lib/server/portfolio";
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-export async function GET(_request: Request, context: Ctx) {
+export const GET = apiRoute(async function GET(_request: Request, context: Ctx) {
   try {
     const { workspaceEmail } = await requireManagerAccess("readPortfolio");
     const { id } = await context.params;
@@ -22,9 +23,9 @@ export async function GET(_request: Request, context: Ctx) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PUT(request: Request, context: Ctx) {
+export const PUT = apiRoute(async function PUT(request: Request, context: Ctx) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writePortfolio");
     const { id } = await context.params;
@@ -37,9 +38,9 @@ export async function PUT(request: Request, context: Ctx) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function DELETE(_request: Request, context: Ctx) {
+export const DELETE = apiRoute(async function DELETE(_request: Request, context: Ctx) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writePortfolio");
     const { id } = await context.params;
@@ -48,4 +49,4 @@ export async function DELETE(_request: Request, context: Ctx) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

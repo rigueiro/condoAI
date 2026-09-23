@@ -3,44 +3,44 @@ import {
   consumeResetToken,
   peekResetToken,
 } from "@/lib/server/auth";
+import { isPlaygroundMode } from "@/lib/server/playground-mode";
 import {
   clearSessionCookie,
   destroySession,
   readSessionId,
 } from "@/lib/server/session";
-import { handleRouteError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
+import { jsonError, jsonOk } from "@/lib/server/http";
 
-export async function GET(request: Request) {
-  try {
-    const token = new URL(request.url).searchParams.get("token") ?? "";
-    if (!token) {
-      return NextResponse.json(
-        { error: "invalidResetToken" },
-        { status: 400 },
-      );
-    }
-    const { email } = peekResetToken(token);
-    return jsonOk({ email });
-  } catch (err) {
-    return handleRouteError(err);
+export const GET = apiRoute(async (request) => {
+  if (isPlaygroundMode()) {
+    return jsonError("playgroundDisabled", 403);
   }
-}
+  const token = new URL(request.url).searchParams.get("token") ?? "";
+  if (!token) {
+    return NextResponse.json(
+      { error: "invalidResetToken" },
+      { status: 400 },
+    );
+  }
+  const { email } = peekResetToken(token);
+  return jsonOk({ email });
+});
 
-export async function POST(request: Request) {
-  try {
-    const body = (await request.json()) as {
-      token?: string;
-      newPassword?: string;
-    };
-    const token = body.token ?? "";
-    const newPassword = body.newPassword ?? "";
-    consumeResetToken(token, newPassword);
-    const sessionId = await readSessionId();
-    destroySession(sessionId);
-    const response = jsonOk({ ok: true });
-    clearSessionCookie(response);
-    return response;
-  } catch (err) {
-    return handleRouteError(err);
+export const POST = apiRoute(async (request) => {
+  if (isPlaygroundMode()) {
+    return jsonError("playgroundDisabled", 403);
   }
-}
+  const body = (await request.json()) as {
+    token?: string;
+    newPassword?: string;
+  };
+  const token = body.token ?? "";
+  const newPassword = body.newPassword ?? "";
+  consumeResetToken(token, newPassword);
+  const sessionId = await readSessionId();
+  destroySession(sessionId);
+  const response = jsonOk({ ok: true });
+  clearSessionCookie(response);
+  return response;
+});

@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth";
 import { useMemberships } from "@/lib/memberships";
 import { useAppNavigation } from "@/hooks/use-app-navigation";
 import { useCommandPalette } from "@/hooks/use-command-palette";
+import PlaygroundBanner from "@/components/playground-banner";
 
 const CommandPalette = dynamic(() => import("./command-palette"), {
   ssr: false,
@@ -48,6 +49,7 @@ function Header() {
   return (
     <>
       <header className="sticky top-0 z-1000 border-b border-border-light bg-surface bg-secondary-50">
+        <PlaygroundBanner />
         <div className="px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex min-w-0 items-center justify-between gap-3">
             <Link

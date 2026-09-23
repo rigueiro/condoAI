@@ -9,8 +9,9 @@ import {
 } from "@/lib/server/org-team";
 import { isAssignableTeamRole } from "@/lib/team/types";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
-export async function GET() {
+export const GET = apiRoute(async function GET() {
   try {
     const ctx = await requireManagerAccess("readTeam");
     const members = listTeamMembers(ctx.workspaceEmail).map((member) =>
@@ -23,9 +24,9 @@ export async function GET() {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function POST(request: Request) {
+export const POST = apiRoute(async function POST(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("manageTeam");
     const body = (await request.json()) as {
@@ -45,9 +46,9 @@ export async function POST(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = apiRoute(async function PATCH(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("manageTeam");
     const body = (await request.json()) as { id?: string; role?: string };
@@ -59,9 +60,9 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function DELETE(request: Request) {
+export const DELETE = apiRoute(async function DELETE(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("manageTeam");
     const id = new URL(request.url).searchParams.get("id");
@@ -73,4 +74,4 @@ export async function DELETE(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

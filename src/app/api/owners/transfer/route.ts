@@ -2,8 +2,9 @@ import { transferOwnership } from "@/lib/server/transfer";
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
 import type { TransferInput } from "@/lib/portfolio/transfer";
+import { apiRoute } from "@/lib/server/api-route";
 
-export async function POST(request: Request) {
+export const POST = apiRoute(async function POST(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("transferOwnership");
     const body = (await request.json()) as TransferInput;
@@ -14,4 +15,4 @@ export async function POST(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

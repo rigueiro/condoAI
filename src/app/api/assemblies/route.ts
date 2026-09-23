@@ -15,6 +15,7 @@ import { syncWorksFromAssembly } from "@/lib/server/works";
 import { resolveSummonsSigner } from "@/lib/server/board";
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
 function hasId<T extends { id?: string }>(
   value: T,
@@ -22,16 +23,16 @@ function hasId<T extends { id?: string }>(
   return Boolean(value.id);
 }
 
-export async function GET() {
+export const GET = apiRoute(async function GET() {
   try {
     const { workspaceEmail } = await requireManagerAccess("readAssemblies");
     return jsonOk({ state: getAssemblies(workspaceEmail) });
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = apiRoute(async function PATCH(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writeAssemblies");
     const body = (await request.json()) as {
@@ -156,4 +157,4 @@ export async function PATCH(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})

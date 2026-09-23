@@ -6,8 +6,9 @@ import {
 } from "@/lib/server/portfolio";
 import { requireManagerAccess } from "@/lib/server/manager-access";
 import { handleRouteError, jsonOk } from "@/lib/server/http";
+import { apiRoute } from "@/lib/server/api-route";
 
-export async function GET() {
+export const GET = apiRoute(async function GET() {
   try {
     const { workspaceEmail } = await requireManagerAccess("readPortfolio");
     const portfolio = getPortfolio(workspaceEmail);
@@ -15,9 +16,9 @@ export async function GET() {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
 
-export async function POST(request: Request) {
+export const POST = apiRoute(async function POST(request: Request) {
   try {
     const { workspaceEmail } = await requireManagerAccess("writePortfolio");
     const body = (await request.json()) as { condominium?: Condominium };
@@ -29,4 +30,4 @@ export async function POST(request: Request) {
   } catch (err) {
     return handleRouteError(err);
   }
-}
+})
