@@ -20,9 +20,16 @@ function redisKey(sessionId: string): string {
   return `${REDIS_KEY_PREFIX}${sessionId}`;
 }
 
+function readEnv(name: string): string | undefined {
+  const raw = process.env[name];
+  if (!raw) return undefined;
+  const value = raw.trim().replace(/^['"]|['"]$/g, "").trim();
+  return value || undefined;
+}
+
 function redisEnv(): { url: string; token: string } | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = readEnv("UPSTASH_REDIS_REST_URL");
+  const token = readEnv("UPSTASH_REDIS_REST_TOKEN");
   if (!url || !token) return null;
   return { url, token };
 }
@@ -30,15 +37,20 @@ function redisEnv(): { url: string; token: string } | null {
 async function redisCommand(command: unknown[]): Promise<unknown> {
   const env = redisEnv();
   if (!env) return null;
-  const response = await fetch(env.url, {
-    method: "POST",
-    cache: "no-store",
-    headers: {
-      Authorization: `Bearer ${env.token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(command),
-  });
+  let response: Response;
+  try {
+    response = await fetch(env.url, {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${env.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(command),
+    });
+  } catch {
+    throw new Error("playgroundUnavailable");
+  }
   if (!response.ok) {
     throw new Error("playgroundUnavailable");
   }
