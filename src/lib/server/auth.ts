@@ -10,6 +10,7 @@ import {
   accountToUser,
   readStore,
   updateStore,
+  type StoreDocument,
   type StoredAccount,
 } from "./store";
 import {
@@ -150,28 +151,54 @@ export function registerAccount(
   return accountToUser(account);
 }
 
+function pruneResetTokens(
+  store: Pick<StoreDocument, "resetTokens">,
+  now: number,
+  email?: string,
+): void {
+  for (const [id, record] of Object.entries(store.resetTokens)) {
+    if (record.expiresAt <= now || (email != null && record.email === email)) {
+      delete store.resetTokens[id];
+    }
+  }
+}
+
+function applyPasswordHash(
+  store: StoreDocument,
+  email: string,
+  hash: string,
+): void {
+  if (isDemoEmail(email)) {
+    store.demoPassword = hash;
+    return;
+  }
+  const account = store.accounts[email];
+  if (!account) {
+    throw new Error("invalidResetToken");
+  }
+  store.accounts[email] = { ...account, password: hash };
+}
+
 export function createResetToken(email: string): { token: string; email: string } {
   const key = normalizeEmail(email);
   const token = crypto.randomUUID().replace(/-/g, "");
+  const now = Date.now();
   updateStore((store) => {
+    pruneResetTokens(store, now, key);
     store.resetTokens[token] = {
       email: key,
-      expiresAt: Date.now() + RESET_TTL_MS,
+      expiresAt: now + RESET_TTL_MS,
     };
   });
   return { token, email: key };
 }
 
 export function peekResetToken(token: string): { email: string } {
-  const store = readStore();
-  const record = store.resetTokens[token];
+  const record = readStore().resetTokens[token];
   if (!record) {
     throw new Error("invalidResetToken");
   }
   if (Date.now() > record.expiresAt) {
-    updateStore((s) => {
-      delete s.resetTokens[token];
-    });
     throw new Error("expiredResetToken");
   }
   return { email: record.email };
@@ -179,32 +206,36 @@ export function peekResetToken(token: string): { email: string } {
 
 function setAccountPassword(email: string, newPassword: string): void {
   const key = normalizeEmail(email);
+  const hash = hashPassword(newPassword);
   updateStore((store) => {
-    const hash = hashPassword(newPassword);
-    if (isDemoEmail(key)) {
-      store.demoPassword = hash;
-      return;
-    }
-    const account = store.accounts[key];
-    if (!account) {
-      throw new Error("invalidResetToken");
-    }
-    store.accounts[key] = { ...account, password: hash };
+    applyPasswordHash(store, key, hash);
   });
 }
 
 export function consumeResetToken(token: string, newPassword: string): void {
-  const { email } = peekResetToken(token);
-  if (!isKnownAccount(email)) {
-    updateStore((s) => {
-      delete s.resetTokens[token];
+  const store = readStore();
+  const record = store.resetTokens[token];
+  if (!record) {
+    throw new Error("invalidResetToken");
+  }
+  if (Date.now() > record.expiresAt) {
+    throw new Error("expiredResetToken");
+  }
+  const email = record.email;
+  if (!isDemoEmail(email) && !store.accounts[email]) {
+    updateStore((next) => {
+      pruneResetTokens(next, Date.now());
+      delete next.resetTokens[token];
     });
     throw new Error("invalidResetToken");
   }
   assertPasswordLength(newPassword);
-  setAccountPassword(email, newPassword);
-  updateStore((s) => {
-    delete s.resetTokens[token];
+  const hash = hashPassword(newPassword);
+  const now = Date.now();
+  updateStore((next) => {
+    pruneResetTokens(next, now);
+    delete next.resetTokens[token];
+    applyPasswordHash(next, email, hash);
   });
 }
 

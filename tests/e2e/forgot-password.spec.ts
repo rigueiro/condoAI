@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { test, expect, type Page } from "@playwright/test";
 
 const DEMO_EMAIL = "admin@condoai.pt";
@@ -7,6 +9,19 @@ const NEW_PASSWORD = "newpass99";
 async function clearAuthState(page: Page) {
   await page.context().clearCookies();
   await page.goto("/");
+}
+
+function latestResetTokenFor(email: string): string {
+  const storePath = path.join(process.cwd(), ".data", "store.json");
+  const store = JSON.parse(readFileSync(storePath, "utf8")) as {
+    resetTokens?: Record<string, { email: string; expiresAt: number }>;
+  };
+  const key = email.trim().toLowerCase();
+  const matches = Object.entries(store.resetTokens ?? {}).filter(
+    ([, record]) => record.email === key,
+  );
+  expect(matches).toHaveLength(1);
+  return matches[0][0];
 }
 
 test.describe("Forgot password flow", () => {
@@ -58,14 +73,16 @@ test.describe("Forgot password flow", () => {
       .click();
 
     const res = await resetResponse;
-    const body = (await res.json()) as { demoResetToken?: string };
-    expect(body.demoResetToken).toBeTruthy();
+    expect(res.ok()).toBeTruthy();
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body).not.toHaveProperty("demoResetToken");
+    expect(body).not.toHaveProperty("token");
 
     await expect(
       page.getByRole("heading", { name: "Verifique o seu email" }),
     ).toBeVisible();
 
-    await page.goto(`/pt/reset-password?token=${body.demoResetToken}`);
+    await page.goto(`/pt/reset-password?token=${latestResetTokenFor(DEMO_EMAIL)}`);
     await expect(
       page.getByRole("heading", { name: "Escolha uma nova senha" }),
     ).toBeVisible();
@@ -95,10 +112,6 @@ test.describe("Forgot password flow", () => {
     await expect(page).toHaveURL(/\/pt\/dashboard/, { timeout: 15_000 });
 
     // Restore default demo password for other tests / local reuse.
-    await page.request.post("/api/auth/forgot-password", {
-      data: { email: DEMO_EMAIL },
-    });
-    // Use a second reset via API if we have a token — or change password while logged in.
     await page.request.post("/api/auth/password", {
       data: {
         currentPassword: NEW_PASSWORD,

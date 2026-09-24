@@ -9,11 +9,7 @@ import {
 } from "react";
 import type { User } from "@/app/types";
 import { apiFetch } from "@/lib/api/client";
-import {
-  AuthContext,
-  type AuthContextValue,
-  type PasswordResetRequestResult,
-} from "./auth-context";
+import { AuthContext, type AuthContextValue } from "./auth-context";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -124,15 +120,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 
   const requestPasswordReset = useCallback(
-    async (email: string): Promise<PasswordResetRequestResult> => {
+    async (email: string): Promise<void> => {
       setError(null);
-      return apiFetch<PasswordResetRequestResult>(
-        "/api/auth/forgot-password",
-        {
-          method: "POST",
-          body: JSON.stringify({ email }),
-        },
-      );
+      await apiFetch("/api/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
     },
     [],
   );

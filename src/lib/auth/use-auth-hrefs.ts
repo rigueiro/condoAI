@@ -16,11 +16,6 @@ export function useAuthHrefs() {
       forgotPassword: localeHref(locale, "/forgot-password"),
       resetPassword: (token: string) =>
         localeHref(locale, "/reset-password", { token }),
-      absoluteResetPassword: (token: string) => {
-        const path = localeHref(locale, "/reset-password", { token });
-        if (typeof window === "undefined") return path;
-        return `${window.location.origin}${path}`;
-      },
     }),
     [locale],
   );

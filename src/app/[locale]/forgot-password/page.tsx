@@ -52,14 +52,9 @@ function ForgotPasswordPage() {
 
     setIsSubmitting(true);
     try {
-      const result = await requestPasswordReset(email);
-      // Never reveal whether the account exists in the UI. In development,
-      // log the reset link so demos / e2e can continue without email.
-      if (isDev && result.demoResetToken) {
-        console.info(
-          `[CondoAI demo] Password reset link for ${email.trim()}: ${hrefs.absoluteResetPassword(result.demoResetToken)}`,
-        );
-      }
+      // Never reveal whether the account exists. In development the
+      // reset link is logged on the server, not returned to the client.
+      await requestPasswordReset(email);
       setSubmittedEmail(email.trim());
     } catch {
       setErrors({ general: t("emailInvalid") });
