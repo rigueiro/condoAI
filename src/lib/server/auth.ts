@@ -13,6 +13,11 @@ import {
   type StoredAccount,
 } from "./store";
 import {
+  hashPassword,
+  isPasswordHash,
+  passwordMatches,
+} from "./password";
+import {
   ensurePortalDemoAccounts,
   PORTAL_DEMO_BOARD_EMAIL,
   PORTAL_DEMO_OWNER_EMAIL,
@@ -71,23 +76,46 @@ export function isKnownAccount(email: string): boolean {
   return Boolean(readStore().accounts[key]);
 }
 
+function storedSecretFor(email: string): string | null {
+  const key = normalizeEmail(email);
+  const store = readStore();
+  if (isDemoEmail(key)) {
+    return store.demoPassword || DEFAULT_PASSWORD;
+  }
+  return store.accounts[key]?.password ?? null;
+}
+
 export function verifyCredentials(email: string, password: string): boolean {
   const key = normalizeEmail(email);
   ensurePortalSeedIfNeeded(key);
-  const store = readStore();
-  if (isDemoEmail(key)) {
-    return password === (store.demoPassword || DEFAULT_PASSWORD);
-  }
-  const account = store.accounts[key];
-  return account != null && account.password === password;
+  return passwordMatches(storedSecretFor(key), password);
+}
+
+function persistPasswordHash(email: string, hash: string): void {
+  const key = normalizeEmail(email);
+  updateStore((store) => {
+    if (isDemoEmail(key)) {
+      store.demoPassword = hash;
+      return;
+    }
+    const account = store.accounts[key];
+    if (!account) return;
+    store.accounts[key] = { ...account, password: hash };
+  });
 }
 
 export function loginUser(
   email: string,
   password: string,
 ): User {
-  if (!verifyCredentials(email, password)) {
+  const key = normalizeEmail(email);
+  ensurePortalSeedIfNeeded(key);
+  const stored = storedSecretFor(key);
+  if (!passwordMatches(stored, password)) {
     throw new Error("invalidCredentials");
+  }
+  if (stored && !isPasswordHash(stored)) {
+    persistPasswordHash(key, hashPassword(password));
   }
   return resolveUser(email);
 }
@@ -110,7 +138,7 @@ export function registerAccount(
     id: crypto.randomUUID(),
     email: key,
     name: name.trim(),
-    password,
+    password: hashPassword(password),
     role: "Property Manager",
     roleCode: UserRole.PropertyManager,
     avatar: null,
@@ -152,15 +180,16 @@ export function peekResetToken(token: string): { email: string } {
 function setAccountPassword(email: string, newPassword: string): void {
   const key = normalizeEmail(email);
   updateStore((store) => {
+    const hash = hashPassword(newPassword);
     if (isDemoEmail(key)) {
-      store.demoPassword = newPassword;
+      store.demoPassword = hash;
       return;
     }
     const account = store.accounts[key];
     if (!account) {
       throw new Error("invalidResetToken");
     }
-    store.accounts[key] = { ...account, password: newPassword };
+    store.accounts[key] = { ...account, password: hash };
   });
 }
 

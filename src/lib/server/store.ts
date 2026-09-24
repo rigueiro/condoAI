@@ -22,6 +22,7 @@ export interface StoredAccount {
   id: string;
   email: string;
   name: string;
+  /** bcrypt hash; legacy plaintext is upgraded on login or password change. */
   password: string;
   role: string;
   roleCode?: UserRole;
@@ -41,6 +42,7 @@ export interface StoredResetToken {
 }
 
 export interface StoreDocument {
+  /** bcrypt hash of the shared demo password; may still be plaintext until first use. */
   demoPassword: string;
   accounts: Record<string, StoredAccount>;
   sessions: Record<string, StoredSession>;

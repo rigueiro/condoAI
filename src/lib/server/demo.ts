@@ -31,6 +31,7 @@ import type { CondoMembership } from "@/lib/memberships/types";
 import { mockAssemblies } from "@/fixtures/assemblies";
 import type { OrgTeamMember } from "@/lib/team/types";
 import { DEMO_EMAIL, DEFAULT_PASSWORD } from "@/lib/auth/constants";
+import { hashPassword, isPasswordHash, toPasswordHash } from "./password";
 import { seedDemoLegalProcesses } from "./legal-processes";
 import { listTeamMembers } from "./org-team";
 import { readStore, updateStore, type StoredAccount } from "./store";
@@ -250,13 +251,51 @@ function ensureDemoTeam(hostEmail: string): void {
   });
 }
 
+function hashedDemoSecret(store: { demoPassword: string }): string {
+  const current = store.demoPassword || DEFAULT_PASSWORD;
+  if (isPasswordHash(current)) return current;
+  const hashed = hashPassword(current);
+  store.demoPassword = hashed;
+  return hashed;
+}
+
+function upsertPortalDemoAccounts(
+  store: { accounts: Record<string, StoredAccount>; demoPassword: string },
+): void {
+  const password = hashedDemoSecret(store);
+  for (const account of portalDemoAccounts(password)) {
+    const existing = store.accounts[account.email];
+    if (!existing) {
+      store.accounts[account.email] = account;
+      continue;
+    }
+    if (!isPasswordHash(existing.password)) {
+      store.accounts[account.email] = {
+        ...existing,
+        password: toPasswordHash(existing.password),
+      };
+    }
+  }
+}
+
+function portalDemoNeedsWrite(store: {
+  accounts: Record<string, StoredAccount>;
+  demoPassword: string;
+  membershipsByHost: Record<string, unknown[]>;
+}): boolean {
+  if (!isPasswordHash(store.demoPassword || DEFAULT_PASSWORD)) return true;
+  if ((store.membershipsByHost[DEMO_EMAIL] ?? []).length === 0) return true;
+  return [PORTAL_DEMO_BOARD_EMAIL, PORTAL_DEMO_OWNER_EMAIL].some((email) => {
+    const existing = store.accounts[email];
+    return !existing || !isPasswordHash(existing.password);
+  });
+}
+
 /** Seeds board/owner demo logins + memberships (idempotent). */
 export function ensurePortalDemoAccounts(): void {
+  if (!portalDemoNeedsWrite(readStore())) return;
   updateStore((store) => {
-    const password = store.demoPassword || DEFAULT_PASSWORD;
-    for (const account of portalDemoAccounts(password)) {
-      store.accounts[account.email] ??= account;
-    }
+    upsertPortalDemoAccounts(store);
     if ((store.membershipsByHost[DEMO_EMAIL] ?? []).length === 0) {
       store.membershipsByHost[DEMO_EMAIL] = portalDemoMemberships(
         new Date().toISOString(),
@@ -295,10 +334,7 @@ export function restoreDemoWorkspace(): Portfolio {
     store.works[key] = buildDemoWorks();
     store.board[key] = buildDemoBoard();
 
-    const password = store.demoPassword || DEFAULT_PASSWORD;
-    for (const account of portalDemoAccounts(password)) {
-      store.accounts[account.email] ??= account;
-    }
+    upsertPortalDemoAccounts(store);
     if ((store.membershipsByHost[key] ?? []).length === 0) {
       store.membershipsByHost[key] = portalDemoMemberships(
         new Date().toISOString(),
