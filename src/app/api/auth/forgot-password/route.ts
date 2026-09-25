@@ -5,7 +5,8 @@ import {
 } from "@/lib/server/auth";
 import { isPlaygroundMode } from "@/lib/server/playground-mode";
 import { apiRoute } from "@/lib/server/api-route";
-import { jsonError, jsonOk } from "@/lib/server/http";
+import { jsonError, jsonOk, jsonRateLimited } from "@/lib/server/http";
+import { enforceRateLimit } from "@/lib/server/rate-limit";
 import { routing, type Locale } from "@/i18n/routing";
 
 function localeFromRequest(request: Request): Locale {
@@ -31,6 +32,10 @@ export const POST = apiRoute(async (request) => {
   const email = body.email?.trim() ?? "";
   if (!email) {
     return NextResponse.json({ error: "invalidEmail" }, { status: 400 });
+  }
+  const limited = enforceRateLimit(request, "forgot-password", email);
+  if (!limited.ok) {
+    return jsonRateLimited(limited.retryAfterSec);
   }
   // Never reveal whether the account exists, and never return the token.
   if (isKnownAccount(email)) {

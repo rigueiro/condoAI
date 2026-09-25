@@ -35,6 +35,7 @@ const LOGIN_ERROR_KEYS = [
   "invalidCredentials",
   "loginFailed",
   "logoutFailed",
+  "tooManyRequests",
 ] as const;
 
 function Login() {

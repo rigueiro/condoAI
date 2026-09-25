@@ -8,7 +8,8 @@ import {
   createSession,
 } from "@/lib/server/session";
 import { apiRoute } from "@/lib/server/api-route";
-import { jsonOk } from "@/lib/server/http";
+import { jsonOk, jsonRateLimited } from "@/lib/server/http";
+import { enforceRateLimit, resetRateLimit } from "@/lib/server/rate-limit";
 
 export const POST = apiRoute(async (request) => {
   const body = (await request.json()) as {
@@ -24,12 +25,18 @@ export const POST = apiRoute(async (request) => {
       { status: 400 },
     );
   }
+  const limited = enforceRateLimit(request, "login", email);
+  if (!limited.ok) {
+    return jsonRateLimited(limited.retryAfterSec);
+  }
   if (isPlaygroundMode()) {
     ensurePlaygroundWorkspace();
     loginUser(email, password);
+    resetRateLimit(limited.pairKey);
     return startPlaygroundSession(email);
   }
   const user = loginUser(email, password);
+  resetRateLimit(limited.pairKey);
   const rememberMe = Boolean(body.rememberMe);
   const { sessionId } = createSession(user.email, rememberMe);
   const response = jsonOk({ user });

@@ -12,6 +12,16 @@ export function jsonError(
   return NextResponse.json({ error: code }, { status });
 }
 
+export function jsonRateLimited(retryAfterSec: number): NextResponse {
+  return NextResponse.json(
+    { error: "tooManyRequests" },
+    {
+      status: 429,
+      headers: { "Retry-After": String(Math.max(1, retryAfterSec)) },
+    },
+  );
+}
+
 const ERROR_STATUS: Record<string, number> = {
   invalidCredentials: 401,
   unauthorized: 401,
@@ -85,6 +95,7 @@ const ERROR_STATUS: Record<string, number> = {
   playgroundDisabled: 403,
   playgroundUnavailable: 503,
   playgroundStoreUnbound: 500,
+  tooManyRequests: 429,
 };
 
 export function handleRouteError(err: unknown): NextResponse {

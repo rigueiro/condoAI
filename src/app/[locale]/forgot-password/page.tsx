@@ -20,6 +20,7 @@ type Errors = {
 
 function ForgotPasswordPage() {
   const t = useTranslations("auth.passwordReset.forgot");
+  const tAuth = useTranslations("auth");
   const { requestPasswordReset } = useAuth();
   const hrefs = useAuthHrefs();
 
@@ -56,8 +57,14 @@ function ForgotPasswordPage() {
       // reset link is logged on the server, not returned to the client.
       await requestPasswordReset(email);
       setSubmittedEmail(email.trim());
-    } catch {
-      setErrors({ general: t("emailInvalid") });
+    } catch (error) {
+      const messageKey = error instanceof Error ? error.message : "";
+      setErrors({
+        general:
+          messageKey === "tooManyRequests"
+            ? tAuth("tooManyRequests")
+            : t("emailInvalid"),
+      });
     } finally {
       setIsSubmitting(false);
     }
