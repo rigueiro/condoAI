@@ -33,31 +33,24 @@ function normalizeOccurrences(parsed: OccurrencesState): OccurrencesState {
   };
 }
 
-function loadOrSeedOccurrences(email: string): {
+function loadOccurrences(email: string): {
   key: string;
   state: OccurrencesState;
-  seeded: boolean;
 } {
   const key = email.trim().toLowerCase();
   const existing = readStore().occurrences[key];
   if (existing) {
-    return { key, state: normalizeOccurrences(existing), seeded: false };
+    return { key, state: normalizeOccurrences(existing) };
   }
   if (isDemoEmail(key)) {
-    return { key, state: buildDemoOccurrences(), seeded: true };
+    return { key, state: buildDemoOccurrences() };
   }
-  return { key, state: { ...EMPTY_OCCURRENCES }, seeded: false };
+  return { key, state: { ...EMPTY_OCCURRENCES } };
 }
 
-/** Load occurrences. Seeds demo fixtures when missing. */
+/** Load occurrences. Demo fixtures are in-memory until a mutation persists them. */
 export function getOccurrences(email: string): OccurrencesState {
-  const { key, state, seeded } = loadOrSeedOccurrences(email);
-  if (seeded) {
-    const store = readStore();
-    store.occurrences[key] = state;
-    writeStore(store);
-  }
-  return state;
+  return loadOccurrences(email).state;
 }
 
 /** Single read→mutate→write, including first-touch demo seed. */
@@ -65,7 +58,7 @@ function mutateOccurrences(
   email: string,
   mutator: (current: OccurrencesState) => OccurrencesState,
 ): OccurrencesState {
-  const { key, state } = loadOrSeedOccurrences(email);
+  const { key, state } = loadOccurrences(email);
   const next = normalizeOccurrences(mutator(state));
   const store = readStore();
   store.occurrences[key] = next;

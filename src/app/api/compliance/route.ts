@@ -11,7 +11,6 @@ import {
 import {
   listLegalProcesses,
   openLegalProcess,
-  seedDemoLegalProcesses,
   updateLegalProcess,
 } from "@/lib/server/legal-processes";
 import { requireManagerAccess } from "@/lib/server/manager-access";
@@ -39,7 +38,6 @@ const PATCH_PERMISSION: Record<string, ManagerAction> = {
 export const GET = apiRoute(async function GET() {
   try {
     const ctx = await requireManagerAccess("readCompliance");
-    seedDemoLegalProcesses(ctx.workspaceEmail);
     return jsonOk({
       state: getCompliance(ctx.workspaceEmail),
       legalProcesses: listLegalProcesses(ctx.workspaceEmail),

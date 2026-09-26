@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { loginUser } from "@/lib/server/auth";
-import { ensurePlaygroundWorkspace } from "@/lib/server/demo";
+import { ensureDemoWorkspace } from "@/lib/server/demo";
 import { isPlaygroundMode } from "@/lib/server/playground-mode";
 import { startPlaygroundSession } from "@/lib/server/playground-session";
 import {
@@ -30,13 +30,13 @@ export const POST = apiRoute(async (request) => {
     return jsonRateLimited(limited.retryAfterSec);
   }
   if (isPlaygroundMode()) {
-    ensurePlaygroundWorkspace();
     loginUser(email, password);
     resetRateLimit(limited.pairKey);
     return startPlaygroundSession(email);
   }
   const user = loginUser(email, password);
   resetRateLimit(limited.pairKey);
+  ensureDemoWorkspace(user.email);
   const rememberMe = Boolean(body.rememberMe);
   const { sessionId } = createSession(user.email, rememberMe);
   const response = jsonOk({ user });

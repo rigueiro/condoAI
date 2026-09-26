@@ -23,31 +23,24 @@ function normalizeOperations(parsed: OperationsState): OperationsState {
   };
 }
 
-function loadOrSeedOperations(email: string): {
+function loadOperations(email: string): {
   key: string;
   state: OperationsState;
-  seeded: boolean;
 } {
   const key = email.trim().toLowerCase();
   const existing = readStore().operations[key];
   if (existing) {
-    return { key, state: normalizeOperations(existing), seeded: false };
+    return { key, state: normalizeOperations(existing) };
   }
   if (isDemoEmail(key)) {
-    return { key, state: buildDemoOperations(), seeded: true };
+    return { key, state: buildDemoOperations() };
   }
-  return { key, state: { ...EMPTY_OPERATIONS }, seeded: false };
+  return { key, state: { ...EMPTY_OPERATIONS } };
 }
 
-/** Load operations. Seeds demo fixtures when missing. */
+/** Load operations. Demo fixtures are in-memory until a mutation persists them. */
 export function getOperations(email: string): OperationsState {
-  const { key, state, seeded } = loadOrSeedOperations(email);
-  if (seeded) {
-    const store = readStore();
-    store.operations[key] = state;
-    writeStore(store);
-  }
-  return state;
+  return loadOperations(email).state;
 }
 
 /** Single read→mutate→write, including first-touch demo seed. */
@@ -55,7 +48,7 @@ function mutateOperations(
   email: string,
   mutator: (current: OperationsState) => OperationsState,
 ): OperationsState {
-  const { key, state } = loadOrSeedOperations(email);
+  const { key, state } = loadOperations(email);
   const next = normalizeOperations(mutator(state));
   const store = readStore();
   store.operations[key] = next;
@@ -83,7 +76,7 @@ function worksUsesVendor(email: string, vendorId: string): boolean {
 export function deleteVendor(email: string, id: string): OperationsState {
   const key = email.trim().toLowerCase();
   const store = readStore();
-  const { state } = loadOrSeedOperations(email);
+  const { state } = loadOperations(email);
   const inUse =
     state.contracts.some((c) => c.vendorId === id) ||
     store.finance[key]?.expenses.some((e) => e.vendorId === id) ||

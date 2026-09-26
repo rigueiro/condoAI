@@ -90,32 +90,32 @@ function condominiumIdForOwner(email: string, ownerId: string): string {
   return occupanciesForOwner(portfolio.units, ownerId)[0]?.unit.condominiumId ?? "";
 }
 
-/** Load collections. Skips portfolio lookup when quotas already exist. */
-export function getCollections(email: string): CollectionsState {
+function loadCollections(email: string): {
+  key: string;
+  state: CollectionsState;
+} {
   const key = email.trim().toLowerCase();
-  const store = readStore();
-  const existing = store.collections[key];
+  const existing = readStore().collections[key];
 
   if (existing?.quotas.length) {
-    const next = normalizeCollections(existing);
-    const needsWrite =
-      next.receipts.length !== (existing.receipts?.length ?? 0) ||
-      !existing.receiptSeqByYear ||
-      !Array.isArray(existing.agreements);
-    return needsWrite ? saveCollections(key, next) : next;
+    return { key, state: normalizeCollections(existing) };
   }
-
   if (isDemoEmail(key)) {
-    return saveCollections(key, buildDemoCollections());
+    return { key, state: buildDemoCollections() };
   }
-
   const owners = getPortfolio(key).owners;
   if (owners.length === 0) {
-    if (existing) return normalizeCollections(existing);
-    return saveCollections(key, { ...EMPTY_COLLECTIONS });
+    return {
+      key,
+      state: existing ? normalizeCollections(existing) : { ...EMPTY_COLLECTIONS },
+    };
   }
+  return { key, state: seedQuotasForOwners(owners) };
+}
 
-  return saveCollections(key, seedQuotasForOwners(owners));
+/** Load collections. Demo fixtures are in-memory until a mutation persists them. */
+export function getCollections(email: string): CollectionsState {
+  return loadCollections(email).state;
 }
 
 export function upsertQuota(

@@ -59,7 +59,6 @@ export function assertPasswordLength(password: string): void {
 
 export function resolveUser(email: string): User {
   const key = normalizeEmail(email);
-  ensurePortalSeedIfNeeded(key);
   if (isDemoEmail(key)) {
     return { ...DEMO_USER, email: key };
   }

@@ -24,31 +24,24 @@ function normalizeCompliance(parsed: ComplianceState): ComplianceState {
   };
 }
 
-function loadOrSeedCompliance(email: string): {
+function loadCompliance(email: string): {
   key: string;
   state: ComplianceState;
-  seeded: boolean;
 } {
   const key = email.trim().toLowerCase();
   const existing = readStore().compliance[key];
   if (existing) {
-    return { key, state: normalizeCompliance(existing), seeded: false };
+    return { key, state: normalizeCompliance(existing) };
   }
   if (isDemoEmail(key)) {
-    return { key, state: buildDemoCompliance(), seeded: true };
+    return { key, state: buildDemoCompliance() };
   }
-  return { key, state: { ...EMPTY_COMPLIANCE }, seeded: false };
+  return { key, state: { ...EMPTY_COMPLIANCE } };
 }
 
-/** Load compliance. Seeds demo fixtures when missing. */
+/** Load compliance. Demo fixtures are in-memory until a mutation persists them. */
 export function getCompliance(email: string): ComplianceState {
-  const { key, state, seeded } = loadOrSeedCompliance(email);
-  if (seeded) {
-    const store = readStore();
-    store.compliance[key] = state;
-    writeStore(store);
-  }
-  return state;
+  return loadCompliance(email).state;
 }
 
 /** Single read→mutate→write, including first-touch demo seed. */
@@ -56,7 +49,7 @@ function mutateCompliance(
   email: string,
   mutator: (current: ComplianceState) => ComplianceState,
 ): ComplianceState {
-  const { key, state } = loadOrSeedCompliance(email);
+  const { key, state } = loadCompliance(email);
   const next = normalizeCompliance(mutator(state));
   const store = readStore();
   store.compliance[key] = next;

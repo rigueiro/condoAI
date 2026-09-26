@@ -20,20 +20,19 @@ import { getAssemblies } from "./assemblies";
 import { getPortfolio } from "./portfolio";
 import { readStore, writeStore } from "./store";
 
-function loadOrSeed(email: string): {
+function loadBoard(email: string): {
   key: string;
   state: BoardState;
-  seeded: boolean;
 } {
   const key = email.trim().toLowerCase();
   const existing = readStore().board?.[key];
   if (existing) {
-    return { key, state: normalizeBoard(existing), seeded: false };
+    return { key, state: normalizeBoard(existing) };
   }
   if (isDemoEmail(key)) {
-    return { key, state: normalizeBoard(mockBoardState()), seeded: true };
+    return { key, state: normalizeBoard(mockBoardState()) };
   }
-  return { key, state: { ...EMPTY_BOARD }, seeded: false };
+  return { key, state: { ...EMPTY_BOARD } };
 }
 
 function persist(key: string, state: BoardState): void {
@@ -44,16 +43,14 @@ function persist(key: string, state: BoardState): void {
 }
 
 export function getBoard(email: string): BoardState {
-  const { key, state, seeded } = loadOrSeed(email);
-  if (seeded) persist(key, state);
-  return state;
+  return loadBoard(email).state;
 }
 
 function mutate(
   email: string,
   mutator: (current: BoardState) => BoardState,
 ): BoardState {
-  const { key, state } = loadOrSeed(email);
+  const { key, state } = loadBoard(email);
   const next = normalizeBoard(mutator(state));
   persist(key, next);
   return next;

@@ -69,31 +69,24 @@ function normalizeFinance(parsed: FinanceState): FinanceState {
   };
 }
 
-function loadOrSeedFinance(email: string): {
+function loadFinance(email: string): {
   key: string;
   state: FinanceState;
-  seeded: boolean;
 } {
   const key = email.trim().toLowerCase();
   const existing = readStore().finance[key];
   if (existing) {
-    return { key, state: normalizeFinance(existing), seeded: false };
+    return { key, state: normalizeFinance(existing) };
   }
   if (isDemoEmail(key)) {
-    return { key, state: buildDemoFinance(), seeded: true };
+    return { key, state: buildDemoFinance() };
   }
-  return { key, state: { ...EMPTY_FINANCE }, seeded: false };
+  return { key, state: { ...EMPTY_FINANCE } };
 }
 
-/** Load finance. Seeds demo fixtures when missing. */
+/** Load finance. Demo fixtures are in-memory until a mutation persists them. */
 export function getFinance(email: string): FinanceState {
-  const { key, state, seeded } = loadOrSeedFinance(email);
-  if (seeded) {
-    const store = readStore();
-    store.finance[key] = state;
-    writeStore(store);
-  }
-  return state;
+  return loadFinance(email).state;
 }
 
 /** Single read→mutate→write, including first-touch demo seed. */
@@ -101,7 +94,7 @@ function mutateFinance(
   email: string,
   mutator: (current: FinanceState) => FinanceState,
 ): FinanceState {
-  const { key, state } = loadOrSeedFinance(email);
+  const { key, state } = loadFinance(email);
   const next = normalizeFinance(mutator(state));
   const store = readStore();
   store.finance[key] = next;

@@ -29,12 +29,12 @@ import { mockBoardState } from "@/fixtures/board";
 import type { BoardState } from "@/lib/board/types";
 import type { CondoMembership } from "@/lib/memberships/types";
 import { mockAssemblies } from "@/fixtures/assemblies";
+import type { AnnouncementsState } from "@/lib/announcements/types";
 import type { OrgTeamMember } from "@/lib/team/types";
-import { DEMO_EMAIL, DEFAULT_PASSWORD } from "@/lib/auth/constants";
+import { DEMO_EMAIL, DEFAULT_PASSWORD, isDemoEmail } from "@/lib/auth/constants";
 import { hashPassword, isPasswordHash, toPasswordHash } from "./password";
-import { seedDemoLegalProcesses } from "./legal-processes";
-import { listTeamMembers } from "./org-team";
-import { readStore, updateStore, type StoredAccount } from "./store";
+import { seedDemoLegalProcesses, demoLegalSeedNeeded } from "./legal-processes";
+import { readStore, updateStore, type StoreDocument, type StoredAccount } from "./store";
 
 export const DEMO_ORGANIZATION: Organization = {
   name: "CondoAI Lda.",
@@ -140,6 +140,24 @@ export function buildDemoAssemblies(): AssembliesState {
   };
 }
 
+export function buildDemoAnnouncements(): AnnouncementsState {
+  return {
+    announcements: [
+      {
+        id: "ann-1",
+        condominiumId: "1",
+        subject: "Elevator maintenance — 28 September",
+        body: "The main elevator will be out of service on 28 September from 09:00 to 17:00 for annual inspection. Please use the service elevator.",
+        audience: "all",
+        createdAt: "2025-09-20T10:00:00.000Z",
+        sentAt: "2025-09-20T10:00:00.000Z",
+        createdBy: DEMO_EMAIL,
+        recipientCount: 12,
+      },
+    ],
+  };
+}
+
 function portalDemoAccounts(password: string): StoredAccount[] {
   return [
     {
@@ -237,18 +255,12 @@ function demoTeamMembers(now: string): OrgTeamMember[] {
   ];
 }
 
-function ensureDemoTeam(hostEmail: string): void {
-  listTeamMembers(hostEmail);
-  updateStore((store) => {
-    const key = hostEmail.trim().toLowerCase();
-    const existing = store.orgTeamsByHost[key] ?? [];
-    if (existing.length > 1) return;
-    const now = new Date().toISOString();
-    store.orgTeamsByHost[key] = [
-      ...existing,
-      ...demoTeamMembers(now),
-    ];
-  });
+function seedDemoTeam(store: StoreDocument, hostEmail: string): void {
+  const key = hostEmail.trim().toLowerCase();
+  const existing = store.orgTeamsByHost[key] ?? [];
+  if (existing.length > 1) return;
+  const now = new Date().toISOString();
+  store.orgTeamsByHost[key] = [...existing, ...demoTeamMembers(now)];
 }
 
 function hashedDemoSecret(store: { demoPassword: string }): string {
@@ -291,16 +303,20 @@ function portalDemoNeedsWrite(store: {
   });
 }
 
+function applyPortalDemoAccounts(store: StoreDocument): void {
+  upsertPortalDemoAccounts(store);
+  if ((store.membershipsByHost[DEMO_EMAIL] ?? []).length === 0) {
+    store.membershipsByHost[DEMO_EMAIL] = portalDemoMemberships(
+      new Date().toISOString(),
+    );
+  }
+}
+
 /** Seeds board/owner demo logins + memberships (idempotent). */
 export function ensurePortalDemoAccounts(): void {
   if (!portalDemoNeedsWrite(readStore())) return;
   updateStore((store) => {
-    upsertPortalDemoAccounts(store);
-    if ((store.membershipsByHost[DEMO_EMAIL] ?? []).length === 0) {
-      store.membershipsByHost[DEMO_EMAIL] = portalDemoMemberships(
-        new Date().toISOString(),
-      );
-    }
+    applyPortalDemoAccounts(store);
   });
 }
 
@@ -308,12 +324,30 @@ export function ensurePortalDemoAccounts(): void {
  * Seed fixtures when this playground session has no manager workspace yet.
  */
 export function ensurePlaygroundWorkspace(): void {
-  const existing = readStore().portfolios[DEMO_EMAIL];
-  if (existing?.condominiums?.length) {
-    ensurePortalDemoAccounts();
+  const store = readStore();
+  const existing = store.portfolios[DEMO_EMAIL];
+  if (!existing?.condominiums?.length) {
+    restoreDemoWorkspace();
     return;
   }
-  restoreDemoWorkspace();
+  if (
+    !portalDemoNeedsWrite(store) &&
+    !demoLegalSeedNeeded(store, DEMO_EMAIL)
+  ) {
+    return;
+  }
+  updateStore((next) => {
+    if (portalDemoNeedsWrite(next)) {
+      applyPortalDemoAccounts(next);
+    }
+    seedDemoLegalProcesses(next, DEMO_EMAIL);
+  });
+}
+
+/** Demo login: seed portal extras, or restore the fixture workspace if it is missing. */
+export function ensureDemoWorkspace(email: string): void {
+  if (!isDemoEmail(email)) return;
+  ensurePlaygroundWorkspace();
 }
 
 /**
@@ -333,15 +367,11 @@ export function restoreDemoWorkspace(): Portfolio {
     store.operations[key] = buildDemoOperations();
     store.works[key] = buildDemoWorks();
     store.board[key] = buildDemoBoard();
+    store.announcements[key] = buildDemoAnnouncements();
 
-    upsertPortalDemoAccounts(store);
-    if ((store.membershipsByHost[key] ?? []).length === 0) {
-      store.membershipsByHost[key] = portalDemoMemberships(
-        new Date().toISOString(),
-      );
-    }
-    ensureDemoTeam(key);
-    seedDemoLegalProcesses(key);
+    applyPortalDemoAccounts(store);
+    seedDemoTeam(store, key);
+    seedDemoLegalProcesses(store, key);
   });
   return portfolio;
 }

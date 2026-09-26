@@ -1,11 +1,11 @@
 import { isDemoEmail } from "@/lib/auth/constants";
-import { mockWorksState } from "@/fixtures/works";
 import type { Assembly } from "@/lib/assemblies/types";
 import { issueExtraordinaryQuotaRecord } from "./finance";
 import { getAssemblies } from "./assemblies";
 import { getOperations, putVendor } from "./operations";
 import { getPortfolio } from "./portfolio";
 import { mockVendors } from "@/fixtures/domain";
+import { buildDemoWorks } from "./demo";
 import { readStore, writeStore } from "./store";
 import { sanitizeOccurrencePhotos } from "@/lib/occurrences/photos";
 import {
@@ -37,20 +37,19 @@ import {
   type WorksState,
 } from "@/lib/works/types";
 
-function loadOrSeedWorks(email: string): {
+function loadWorks(email: string): {
   key: string;
   state: WorksState;
-  seeded: boolean;
 } {
   const key = email.trim().toLowerCase();
   const existing = readStore().works?.[key];
   if (existing) {
-    return { key, state: normalizeWorks(existing), seeded: false };
+    return { key, state: normalizeWorks(existing) };
   }
   if (isDemoEmail(key)) {
-    return { key, state: normalizeWorks(mockWorksState()), seeded: true };
+    return { key, state: normalizeWorks(buildDemoWorks()) };
   }
-  return { key, state: { ...EMPTY_WORKS }, seeded: false };
+  return { key, state: { ...EMPTY_WORKS } };
 }
 
 function persistWorks(key: string, state: WorksState): void {
@@ -61,7 +60,7 @@ function persistWorks(key: string, state: WorksState): void {
 }
 
 function peekWorks(email: string): WorksState {
-  return loadOrSeedWorks(email).state;
+  return loadWorks(email).state;
 }
 
 function ensureDemoWorksVendors(email: string): void {
@@ -76,17 +75,15 @@ function ensureDemoWorksVendors(email: string): void {
 }
 
 export function getWorks(email: string): WorksState {
-  const { key, state, seeded } = loadOrSeedWorks(email);
-  if (seeded) persistWorks(key, state);
-  ensureDemoWorksVendors(email);
-  return state;
+  return loadWorks(email).state;
 }
 
 function mutateWorks(
   email: string,
   mutator: (current: WorksState) => WorksState,
 ): WorksState {
-  const { key, state } = loadOrSeedWorks(email);
+  ensureDemoWorksVendors(email);
+  const { key, state } = loadWorks(email);
   const next = normalizeWorks(mutator(state));
   persistWorks(key, next);
   return next;
@@ -233,7 +230,7 @@ export function cancelWorksProject(email: string, id: string): WorksState {
 }
 
 export function syncWorksFromAssembly(email: string, assembly: Assembly): void {
-  const { key, state } = loadOrSeedWorks(email);
+  const { key, state } = loadWorks(email);
   const next = syncProjectsFromAssembly(state, assembly);
   if (next === state) return;
   persistWorks(key, next);

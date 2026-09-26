@@ -1,9 +1,11 @@
 import type { LegalProcess } from "@/types";
 import { isDemoEmail } from "@/lib/auth/constants";
+import type { CollectionsState } from "@/lib/collections/types";
+import type { Portfolio } from "@/lib/portfolio/types";
+import { occupanciesForOwner } from "@/lib/portfolio/occupancy";
 import { getPortfolio } from "./portfolio";
 import { getCollections } from "./collections";
-import { occupanciesForOwner } from "@/lib/portfolio/occupancy";
-import { readStore, writeStore } from "./store";
+import { readStore, writeStore, type StoreDocument } from "./store";
 
 export type LegalProcessInput = {
   ownerId: string;
@@ -17,9 +19,81 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-function readProcesses(workspaceEmail: string): LegalProcess[] {
+function unpaidOwnerId(
+  portfolio: Portfolio,
+  collections: CollectionsState | undefined,
+): string | undefined {
+  const quotas = collections?.quotas ?? [];
+  const ranked = [
+    ...quotas.filter((quota) => quota.status === "overdue"),
+    ...quotas.filter((quota) => quota.status === "pending"),
+  ];
+  return ranked
+    .map((quota) => quota.ownerId)
+    .find((ownerId) => occupanciesForOwner(portfolio.units, ownerId).length > 0);
+}
+
+function demoLegalSubject(
+  portfolio: Portfolio,
+  collections: CollectionsState | undefined,
+): {
+  ownerId: string;
+  condominiumId: string;
+  certificateId: string | null;
+} | null {
+  const certificate = collections?.certificates[0];
+  const ownerId =
+    (certificate?.ownerId &&
+    portfolio.owners.some((owner) => owner.id === certificate.ownerId)
+      ? certificate.ownerId
+      : undefined) ??
+    unpaidOwnerId(portfolio, collections) ??
+    portfolio.owners.find(
+      (owner) => occupanciesForOwner(portfolio.units, owner.id).length > 0,
+    )?.id;
+  if (!ownerId) return null;
+  const condominiumId =
+    certificate?.condominiumId ||
+    occupanciesForOwner(portfolio.units, ownerId)[0]?.unit.condominiumId ||
+    portfolio.condominiums[0]?.id;
+  if (!condominiumId) return null;
+  return {
+    ownerId,
+    condominiumId,
+    certificateId: certificate?.id ?? null,
+  };
+}
+
+function demoLegalProcessFromStore(
+  store: StoreDocument,
+  workspaceEmail: string,
+): LegalProcess | null {
   const key = normalizeEmail(workspaceEmail);
-  return readStore().legalProcessesByHost[key] ?? [];
+  if (!isDemoEmail(key)) return null;
+  const portfolio = store.portfolios[key];
+  if (!portfolio) return null;
+  const subject = demoLegalSubject(portfolio, store.collections[key]);
+  if (!subject) return null;
+  return {
+    id: "lp-demo-1",
+    condominiumId: subject.condominiumId,
+    ownerId: subject.ownerId,
+    certificateId: subject.certificateId,
+    number: `LP-${new Date().getFullYear()}-0001`,
+    description: "Debt enforcement — certidão de dívida emitida após escalada",
+    status: "ongoing",
+    documents: [],
+    openedAt: new Date(Date.now() - 14 * 86400000).toISOString(),
+    resolvedAt: null,
+  };
+}
+
+function loadProcesses(workspaceEmail: string): LegalProcess[] {
+  const key = normalizeEmail(workspaceEmail);
+  const stored = readStore().legalProcessesByHost[key] ?? [];
+  if (stored.length > 0) return stored;
+  const demo = demoLegalProcessFromStore(readStore(), key);
+  return demo ? [demo] : [];
 }
 
 function saveProcesses(
@@ -47,7 +121,7 @@ function nextProcessNumber(
 }
 
 export function listLegalProcesses(workspaceEmail: string): LegalProcess[] {
-  return readProcesses(workspaceEmail);
+  return loadProcesses(workspaceEmail);
 }
 
 export function openLegalProcess(
@@ -78,7 +152,7 @@ export function openLegalProcess(
     ? collections.certificates.find((item) => item.id === input.certificateId)
     : undefined;
 
-  const processes = readProcesses(workspaceEmail);
+  const processes = loadProcesses(workspaceEmail);
   const year = new Date().getFullYear();
   const number = nextProcessNumber(processes, year);
   const description =
@@ -111,7 +185,7 @@ export function updateLegalProcess(
     Pick<LegalProcess, "description" | "status" | "documents" | "resolvedAt">
   >,
 ): LegalProcess {
-  const processes = readProcesses(workspaceEmail);
+  const processes = loadProcesses(workspaceEmail);
   const index = processes.findIndex((process) => process.id === id);
   if (index < 0) {
     throw new Error("notFound");
@@ -139,28 +213,23 @@ export function updateLegalProcess(
   return updated;
 }
 
-export function seedDemoLegalProcesses(workspaceEmail: string): void {
-  if (!isDemoEmail(workspaceEmail)) return;
-  if (readProcesses(workspaceEmail).length > 0) return;
+export function demoLegalSeedNeeded(
+  store: StoreDocument,
+  workspaceEmail: string,
+): boolean {
+  const key = normalizeEmail(workspaceEmail);
+  if ((store.legalProcessesByHost[key] ?? []).length > 0) return false;
+  return demoLegalProcessFromStore(store, key) !== null;
+}
 
-  const portfolio = getPortfolio(workspaceEmail);
-  const collections = getCollections(workspaceEmail);
-  const owner = portfolio.owners.find((item) => item.id === "3");
-  const certificate = collections.certificates[0];
-  if (!owner) return;
-
-  saveProcesses(workspaceEmail, [
-    {
-      id: "lp-demo-1",
-      condominiumId: "1",
-      ownerId: owner.id,
-      certificateId: certificate?.id ?? null,
-      number: `LP-${new Date().getFullYear()}-0001`,
-      description: "Debt enforcement — certidão de dívida emitida após escalada",
-      status: "ongoing",
-      documents: [],
-      openedAt: new Date(Date.now() - 14 * 86400000).toISOString(),
-      resolvedAt: null,
-    },
-  ]);
+/** Mutates `store` in place. Returns whether anything was written. */
+export function seedDemoLegalProcesses(
+  store: StoreDocument,
+  workspaceEmail: string,
+): boolean {
+  if (!demoLegalSeedNeeded(store, workspaceEmail)) return false;
+  const process = demoLegalProcessFromStore(store, normalizeEmail(workspaceEmail));
+  if (!process) return false;
+  store.legalProcessesByHost[normalizeEmail(workspaceEmail)] = [process];
+  return true;
 }

@@ -41,38 +41,30 @@ function normalizeState(parsed: AssembliesState): AssembliesState {
   };
 }
 
-function loadOrSeed(email: string): {
+function loadAssemblies(email: string): {
   key: string;
   state: AssembliesState;
-  seeded: boolean;
 } {
   const key = email.trim().toLowerCase();
   const existing = readStore().assemblies?.[key];
   if (existing) {
-    return { key, state: normalizeState(existing), seeded: false };
+    return { key, state: normalizeState(existing) };
   }
   if (isDemoEmail(key)) {
-    return { key, state: buildDemoAssemblies(), seeded: true };
+    return { key, state: buildDemoAssemblies() };
   }
-  return { key, state: { ...EMPTY_ASSEMBLIES }, seeded: false };
+  return { key, state: { ...EMPTY_ASSEMBLIES } };
 }
 
 export function getAssemblies(email: string): AssembliesState {
-  const { key, state, seeded } = loadOrSeed(email);
-  if (seeded) {
-    const store = readStore();
-    store.assemblies = store.assemblies ?? {};
-    store.assemblies[key] = state;
-    writeStore(store);
-  }
-  return state;
+  return loadAssemblies(email).state;
 }
 
 function mutate(
   email: string,
   mutator: (current: AssembliesState) => AssembliesState,
 ): AssembliesState {
-  const { key, state } = loadOrSeed(email);
+  const { key, state } = loadAssemblies(email);
   const next = normalizeState(mutator(state));
   const store = readStore();
   store.assemblies = store.assemblies ?? {};

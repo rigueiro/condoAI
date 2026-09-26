@@ -98,14 +98,10 @@ export function resolveManagerContext(sessionEmail: string): {
   return null;
 }
 
-function ensureOwnerMember(hostEmail: string): OrgTeamMember[] {
+function buildOwnerMember(hostEmail: string): OrgTeamMember {
   const key = normalizeEmail(hostEmail);
-  const existing = readTeam(key);
-  if (existing.some((member) => member.role === "owner")) {
-    return existing;
-  }
   const account = readStore().accounts[key];
-  const owner: OrgTeamMember = {
+  return {
     id: `owner-${key}`,
     memberEmail: key,
     displayName: account?.name ?? accountDisplayName(key),
@@ -115,14 +111,18 @@ function ensureOwnerMember(hostEmail: string): OrgTeamMember[] {
     activatedAt: todayIso(),
     lastActiveAt: todayIso(),
   };
-  const next = [owner, ...existing];
-  saveTeam(key, next);
-  return next;
+}
+
+function teamWithOwner(hostEmail: string): OrgTeamMember[] {
+  const existing = readTeam(hostEmail);
+  if (existing.some((member) => member.role === "owner")) {
+    return existing;
+  }
+  return [buildOwnerMember(hostEmail), ...existing];
 }
 
 export function listTeamMembers(hostEmail: string): OrgTeamMember[] {
-  const members = ensureOwnerMember(hostEmail);
-  return members.filter((member) => member.status !== "inactive");
+  return teamWithOwner(hostEmail).filter((member) => member.status !== "inactive");
 }
 
 export function inviteTeamMember(
@@ -142,7 +142,7 @@ export function inviteTeamMember(
     throw new Error("badRequest");
   }
 
-  const team = ensureOwnerMember(hostKey);
+  const team = teamWithOwner(hostKey);
   const duplicate = team.find(
     (member) =>
       member.memberEmail === memberKey && member.status !== "inactive",
@@ -179,7 +179,7 @@ export function updateTeamMemberRole(
   }
 
   const hostKey = normalizeEmail(hostEmail);
-  const team = ensureOwnerMember(hostKey);
+  const team = teamWithOwner(hostKey);
   const index = team.findIndex((member) => member.id === memberId);
   if (index < 0) {
     throw new Error("notFound");
@@ -197,7 +197,7 @@ export function updateTeamMemberRole(
 
 export function removeTeamMember(hostEmail: string, memberId: string): void {
   const hostKey = normalizeEmail(hostEmail);
-  const team = ensureOwnerMember(hostKey);
+  const team = teamWithOwner(hostKey);
   const target = team.find((member) => member.id === memberId);
   if (!target) {
     throw new Error("notFound");

@@ -18,7 +18,7 @@ import {
 } from "@/lib/portfolio/mutations";
 import { applySaleTransfer } from "@/lib/portfolio/transfer";
 import { readStore, writeStore } from "./store";
-import { restoreDemoWorkspace, ensurePortalDemoAccounts } from "./demo";
+import { buildDemoPortfolio } from "./demo";
 
 function normalizeCondominium(condo: Condominium): Condominium {
   return {
@@ -42,22 +42,19 @@ function normalizePortfolio(parsed: Portfolio): Portfolio {
 function loadPortfolio(email: string): { key: string; portfolio: Portfolio } {
   const key = email.trim().toLowerCase();
   const existing = readStore().portfolios[key];
-
-  if (isDemoEmail(key)) {
-    if (!existing?.condominiums?.length) {
-      return { key, portfolio: restoreDemoWorkspace() };
-    }
-    ensurePortalDemoAccounts();
+  if (existing?.condominiums?.length) {
     return { key, portfolio: normalizePortfolio(existing) };
   }
-
+  if (isDemoEmail(key)) {
+    return { key, portfolio: normalizePortfolio(buildDemoPortfolio()) };
+  }
   if (existing) {
     return { key, portfolio: normalizePortfolio(existing) };
   }
   return { key, portfolio: { ...EMPTY_PORTFOLIO } };
 }
 
-/** Load portfolio for email; restores demo fixtures when admin has no buildings. */
+/** Load portfolio. Demo fixtures are in-memory until a mutation persists them. */
 export function getPortfolio(email: string): Portfolio {
   return loadPortfolio(email).portfolio;
 }
