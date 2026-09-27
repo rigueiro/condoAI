@@ -52,6 +52,10 @@ export const DEMO_ORGANIZATION: Organization = {
 export const PORTAL_DEMO_BOARD_EMAIL = "board@condoai.pt";
 export const PORTAL_DEMO_OWNER_EMAIL = "owner@condoai.pt";
 
+/** Manager login seeded on sign-in, including playground sessions. Same password as admin. */
+export const PARTNER_MANAGER_EMAIL = "so.adm.condominios@gmail.com";
+const PARTNER_MANAGER_NAME = "SO Administração de Condomínios";
+
 export function buildDemoPortfolio(): Portfolio {
   return {
     organization: { ...DEMO_ORGANIZATION },
@@ -183,11 +187,14 @@ function portalDemoAccounts(password: string): StoredAccount[] {
   ];
 }
 
-function portalDemoMemberships(now: string): CondoMembership[] {
+function portalDemoMemberships(
+  now: string,
+  hostEmail: string = DEMO_EMAIL,
+): CondoMembership[] {
   return [
     {
       id: "mem-board-1",
-      hostEmail: DEMO_EMAIL,
+      hostEmail,
       memberEmail: PORTAL_DEMO_BOARD_EMAIL,
       condominiumId: "1",
       role: UserRole.BoardMember,
@@ -199,7 +206,7 @@ function portalDemoMemberships(now: string): CondoMembership[] {
     },
     {
       id: "mem-owner-1",
-      hostEmail: DEMO_EMAIL,
+      hostEmail,
       memberEmail: PORTAL_DEMO_OWNER_EMAIL,
       condominiumId: "1",
       role: UserRole.Resident,
@@ -312,6 +319,77 @@ function applyPortalDemoAccounts(store: StoreDocument): void {
   }
 }
 
+function writeFixtureWorkspace(store: StoreDocument, key: string): Portfolio {
+  const portfolio = buildDemoPortfolio();
+  store.portfolios[key] = portfolio;
+  store.collections[key] = buildDemoCollections();
+  store.finance[key] = buildDemoFinance();
+  store.compliance[key] = buildDemoCompliance();
+  store.occurrences[key] = buildDemoOccurrences();
+  store.assemblies[key] = buildDemoAssemblies();
+  store.operations[key] = buildDemoOperations();
+  store.works[key] = buildDemoWorks();
+  store.board[key] = buildDemoBoard();
+  const announcements = buildDemoAnnouncements();
+  for (const item of announcements.announcements) {
+    item.createdBy = key;
+  }
+  store.announcements[key] = announcements;
+  seedDemoTeam(store, key);
+  seedDemoLegalProcesses(store, key);
+  return portfolio;
+}
+
+function applyPartnerManager(store: StoreDocument): void {
+  const key = PARTNER_MANAGER_EMAIL;
+  const password = hashedDemoSecret(store);
+  const existing = store.accounts[key];
+  if (!existing) {
+    store.accounts[key] = {
+      id: "partner-so-adm",
+      email: key,
+      name: PARTNER_MANAGER_NAME,
+      password,
+      role: "Property Manager",
+      roleCode: UserRole.PropertyManager,
+      avatar: null,
+      phone: null,
+    };
+  } else if (!isPasswordHash(existing.password)) {
+    store.accounts[key] = {
+      ...existing,
+      password: toPasswordHash(existing.password),
+    };
+  }
+
+  if (store.portfolios[key]?.condominiums?.length) return;
+
+  writeFixtureWorkspace(store, key);
+  if ((store.membershipsByHost[key] ?? []).length === 0) {
+    store.membershipsByHost[key] = portalDemoMemberships(
+      new Date().toISOString(),
+      key,
+    );
+  }
+}
+
+/**
+ * Seed the partner manager into this store when the login is missing.
+ * Leaves an existing workspace untouched so local data is not reset.
+ */
+export function ensurePartnerManagerAccount(email: string): void {
+  const key = email.trim().toLowerCase();
+  if (key !== PARTNER_MANAGER_EMAIL) return;
+  const store = readStore();
+  const account = store.accounts[key];
+  const accountReady = Boolean(account && isPasswordHash(account.password));
+  const workspaceReady = (store.portfolios[key]?.condominiums?.length ?? 0) > 0;
+  if (accountReady && workspaceReady) return;
+  updateStore((next) => {
+    applyPartnerManager(next);
+  });
+}
+
 /** Seeds board/owner demo logins + memberships (idempotent). */
 export function ensurePortalDemoAccounts(): void {
   if (!portalDemoNeedsWrite(readStore())) return;
@@ -355,23 +433,11 @@ export function ensureDemoWorkspace(email: string): void {
  * Leaves other accounts untouched; re-ensures portal demo logins.
  */
 export function restoreDemoWorkspace(): Portfolio {
-  const portfolio = buildDemoPortfolio();
+  let portfolio: Portfolio | null = null;
   updateStore((store) => {
-    const key = DEMO_EMAIL;
-    store.portfolios[key] = portfolio;
-    store.collections[key] = buildDemoCollections();
-    store.finance[key] = buildDemoFinance();
-    store.compliance[key] = buildDemoCompliance();
-    store.occurrences[key] = buildDemoOccurrences();
-    store.assemblies[key] = buildDemoAssemblies();
-    store.operations[key] = buildDemoOperations();
-    store.works[key] = buildDemoWorks();
-    store.board[key] = buildDemoBoard();
-    store.announcements[key] = buildDemoAnnouncements();
-
+    portfolio = writeFixtureWorkspace(store, DEMO_EMAIL);
     applyPortalDemoAccounts(store);
-    seedDemoTeam(store, key);
-    seedDemoLegalProcesses(store, key);
   });
+  if (!portfolio) throw new Error("demoWorkspaceMissing");
   return portfolio;
 }

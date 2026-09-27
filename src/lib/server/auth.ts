@@ -19,7 +19,9 @@ import {
   passwordMatches,
 } from "./password";
 import {
+  ensurePartnerManagerAccount,
   ensurePortalDemoAccounts,
+  PARTNER_MANAGER_EMAIL,
   PORTAL_DEMO_BOARD_EMAIL,
   PORTAL_DEMO_OWNER_EMAIL,
 } from "./demo";
@@ -72,7 +74,7 @@ export function resolveUser(email: string): User {
 export function isKnownAccount(email: string): boolean {
   const key = normalizeEmail(email);
   ensurePortalSeedIfNeeded(key);
-  if (isDemoEmail(key)) return true;
+  if (isDemoEmail(key) || key === PARTNER_MANAGER_EMAIL) return true;
   return Boolean(readStore().accounts[key]);
 }
 
@@ -82,7 +84,12 @@ function storedSecretFor(email: string): string | null {
   if (isDemoEmail(key)) {
     return store.demoPassword || DEFAULT_PASSWORD;
   }
-  return store.accounts[key]?.password ?? null;
+  const accountPassword = store.accounts[key]?.password;
+  if (accountPassword) return accountPassword;
+  if (key === PARTNER_MANAGER_EMAIL) {
+    return store.demoPassword || DEFAULT_PASSWORD;
+  }
+  return null;
 }
 
 export function verifyCredentials(email: string, password: string): boolean {
@@ -117,6 +124,7 @@ export function loginUser(
   if (stored && !isPasswordHash(stored)) {
     persistPasswordHash(key, hashPassword(password));
   }
+  ensurePartnerManagerAccount(key);
   return resolveUser(email);
 }
 
@@ -126,7 +134,7 @@ export function registerAccount(
   password: string,
 ): User {
   const key = normalizeEmail(email);
-  if (isDemoEmail(key)) {
+  if (isDemoEmail(key) || key === PARTNER_MANAGER_EMAIL) {
     throw new Error("emailAlreadyRegistered");
   }
   assertPasswordLength(password);

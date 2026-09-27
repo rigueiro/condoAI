@@ -64,12 +64,11 @@ function demoLegalSubject(
   };
 }
 
-function demoLegalProcessFromStore(
+function buildFixtureLegalProcess(
   store: StoreDocument,
   workspaceEmail: string,
 ): LegalProcess | null {
   const key = normalizeEmail(workspaceEmail);
-  if (!isDemoEmail(key)) return null;
   const portfolio = store.portfolios[key];
   if (!portfolio) return null;
   const subject = demoLegalSubject(portfolio, store.collections[key]);
@@ -86,6 +85,15 @@ function demoLegalProcessFromStore(
     openedAt: new Date(Date.now() - 14 * 86400000).toISOString(),
     resolvedAt: null,
   };
+}
+
+function demoLegalProcessFromStore(
+  store: StoreDocument,
+  workspaceEmail: string,
+): LegalProcess | null {
+  const key = normalizeEmail(workspaceEmail);
+  if (!isDemoEmail(key)) return null;
+  return buildFixtureLegalProcess(store, key);
 }
 
 function loadProcesses(workspaceEmail: string): LegalProcess[] {
@@ -227,9 +235,10 @@ export function seedDemoLegalProcesses(
   store: StoreDocument,
   workspaceEmail: string,
 ): boolean {
-  if (!demoLegalSeedNeeded(store, workspaceEmail)) return false;
-  const process = demoLegalProcessFromStore(store, normalizeEmail(workspaceEmail));
+  const key = normalizeEmail(workspaceEmail);
+  if ((store.legalProcessesByHost[key] ?? []).length > 0) return false;
+  const process = buildFixtureLegalProcess(store, key);
   if (!process) return false;
-  store.legalProcessesByHost[normalizeEmail(workspaceEmail)] = [process];
+  store.legalProcessesByHost[key] = [process];
   return true;
 }
