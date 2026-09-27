@@ -7,14 +7,12 @@ import Button from "@/components/ui/button";
 
 interface AccountDangerZoneProps {
   organizationName: string;
-  onConfirmDelete?: () => Promise<void> | void;
-  onTransferOwnership?: () => void;
+  onConfirmDelete: () => Promise<void> | void;
 }
 
 function AccountDangerZone({
   organizationName,
   onConfirmDelete,
-  onTransferOwnership,
 }: AccountDangerZoneProps) {
   const t = useTranslations("account.dangerZone");
   const [open, setOpen] = useState(false);
@@ -31,7 +29,7 @@ function AccountDangerZone({
     if (confirmation !== organizationName) return;
     setIsDeleting(true);
     try {
-      await onConfirmDelete?.();
+      await onConfirmDelete();
       setOpen(false);
       setConfirmation("");
     } finally {
@@ -40,32 +38,10 @@ function AccountDangerZone({
   }, [confirmation, organizationName, onConfirmDelete]);
 
   return (
-    <div className="space-y-6">
+    <>
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex-1">
-          <h3 className="text-sm font-medium text-text-primary">
-            {t("transferOwnership")}
-          </h3>
-          <p className="text-xs text-text-secondary mt-1">
-            {t("transferOwnershipDesc")}
-          </p>
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          iconName="ArrowRightLeft"
-          onClick={onTransferOwnership}
-        >
-          {t("transfer")}
-        </Button>
-      </div>
-
-      <div className="pt-6 border-t border-error-100 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div className="flex-1">
-          <h3 className="text-sm font-medium text-error">
-            {t("deleteAccount")}
-          </h3>
+          <h3 className="text-sm font-medium text-error">{t("deleteAccount")}</h3>
           <p className="text-xs text-text-secondary mt-1">
             {t("deleteAccountDesc")}
           </p>
@@ -81,7 +57,7 @@ function AccountDangerZone({
         </Button>
       </div>
 
-      {open && (
+      {open ? (
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-1001 p-4"
           role="dialog"
@@ -136,8 +112,8 @@ function AccountDangerZone({
             </div>
           </div>
         </div>
-      )}
-    </div>
+      ) : null}
+    </>
   );
 }
 

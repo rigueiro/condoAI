@@ -40,7 +40,7 @@ interface PortfolioContextValue {
   removeUnit: (unitId: string) => Promise<void>;
   applyImport: (units: Unit[], owners: Owner[]) => void;
   completeOnboarding: () => void;
-  updateOrganization: (organization: Organization) => void;
+  updateOrganization: (organization: Organization) => Promise<void>;
 }
 
 const PortfolioContext = createContext<PortfolioContextValue | undefined>(
@@ -205,8 +205,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   }, [patchPortfolio]);
 
   const updateOrganization = useCallback(
-    (organization: Organization) => {
-      void patchPortfolio({ action: "updateOrganization", organization });
+    async (organization: Organization) => {
+      await patchPortfolio({ action: "updateOrganization", organization });
     },
     [patchPortfolio],
   );

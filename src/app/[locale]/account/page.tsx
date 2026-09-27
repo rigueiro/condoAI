@@ -1,168 +1,46 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import Header from "@/components/ui/header";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Icon from "@/components/icon";
 import SectionCard from "@/components/ui/section-card";
-import Button from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { usePortfolio } from "@/lib/portfolio";
 import { apiFetch } from "@/lib/api/client";
 import { useRouter } from "@/i18n/navigation";
 
 import OrganizationForm from "./components/organization-form";
-import SubscriptionSection from "./components/subscription-section";
-import BillingSection from "./components/billing-section";
-import InvoicesSection from "./components/invoices-section";
 import TeamMembersSection from "./components/team-members-section";
-import IntegrationsSection from "./components/integrations-section";
 import AccountDangerZone from "./components/account-danger-zone";
 
-import type {
-  Integration,
-  Invoice,
-  Organization,
-  PaymentMethod,
-  Subscription,
-  TeamMember,
-  TeamRole,
-} from "./types";
+import type { Organization, TeamMember, TeamRole } from "./types";
+import { EMPTY_ORGANIZATION } from "./types";
 
-type Banner = { type: "success" | "error"; message: string } | null;
+type BannerKind = "success" | "error";
+type Banner = { type: BannerKind; message: string } | null;
 
-const DEFAULT_ORGANIZATION: Organization = {
-  name: "CondoAI Lda.",
-  legalName: "CondoAI Sociedade Unipessoal Lda.",
-  taxId: "PT509123456",
-  email: "billing@condoai.pt",
-  phone: "+351 21 000 0000",
-  website: "https://condoai.pt",
-  addressLine1: "Av. da Liberdade 100, 4º",
-  city: "Lisboa",
-  postalCode: "1250-145",
-  country: "PT",
+type TeamPayload = {
+  members: TeamMember[];
+  canManageTeam?: boolean;
 };
-
-const DEFAULT_SUBSCRIPTION: Subscription = {
-  planId: "professional",
-  cycle: "yearly",
-  renewsAt: "2027-01-15",
-  usage: {
-    properties: { used: 24, limit: 50 },
-    units: { used: 486, limit: 1000 },
-    users: { used: 6, limit: 10 },
-    storageMb: { used: 3400, limit: 10240 },
-  },
-};
-
-const DEFAULT_PAYMENT_METHOD: PaymentMethod = {
-  brand: "Visa",
-  last4: "4242",
-  expiryMonth: 9,
-  expiryYear: 2028,
-};
-
-const DEFAULT_INVOICES: Invoice[] = [
-  {
-    id: "inv-2026-04",
-    number: "INV-2026-04",
-    date: "2026-04-15",
-    amount: 79,
-    currency: "EUR",
-    status: "paid",
-  },
-  {
-    id: "inv-2026-03",
-    number: "INV-2026-03",
-    date: "2026-03-15",
-    amount: 79,
-    currency: "EUR",
-    status: "paid",
-  },
-  {
-    id: "inv-2026-02",
-    number: "INV-2026-02",
-    date: "2026-02-15",
-    amount: 79,
-    currency: "EUR",
-    status: "paid",
-  },
-  {
-    id: "inv-2026-01",
-    number: "INV-2026-01",
-    date: "2026-01-15",
-    amount: 79,
-    currency: "EUR",
-    status: "refunded",
-  },
-];
-
-const DEFAULT_INTEGRATIONS: Integration[] = [
-  { id: "stripe", icon: "CreditCard", connected: true },
-  { id: "sepa", icon: "Landmark", connected: true },
-  { id: "google", icon: "Calendar", connected: false },
-  { id: "slack", icon: "MessageSquare", connected: false },
-  { id: "zapier", icon: "Zap", connected: false },
-];
 
 function AccountPage() {
   const t = useTranslations("account");
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const {
     organization: portfolioOrg,
-    isDemo,
-    portfolio,
+    isReady,
     updateOrganization,
   } = usePortfolio();
   const router = useRouter();
 
-  const [organizationOverride, setOrganizationOverride] =
-    useState<Organization | null>(null);
-  const [billingEmailOverride, setBillingEmailOverride] = useState<
-    string | null
-  >(null);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
-    DEFAULT_PAYMENT_METHOD,
-  );
-  const [invoices] = useState<Invoice[]>(DEFAULT_INVOICES);
-  const [integrations] = useState<Integration[]>(DEFAULT_INTEGRATIONS);
   const [banner, setBanner] = useState<Banner>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [canManageTeam, setCanManageTeam] = useState(false);
 
-  const organization =
-    organizationOverride ??
-    (!isDemo && portfolioOrg ? portfolioOrg : DEFAULT_ORGANIZATION);
-
-  const billingEmail =
-    billingEmailOverride ?? organization.email;
-
-  const subscription = useMemo<Subscription>(() => {
-    if (isDemo) return DEFAULT_SUBSCRIPTION;
-    return {
-      ...DEFAULT_SUBSCRIPTION,
-      usage: {
-        ...DEFAULT_SUBSCRIPTION.usage,
-        properties: {
-          ...DEFAULT_SUBSCRIPTION.usage.properties,
-          used: portfolio.condominiums.length,
-        },
-        units: {
-          ...DEFAULT_SUBSCRIPTION.usage.units,
-          used: portfolio.condominiums.reduce(
-            (s, c) => s + c.numberOfUnits,
-            0,
-          ),
-        },
-        users: {
-          ...DEFAULT_SUBSCRIPTION.usage.users,
-          used: teamMembers.filter((m) => m.status !== "inactive").length || 1,
-        },
-      },
-    };
-  }, [isDemo, portfolio, teamMembers]);
+  const organization = portfolioOrg ?? EMPTY_ORGANIZATION;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -176,18 +54,18 @@ function AccountPage() {
     return () => window.clearTimeout(timer);
   }, [banner]);
 
+  const refreshTeam = useCallback(async () => {
+    const data = await apiFetch<TeamPayload>("/api/team");
+    setTeamMembers(data.members);
+    setCanManageTeam(Boolean(data.canManageTeam));
+  }, []);
+
   useEffect(() => {
     if (!isAuthenticated || isLoading) return;
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
-        const data = await apiFetch<{
-          members: TeamMember[];
-          canManageTeam?: boolean;
-        }>("/api/team");
-        if (cancelled) return;
-        setTeamMembers(data.members);
-        setCanManageTeam(Boolean(data.canManageTeam));
+        await refreshTeam();
       } catch {
         if (cancelled) return;
         setTeamMembers([]);
@@ -197,74 +75,67 @@ function AccountPage() {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, isLoading, user?.id]);
+  }, [isAuthenticated, isLoading, user?.id, refreshTeam]);
 
-  const showSuccess = (message: string) =>
-    setBanner({ type: "success", message });
-
-  const refreshTeam = useCallback(async () => {
-    const data = await apiFetch<{
-      members: TeamMember[];
-      canManageTeam?: boolean;
-    }>("/api/team");
-    setTeamMembers(data.members);
-    setCanManageTeam(Boolean(data.canManageTeam));
+  const showBanner = useCallback((type: BannerKind, message: string) => {
+    setBanner({ type, message });
   }, []);
 
-  const handleInvite = useCallback(
-    async (input: { email: string; role: TeamRole }) => {
-      await apiFetch("/api/team", {
-        method: "POST",
-        body: JSON.stringify({ email: input.email, role: input.role }),
-      });
-      await refreshTeam();
-      showSuccess(t("saved"));
+  const runTeamAction = useCallback(
+    async (action: () => Promise<void>) => {
+      try {
+        await action();
+        await refreshTeam();
+        showBanner("success", t("saved"));
+      } catch {
+        showBanner("error", t("saveError"));
+      }
     },
-    [t, refreshTeam],
+    [refreshTeam, showBanner, t],
+  );
+
+  const handleInvite = useCallback(
+    (input: { email: string; role: TeamRole }) =>
+      runTeamAction(async () => {
+        await apiFetch("/api/team", {
+          method: "POST",
+          body: JSON.stringify({ email: input.email, role: input.role }),
+        });
+      }),
+    [runTeamAction],
   );
 
   const handleRemoveMember = useCallback(
-    async (member: TeamMember) => {
-      await apiFetch(`/api/team?id=${encodeURIComponent(member.id)}`, {
-        method: "DELETE",
-      });
-      await refreshTeam();
-      showSuccess(t("saved"));
-    },
-    [t, refreshTeam],
+    (member: TeamMember) =>
+      runTeamAction(async () => {
+        await apiFetch(`/api/team?id=${encodeURIComponent(member.id)}`, {
+          method: "DELETE",
+        });
+      }),
+    [runTeamAction],
   );
 
   const handleChangeRole = useCallback(
-    async (member: TeamMember, role: TeamRole) => {
-      await apiFetch("/api/team", {
-        method: "PATCH",
-        body: JSON.stringify({ id: member.id, role }),
-      });
-      await refreshTeam();
-      showSuccess(t("saved"));
-    },
-    [t, refreshTeam],
+    (member: TeamMember, role: TeamRole) =>
+      runTeamAction(async () => {
+        await apiFetch("/api/team", {
+          method: "PATCH",
+          body: JSON.stringify({ id: member.id, role }),
+        });
+      }),
+    [runTeamAction],
   );
 
   const handleSaveOrganization = useCallback(
     async (next: Organization) => {
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      setOrganizationOverride(next);
-      if (!isDemo) {
-        updateOrganization(next);
+      try {
+        await updateOrganization(next);
+        showBanner("success", t("saved"));
+      } catch {
+        showBanner("error", t("saveError"));
       }
-      showSuccess(t("saved"));
     },
-    [t, isDemo, updateOrganization],
-  );
-
-  const handleUpdateBillingEmail = useCallback(
-    async (email: string) => {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      setBillingEmailOverride(email);
-      showSuccess(t("saved"));
-    },
-    [t],
+    [showBanner, t, updateOrganization],
   );
 
   const handleConfirmDelete = useCallback(async () => {
@@ -272,7 +143,7 @@ function AccountPage() {
     router.replace("/login");
   }, [logout, router]);
 
-  if (isLoading || !user) {
+  if (isLoading || !user || !isReady) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -325,7 +196,7 @@ function AccountPage() {
                 type="button"
                 onClick={() => setBanner(null)}
                 className="ml-auto p-1 hover:opacity-80"
-                aria-label="Dismiss"
+                aria-label={t("dismiss")}
               >
                 <Icon name="X" size={16} />
               </button>
@@ -344,43 +215,6 @@ function AccountPage() {
             </SectionCard>
 
             <SectionCard
-              title={t("sections.subscription")}
-              description={t("sections.subscriptionSubtitle")}
-            >
-              <SubscriptionSection subscription={subscription} />
-            </SectionCard>
-
-            <SectionCard
-              title={t("sections.billing")}
-              description={t("sections.billingSubtitle")}
-            >
-              <BillingSection
-                paymentMethod={paymentMethod}
-                billingEmail={billingEmail}
-                onUpdateBillingEmail={handleUpdateBillingEmail}
-              />
-            </SectionCard>
-
-            <SectionCard
-              title={t("sections.invoices")}
-              description={t("sections.invoicesSubtitle")}
-              action={
-                invoices.length > 0 ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    iconName="ExternalLink"
-                  >
-                    {t("invoices.viewAll")}
-                  </Button>
-                ) : null
-              }
-            >
-              <InvoicesSection invoices={invoices} />
-            </SectionCard>
-
-            <SectionCard
               title={t("sections.team")}
               description={t("sections.teamSubtitle")}
             >
@@ -390,13 +224,6 @@ function AccountPage() {
                 onRemove={canManageTeam ? handleRemoveMember : undefined}
                 onChangeRole={canManageTeam ? handleChangeRole : undefined}
               />
-            </SectionCard>
-
-            <SectionCard
-              title={t("sections.integrations")}
-              description={t("sections.integrationsSubtitle")}
-            >
-              <IntegrationsSection integrations={integrations} />
             </SectionCard>
 
             <SectionCard
