@@ -53,8 +53,8 @@ export const PORTAL_DEMO_BOARD_EMAIL = "board@condoai.pt";
 export const PORTAL_DEMO_OWNER_EMAIL = "owner@condoai.pt";
 
 /** Manager login seeded on sign-in, including playground sessions. Same password as admin. */
-export const PARTNER_MANAGER_EMAIL = "so.adm.condominios@gmail.com";
-const PARTNER_MANAGER_NAME = "SO Administração de Condomínios";
+export const PARTNER_MANAGER_EMAIL = "test@condoai.pt";
+const PARTNER_MANAGER_NAME = "Test User";
 
 export function buildDemoPortfolio(): Portfolio {
   return {
@@ -346,7 +346,7 @@ function applyPartnerManager(store: StoreDocument): void {
   const existing = store.accounts[key];
   if (!existing) {
     store.accounts[key] = {
-      id: "partner-so-adm",
+      id: "partner-test",
       email: key,
       name: PARTNER_MANAGER_NAME,
       password,
